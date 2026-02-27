@@ -1,0 +1,98 @@
+import React from 'react';
+import { Crown, ShieldAlert, Activity } from 'lucide-react';
+import { CHARACTERS, BADGES } from '../constants';
+
+interface HeroProps {
+  user: any;
+  onBrowseLibrary: () => void;
+}
+
+export const Hero: React.FC<HeroProps> = ({ user, onBrowseLibrary }) => {
+  const currentAvatar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
+  const featuredBadge = BADGES.find(b => b.id === user.featuredBadgeId);
+
+  const heroImage = user.currentTheme === 'spongebob' 
+    ? 'https://cdni.fancaps.net/file/fancaps-tvimages/2891461.jpg'
+    : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop';
+
+  const expProgress = (user.exp / (user.level * 200)) * 100; // Using 200 as base from App.tsx
+
+  return (
+    <section className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950">
+      {!user.settings.hideHeroImage && (
+        <div className="absolute inset-0">
+          <img className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-1000" alt="Hero Background" src={heroImage} />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent"></div>
+        </div>
+      )}
+      <div className={`absolute inset-y-0 left-0 flex flex-col justify-center px-10 md:px-20 w-full md:w-3/5 lg:w-1/2 space-y-8 z-10 bg-slate-950 ${!user.settings.hideHeroImage ? 'shadow-[60px_0_100px_rgba(2,6,23,1)]' : ''}`}>
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="relative shrink-0">
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-theme relative z-10 transition-transform duration-500 group-hover:scale-105 overflow-hidden ${user.currentTheme !== 'spongebob' && user.currentTheme !== 'kanye' ? 'bg-slate-950 border border-theme/20 shadow-[inset_0_0_40px_var(--primary-glow)]' : ''}`}>
+              {currentAvatar.img ? (
+                <img src={currentAvatar.img} alt={currentAvatar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
+              ) : (
+                React.createElement(currentAvatar.icon, { size: 64 })
+              )}
+            </div>
+            <div className={`absolute inset-0 frame-${user.currentFrame || 'solar'} pointer-events-none z-20`}></div>
+            <div className="absolute -bottom-1 -right-1 bg-theme text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-xl border-4 border-slate-950 shadow-theme z-30">LVL {user.level}</div>
+          </div>
+          <div className="flex-1 space-y-4 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 text-slate-500 font-black uppercase tracking-[0.3em] text-[9px] bg-black/40 border border-white/5 border-dashed px-3 py-1.5 rounded-full w-fit mx-auto md:mx-0 opacity-60">
+              {featuredBadge ? (
+                <>
+                  <featuredBadge.icon size={12} className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} style={{ color: featuredBadge.color !== 'rainbow' ? featuredBadge.color : undefined }} />
+                  <span className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''}>BADGE: {featuredBadge.name}</span>
+                </>
+              ) : (
+                <>
+                  <ShieldAlert size={12} className="text-slate-600" />
+                  BADGE: NOT EQUIPPED
+                </>
+              )}
+            </div>
+            <h1 className="font-orbitron font-black text-4xl md:text-6xl italic leading-none text-white tracking-tighter uppercase">WELCOME <br/><span className="text-theme drop-shadow-theme">{user.username}</span></h1>
+            <div className="flex items-center justify-center md:justify-start gap-4 pt-2">
+              <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                <Activity size={14} className="text-emerald-500 animate-pulse" />
+                Session Verified
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4 max-w-md mx-auto md:mx-0 w-full">
+          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1">
+            <span>EXP PROGRESS</span>
+            <div className="flex items-center gap-3">
+              <span className="text-white text-xs font-orbitron">{user.level}</span>
+              <span className="text-theme opacity-60">→</span>
+              <span className="text-slate-400 text-xs font-orbitron">{user.level + 1}</span>
+            </div>
+          </div>
+          <div className="relative h-4 bg-black/60 rounded-full border border-white/5 p-1 flex gap-1 shadow-inner overflow-hidden">
+            {Array.from({ length: 20 }).map((_, i) => {
+              const segmentThreshold = (i + 1) * 5;
+              const isActive = expProgress >= segmentThreshold;
+              return (
+                <div 
+                  key={i} 
+                  className={`h-full flex-1 rounded-[2px] transition-all duration-500 ${isActive ? 'bg-theme shadow-[0_0_10px_var(--primary-glow)]' : 'bg-slate-900/40'}`}
+                ></div>
+              );
+            })}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_3s_infinite] pointer-events-none"></div>
+          </div>
+        </div>
+        <p className="text-slate-300 text-base md:text-lg max-w-md font-medium text-center md:text-left">The elite unblocked library for high-performance browser gaming. Zero lag, zero blocks, pure gaming.</p>
+        <div className="flex flex-col sm:flex-row gap-4 pt-2">
+          <button onClick={onBrowseLibrary} className="bg-theme text-slate-950 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all hover:scale-105 hover:brightness-110 shadow-theme">Browse Library</button>
+        </div>
+      </div>
+      <div className="absolute bottom-10 right-10 hidden lg:flex flex-col items-end opacity-100 z-0">
+        <span className="font-orbitron font-black text-8xl leading-none text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">9X</span>
+        <span className="font-bold tracking-[0.5em] text-sm uppercase text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">Reworked</span>
+      </div>
+    </section>
+  );
+};
