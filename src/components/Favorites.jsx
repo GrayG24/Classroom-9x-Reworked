@@ -1,15 +1,8 @@
 import React, { useMemo } from 'react';
-import { GameCard } from './GameCard';
+import { GameCard } from './GameCard.jsx';
 import { Heart } from 'lucide-react';
 
-interface FavoritesProps {
-  games: any[];
-  favorites: string[];
-  onToggleFavorite: (id: string) => void;
-  onPlayGame: (game: any) => void;
-}
-
-export const Favorites: React.FC<FavoritesProps> = ({ 
+export const Favorites = ({ 
   games, 
   favorites, 
   onToggleFavorite, 

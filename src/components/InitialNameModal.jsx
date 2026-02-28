@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import { Rocket, ShieldCheck } from 'lucide-react';
 
-interface InitialNameModalProps {
-  onSubmit: (name: string) => void;
-}
-
-export const InitialNameModal: React.FC<InitialNameModalProps> = ({ onSubmit }) => {
+export const InitialNameModal = ({ onSubmit }) => {
   const [name, setName] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (name.trim().length >= 2) {
       onSubmit(name.trim());

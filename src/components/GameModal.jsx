@@ -4,14 +4,7 @@ import {
   Activity, Shield, Zap, ExternalLink, Gamepad2
 } from 'lucide-react';
 
-interface GameModalProps {
-  game: any;
-  isFavorite: boolean;
-  onToggleFavorite: (id: string) => void;
-  onClose: () => void;
-}
-
-export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggleFavorite, onClose }) => {
+export const GameModal = ({ game, isFavorite, onToggleFavorite, onClose }) => {
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -23,7 +16,6 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 lg:p-6 overflow-hidden">
-      {/* Immersive Background */}
       <div className="absolute inset-0 bg-slate-950/98 backdrop-blur-2xl" onClick={onClose}>
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,var(--primary),transparent_70%)]"></div>
@@ -32,7 +24,6 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
 
       <div className={`relative w-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] flex flex-col bg-slate-900 border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] overflow-hidden ${isTheaterMode ? 'h-full max-w-none rounded-none' : 'max-w-7xl aspect-video rounded-[2rem]'}`}>
         
-        {/* Header Bar */}
         <div className="h-16 shrink-0 px-6 flex items-center justify-between bg-slate-950 border-b border-white/5 z-50">
           <div className="flex items-center gap-4">
             <div className="p-2 bg-theme/10 rounded-xl text-theme border border-theme/20">
@@ -64,9 +55,7 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
           </div>
         </div>
 
-        {/* Main Content Area */}
         <div className="flex-1 flex overflow-hidden relative">
-          {/* Game Viewport */}
           <div className="flex-1 bg-black relative">
             {!isLoaded && (
               <div className="absolute inset-0 flex flex-col items-center justify-center z-40 bg-slate-950">
@@ -83,7 +72,6 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
             ></iframe>
           </div>
 
-          {/* Info Sidebar */}
           <div className={`absolute inset-y-0 right-0 w-full md:w-80 bg-slate-950/98 backdrop-blur-3xl border-l border-white/10 z-[60] transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${showInfo ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="h-full flex flex-col p-8 overflow-y-auto custom-scrollbar">
               <div className="flex items-center justify-between mb-8">
@@ -120,14 +108,19 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
                     <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Controls</h4>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Move</span>
-                      <span className="px-2 py-0.5 bg-slate-900 rounded text-[9px] font-black text-theme border border-theme/20 uppercase">WASD</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Action</span>
-                      <span className="px-2 py-0.5 bg-slate-900 rounded text-[9px] font-black text-theme border border-theme/20 uppercase">SPACE</span>
-                    </div>
+                    {game.controls ? (
+                      Object.entries(game.controls).map(([action, key]) => (
+                        <div key={action} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{action}</span>
+                          <span className="px-2 py-0.5 bg-slate-900 rounded text-[9px] font-black text-theme border border-theme/20 uppercase">{key}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Standard</span>
+                        <span className="px-2 py-0.5 bg-slate-900 rounded text-[9px] font-black text-theme border border-theme/20 uppercase">WASD / SPACE</span>
+                      </div>
+                    )}
                   </div>
                 </section>
 
@@ -140,12 +133,20 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
                 </section>
 
                 <div className="pt-4 space-y-3">
-                  <button className="w-full py-4 bg-theme text-slate-950 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-theme">
-                    <Share2 size={14} />
-                    Broadcast
-                  </button>
                   <button 
-                    onClick={() => window.open(game.iframeUrl, '_blank')}
+                    onClick={() => {
+                      const win = window.open('about:blank', '_blank');
+                      if (win) {
+                        win.document.body.style.margin = '0';
+                        win.document.body.style.height = '100vh';
+                        const iframe = win.document.createElement('iframe');
+                        iframe.style.border = 'none';
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+                        iframe.src = game.iframeUrl;
+                        win.document.body.appendChild(iframe);
+                      }
+                    }}
                     className="w-full py-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 border border-white/10 transition-all"
                   >
                     <ExternalLink size={14} />
@@ -157,7 +158,6 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
           </div>
         </div>
 
-        {/* Footer Bar */}
         <div className="h-14 shrink-0 px-6 flex items-center justify-between bg-slate-950 border-t border-white/5 z-50">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-900 rounded-full border border-white/5">
@@ -172,7 +172,7 @@ export const GameModal: React.FC<GameModalProps> = ({ game, isFavorite, onToggle
               className={`h-9 px-4 rounded-xl border transition-all flex items-center gap-2 active:scale-95 ${isTheaterMode ? 'bg-theme border-theme/50 text-slate-950 shadow-theme' : 'bg-slate-800 border-white/5 text-slate-400 hover:text-white'}`}
             >
               <Monitor size={14} />
-              <span className="text-[9px] font-black uppercase tracking-widest">Cloak Tab</span>
+              <span className="text-[9px] font-black uppercase tracking-widest">Expand</span>
             </button>
             <button 
               onClick={() => setShowInfo(!showInfo)}

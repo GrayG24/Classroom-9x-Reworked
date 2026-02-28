@@ -1,21 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar, Clock, Flame, ChevronRight, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Hero } from './Hero';
-import { GameCard } from './GameCard';
+import { Hero } from './Hero.jsx';
+import { GameCard } from './GameCard.jsx';
 
-interface HomeProps {
-  user: any;
-  games: any[];
-  dailyPicks: any[];
-  favorites: string[];
-  boosts: { id: string; name: string; multiplier: number; expiresAt: number }[];
-  onToggleFavorite: (id: string) => void;
-  onPlayGame: (game: any) => void;
-  onSwitchToLibrary: () => void;
-}
-
-export const Home: React.FC<HomeProps> = ({ 
+export const Home = ({ 
   user, 
   games, 
   dailyPicks,
@@ -25,12 +14,11 @@ export const Home: React.FC<HomeProps> = ({
   onPlayGame,
   onSwitchToLibrary
 }) => {
-  const [timeLeft, setTimeLeft] = React.useState('');
+  const [timeLeft, setTimeLeft] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
-      // EST is UTC-5
       const estNow = new Date(now.getTime() + (-5 * 60 * 60 * 1000));
       const estMidnight = new Date(estNow);
       estMidnight.setUTCHours(24, 0, 0, 0);
@@ -69,19 +57,30 @@ export const Home: React.FC<HomeProps> = ({
             {boosts.map(boost => (
               <motion.div 
                 key={boost.id} 
-                whileHover={{ scale: 1.05 }}
-                className="px-8 py-4 bg-slate-900/60 border border-emerald-500/30 rounded-[2rem] flex items-center gap-6 shadow-2xl"
+                whileHover={{ scale: 1.05, y: -5 }}
+                className="relative px-8 py-6 bg-slate-900/60 border border-emerald-500/30 rounded-[2.5rem] flex items-center gap-8 shadow-2xl overflow-hidden group"
               >
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-2">{boost.name}</span>
-                  <span className="text-lg font-orbitron font-bold text-emerald-500 tracking-wider">{boost.multiplier}x EXP</span>
+                <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors"></div>
+                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <Zap size={80} className="text-emerald-500" />
                 </div>
-                <div className="w-px h-10 bg-white/10"></div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-2">Expires In</span>
-                  <span className="text-sm font-mono font-bold text-white uppercase tracking-tight">
-                    {Math.max(0, Math.floor((boost.expiresAt - Date.now()) / 60000))}m
-                  </span>
+                
+                <div className="flex flex-col relative z-10">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-2">{boost.name}</span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-orbitron font-black text-emerald-500 tracking-tighter italic">{boost.multiplier}x</span>
+                    <span className="text-xs font-black text-emerald-500/60 uppercase">EXP</span>
+                  </div>
+                </div>
+                <div className="w-px h-12 bg-white/10 relative z-10"></div>
+                <div className="flex flex-col relative z-10">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-2">Time Remaining</span>
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-white/40" />
+                    <span className="text-lg font-mono font-black text-white uppercase tracking-tight">
+                      {Math.max(0, Math.floor((boost.expiresAt - Date.now()) / 60000))}m
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             ))}

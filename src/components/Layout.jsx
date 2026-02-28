@@ -1,20 +1,9 @@
 import React from 'react';
-import { Navbar } from './Navbar';
-import { Sidebar } from './Sidebar';
-import { AppRoute } from '../types';
+import { Navbar } from './Navbar.jsx';
+import { Sidebar } from './Sidebar.jsx';
+import { AppRoute } from '../types.js';
 
-interface LayoutProps {
-  children: React.ReactNode;
-  onSearch: (query: string) => void;
-  onSetTheme: (theme: string) => void;
-  currentView: AppRoute;
-  selectedCategoryId: string | null;
-  onViewChange: (view: AppRoute, param?: string) => void;
-  onProfileClick: () => void;
-  user: any;
-}
-
-export const Layout: React.FC<LayoutProps> = ({ 
+export const Layout = ({ 
   children, 
   onSearch, 
   onSetTheme, 

@@ -1,16 +1,10 @@
 import React from 'react';
 import { Search, Rocket, User as UserIcon, Zap as ZapIcon, Shield, Ghost, Crown, ZapOff, Bot, Star, Cat } from 'lucide-react';
-import { CHARACTERS } from '../constants';
+import { CHARACTERS } from '../constants.js';
 
-interface NavbarProps {
-  user: any;
-  onSearch: (query: string) => void;
-  onLogoClick: () => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ user, onSearch, onLogoClick }) => {
+export const Navbar = ({ user, onSearch, onLogoClick }) => {
   // Avatar Icon Mapping
-  const avatarIcons: Record<string, any> = {
+  const avatarIcons = {
     'agent-x': UserIcon,
     'viper': ZapIcon,
     'ghost': Ghost,
@@ -57,15 +51,16 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onSearch, onLogoClick }) =
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex flex-col items-end text-right">
             <span className="text-xs font-black text-white uppercase tracking-wider">{user.username}</span>
-            <span className="text-[10px] font-bold text-theme uppercase">Operative Active</span>
+            <span className="text-[10px] font-bold text-theme uppercase">Profile Active</span>
           </div>
           <div className="flex items-center gap-2 p-1.5 bg-slate-900 rounded-full border border-white/5">
-            <div className="w-8 h-8 rounded-full bg-theme flex items-center justify-center text-slate-950 font-black text-xs shadow-theme overflow-hidden">
+            <div className="relative w-8 h-8 rounded-full bg-theme flex items-center justify-center text-slate-950 font-black text-xs shadow-theme overflow-hidden">
               {currentChar?.img ? (
                 <img src={currentChar.img} alt={currentChar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
               ) : (
                 <CurrentAvatarIcon size={14} />
               )}
+              <div className={`absolute inset-0 frame-${user.currentFrame || 'solar'} pointer-events-none scale-125`}></div>
             </div>
             <div className="flex items-center gap-1.5 px-3 bg-slate-800 rounded-full">
                <span className="text-[10px] font-black text-white uppercase">LVL {user.level}</span>

@@ -1,13 +1,9 @@
 import React from 'react';
 import { Crown, ShieldAlert, Activity } from 'lucide-react';
-import { CHARACTERS, BADGES } from '../constants';
+import { motion } from 'motion/react';
+import { CHARACTERS, BADGES } from '../constants.js';
 
-interface HeroProps {
-  user: any;
-  onBrowseLibrary: () => void;
-}
-
-export const Hero: React.FC<HeroProps> = ({ user, onBrowseLibrary }) => {
+export const Hero = ({ user, onBrowseLibrary }) => {
   const currentAvatar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
   const featuredBadge = BADGES.find(b => b.id === user.featuredBadgeId);
 
@@ -15,17 +11,32 @@ export const Hero: React.FC<HeroProps> = ({ user, onBrowseLibrary }) => {
     ? 'https://cdni.fancaps.net/file/fancaps-tvimages/2891461.jpg'
     : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop';
 
-  const expProgress = (user.exp / (user.level * 200)) * 100; // Using 200 as base from App.tsx
+  const expProgress = (user.exp / (user.level * 200)) * 100;
+
+  const getRarityColor = (badge) => {
+    if (badge.color === 'rainbow') return 'text-white border-white/20 bg-white/5 shadow-[0_0_30px_rgba(255,255,255,0.2)]';
+    
+    switch (badge.rarity) {
+      case 'Mythic': return 'text-rose-500 border-rose-500/30 bg-rose-500/10 shadow-[0_0_20px_rgba(244,63,94,0.3)]';
+      case 'Legendary': return 'text-amber-500 border-amber-500/30 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.3)]';
+      case 'Epic': return 'text-purple-500 border-purple-500/30 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.3)]';
+      case 'Rare': return 'text-blue-500 border-blue-500/30 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.3)]';
+      case 'Uncommon': return 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.3)]';
+      default: return 'text-slate-400 border-slate-400/30 bg-slate-400/10';
+    }
+  };
+
+  const rarityStyles = featuredBadge ? getRarityColor(featuredBadge) : 'text-theme bg-theme/10 border-theme/30 shadow-[0_0_20px_var(--primary-glow)]';
 
   return (
     <section className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950">
-      {!user.settings.hideHeroImage && (
+      {user.settings.homeBanner && (
         <div className="absolute inset-0">
-          <img className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-1000" alt="Hero Background" src={heroImage} />
+          <img className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-1000" alt="Home Banner" src={heroImage} />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent"></div>
         </div>
       )}
-      <div className={`absolute inset-y-0 left-0 flex flex-col justify-center px-10 md:px-20 w-full md:w-3/5 lg:w-1/2 space-y-8 z-10 bg-slate-950 ${!user.settings.hideHeroImage ? 'shadow-[60px_0_100px_rgba(2,6,23,1)]' : ''}`}>
+      <div className={`absolute inset-y-0 left-0 flex flex-col justify-center px-10 md:px-20 w-full md:w-3/5 lg:w-1/2 space-y-8 z-10 bg-slate-950 ${user.settings.homeBanner ? 'shadow-[60px_0_100px_rgba(2,6,23,1)]' : ''}`}>
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
           <div className="relative shrink-0">
             <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-theme relative z-10 transition-transform duration-500 group-hover:scale-105 overflow-hidden ${user.currentTheme !== 'spongebob' && user.currentTheme !== 'kanye' ? 'bg-slate-950 border border-theme/20 shadow-[inset_0_0_40px_var(--primary-glow)]' : ''}`}>
@@ -39,16 +50,21 @@ export const Hero: React.FC<HeroProps> = ({ user, onBrowseLibrary }) => {
             <div className="absolute -bottom-1 -right-1 bg-theme text-slate-950 text-[10px] font-black px-3 py-1.5 rounded-xl border-4 border-slate-950 shadow-theme z-30">LVL {user.level}</div>
           </div>
           <div className="flex-1 space-y-4 text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 text-slate-500 font-black uppercase tracking-[0.3em] text-[9px] bg-black/40 border border-white/5 border-dashed px-3 py-1.5 rounded-full w-fit mx-auto md:mx-0 opacity-60">
+            <div className={`flex items-center justify-center md:justify-start gap-3 font-black uppercase tracking-[0.4em] text-[10px] border px-6 py-3 rounded-2xl w-fit mx-auto md:mx-0 group/badge cursor-default ${rarityStyles}`}>
               {featuredBadge ? (
                 <>
-                  <featuredBadge.icon size={12} className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} style={{ color: featuredBadge.color !== 'rainbow' ? featuredBadge.color : undefined }} />
-                  <span className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''}>BADGE: {featuredBadge.name}</span>
+                  <div className="relative">
+                    <featuredBadge.icon size={16} className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} style={{ color: featuredBadge.color !== 'rainbow' ? featuredBadge.color : undefined }} />
+                    <div className="absolute inset-0 blur-sm opacity-50 animate-pulse">
+                      <featuredBadge.icon size={16} className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} style={{ color: featuredBadge.color !== 'rainbow' ? featuredBadge.color : undefined }} />
+                    </div>
+                  </div>
+                  <span className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''}>TITLE: {featuredBadge.name}</span>
                 </>
               ) : (
                 <>
-                  <ShieldAlert size={12} className="text-slate-600" />
-                  BADGE: NOT EQUIPPED
+                  <ShieldAlert size={16} className="text-slate-600" />
+                  <span>NO TITLE EQUIPPED</span>
                 </>
               )}
             </div>
@@ -56,7 +72,7 @@ export const Hero: React.FC<HeroProps> = ({ user, onBrowseLibrary }) => {
             <div className="flex items-center justify-center md:justify-start gap-4 pt-2">
               <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                 <Activity size={14} className="text-emerald-500 animate-pulse" />
-                Session Verified
+                Profile Verified
               </div>
             </div>
           </div>
@@ -70,18 +86,21 @@ export const Hero: React.FC<HeroProps> = ({ user, onBrowseLibrary }) => {
               <span className="text-slate-400 text-xs font-orbitron">{user.level + 1}</span>
             </div>
           </div>
-          <div className="relative h-4 bg-black/60 rounded-full border border-white/5 p-1 flex gap-1 shadow-inner overflow-hidden">
-            {Array.from({ length: 20 }).map((_, i) => {
-              const segmentThreshold = (i + 1) * 5;
-              const isActive = expProgress >= segmentThreshold;
-              return (
-                <div 
-                  key={i} 
-                  className={`h-full flex-1 rounded-[2px] transition-all duration-500 ${isActive ? 'bg-theme shadow-[0_0_10px_var(--primary-glow)]' : 'bg-slate-900/40'}`}
-                ></div>
-              );
-            })}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_3s_infinite] pointer-events-none"></div>
+          <div className="relative h-6 bg-black/60 rounded-full border border-white/10 p-1.5 flex gap-1.5 shadow-inner overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${expProgress}%` }}
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-theme via-white/40 to-theme bg-[length:200%_100%] animate-[gold-liquid-pan_3s_linear_infinite] shadow-[0_0_20px_var(--primary-glow)]"
+            />
+            <div className="absolute inset-0 flex justify-around pointer-events-none">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="w-px h-full bg-white/10"></div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-between text-[8px] font-black text-slate-600 uppercase tracking-widest">
+            <span>{user.exp} EXP</span>
+            <span>{user.level * 200} EXP</span>
           </div>
         </div>
         <p className="text-slate-300 text-base md:text-lg max-w-md font-medium text-center md:text-left">The elite unblocked library for high-performance browser gaming. Zero lag, zero blocks, pure gaming.</p>

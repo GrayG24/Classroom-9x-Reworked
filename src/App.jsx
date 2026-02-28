@@ -1,25 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { AppRoute } from './types';
-import { GAMES_DATA, BADGES, QUEST_POOL } from './constants';
-import { Layout } from './components/Layout';
-import { Home } from './components/Home';
-import { GameModal } from './components/GameModal';
-import { ProfileModal } from './components/ProfileModal';
-import { CategoryPage } from './components/CategoryPage';
-import { Favorites } from './components/Favorites';
-import { Library } from './components/Library';
-import { Settings } from './components/Settings';
-import { Customization } from './components/Customization';
-import { InitialNameModal } from './components/InitialNameModal';
-import { Footer } from './components/Footer';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { AppRoute } from './types.js';
+import { GAMES_DATA, BADGES, QUEST_POOL } from './constants.js';
+import { Layout } from './components/Layout.jsx';
+import { Home } from './components/Home.jsx';
+import { GameModal } from './components/GameModal.jsx';
+import { ProfileModal } from './components/ProfileModal.jsx';
+import { CategoryPage } from './components/CategoryPage.jsx';
+import { Favorites } from './components/Favorites.jsx';
+import { Library } from './components/Library.jsx';
+import { Settings } from './components/Settings.jsx';
+import { Customization } from './components/Customization.jsx';
+import { InitialNameModal } from './components/InitialNameModal.jsx';
+import { Footer } from './components/Footer.jsx';
 import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown } from 'lucide-react';
-
-import { DailyQuests, Quest } from './components/DailyQuests';
 
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;
 
-const getRandomQuests = (pool: Quest[], count: number) => {
+const getRandomQuests = (pool, count) => {
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
 };
@@ -37,6 +35,7 @@ const DEFAULT_USER = {
   unlockedCharacters: ['agent-x'],
   unlockedCursors: ['default'],
   unlockedBadges: [],
+  redeemedCodes: [],
   favorites: [],
   featuredBadgeId: null,
   score: 0,
@@ -51,34 +50,60 @@ const DEFAULT_USER = {
     cursorStyle: 'default',
     animatedBg: true,
     notifications: true,
-    hideHeroImage: false
+    homeBanner: true,
+    lagNotifications: true
   }
 };
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'level' | 'badge' | 'system';
-  icon: React.ReactNode;
-  color?: string;
-}
-
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<AppRoute>(AppRoute.HOME);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+const App = () => {
+  const [currentView, setCurrentView] = useState(AppRoute.HOME);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState(DEFAULT_USER);
-  const [activeGame, setActiveGame] = useState<any>(null);
+  const [activeGame, setActiveGame] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showInitialModal, setShowInitialModal] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [quests, setQuests] = useState<Quest[]>([]);
-  const [boosts, setBoosts] = useState<{ id: string; name: string; multiplier: number; expiresAt: number }[]>([]);
-  const lastNotifiedLevel = React.useRef(user.level);
-  const lastNotifiedThemesCount = React.useRef(user.unlockedThemes.length);
-  const lastNotifiedFramesCount = React.useRef(user.unlockedFrames.length);
-  const lastNotifiedCharsCount = React.useRef(user.unlockedCharacters.length);
+  const [notifications, setNotifications] = useState([]);
+  const [quests, setQuests] = useState([]);
+  const [boosts, setBoosts] = useState([]);
+  const lastNotifiedLevel = useRef(user.level);
+  const lastNotifiedThemesCount = useRef(user.unlockedThemes.length);
+  const lastNotifiedFramesCount = useRef(user.unlockedFrames.length);
+  const lastNotifiedCharsCount = useRef(user.unlockedCharacters.length);
+  const fpsHistory = useRef([]);
+  const lastLagNotification = useRef(0);
+
+  useEffect(() => {
+    if (!user.settings.lagNotifications) return;
+
+    let lastTime = performance.now();
+    let frameCount = 0;
+
+    const checkLag = () => {
+      const now = performance.now();
+      frameCount++;
+
+      if (now - lastTime >= 1000) {
+        const fps = Math.round((frameCount * 1000) / (now - lastTime));
+        fpsHistory.current.push(fps);
+        if (fpsHistory.current.length > 5) fpsHistory.current.shift();
+
+        const avgFps = fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length;
+        
+        if (avgFps < 30 && Date.now() - lastLagNotification.current > 60000) {
+          addNotification('Lag Detected', 'The experience could be laggy. Try closing other tabs.', 'system', <ZapOff className="text-rose-500" />);
+          lastLagNotification.current = Date.now();
+        }
+
+        frameCount = 0;
+        lastTime = now;
+      }
+      requestAnimationFrame(checkLag);
+    };
+
+    const animId = requestAnimationFrame(checkLag);
+    return () => cancelAnimationFrame(animId);
+  }, [user.settings.lagNotifications]);
 
   useEffect(() => {
     if (user.level > lastNotifiedLevel.current) {
@@ -121,7 +146,7 @@ const App: React.FC = () => {
     }
   }, [user.unlockedCharacters]);
 
-  const lastCompletedQuestsCount = React.useRef(quests.filter(q => q.isCompleted).length);
+  const lastCompletedQuestsCount = useRef(quests.filter(q => q.isCompleted).length);
 
   useEffect(() => {
     const completedQuests = quests.filter(q => q.isCompleted);
@@ -148,7 +173,7 @@ const App: React.FC = () => {
     if (lastQuestDate === today && savedQuests && JSON.parse(savedQuests).length > 0) {
       setQuests(JSON.parse(savedQuests));
     } else {
-      const dailyQuests = getRandomQuests(QUEST_POOL as Quest[], 3);
+      const dailyQuests = getRandomQuests(QUEST_POOL, 3);
       localStorage.setItem('classroom9x_quest_date', today);
       localStorage.setItem('classroom9x_quests_v1', JSON.stringify(dailyQuests));
       setQuests(dailyQuests);
@@ -159,7 +184,7 @@ const App: React.FC = () => {
     localStorage.setItem('classroom9x_quests_v1', JSON.stringify(quests));
   }, [quests]);
 
-  const updateQuestProgress = (type: string, amount: number = 1) => {
+  const updateQuestProgress = (type, amount = 1) => {
     setQuests(prev => prev.map(q => {
       if (q.questType === type && !q.isCompleted) {
         const newProgress = Math.min(q.progress + amount, q.target);
@@ -170,7 +195,7 @@ const App: React.FC = () => {
     }));
   };
 
-  const handleClaimQuestReward = (questId: string) => {
+  const handleClaimQuestReward = (questId) => {
     const quest = quests.find(q => q.id === questId);
     if (quest && quest.isCompleted) {
       if (quest.type === 'exp') {
@@ -181,12 +206,11 @@ const App: React.FC = () => {
       } else if (quest.type === 'rare') {
         setUser(prev => ({ ...prev, score: prev.score + 1000 }));
         addNotification('Rare Reward!', 'Score Boost Activated', 'badge', <Star className="text-amber-400" />);
-        // Add a temporary boost
         setBoosts(prev => [...prev, { id: Math.random().toString(), name: 'Rare Boost', multiplier: 2.0, expiresAt: Date.now() + 3600000 }]);
       } else if (quest.type === 'item' && quest.rewardItem) {
         const item = quest.rewardItem;
         setUser(prev => {
-          const updates: any = {};
+          const updates = {};
           if (item.type === 'frame') updates.unlockedFrames = Array.from(new Set([...(prev.unlockedFrames || []), item.id]));
           if (item.type === 'character') updates.unlockedCharacters = Array.from(new Set([...(prev.unlockedCharacters || []), item.id]));
           if (item.type === 'theme') updates.unlockedThemes = Array.from(new Set([...(prev.unlockedThemes || []), item.id]));
@@ -203,11 +227,11 @@ const App: React.FC = () => {
     }
   };
 
-  const removeNotification = (id: string) => {
+  const removeNotification = (id) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const addNotification = (title: string, message: string, type: Notification['type'], icon: React.ReactNode, color?: string) => {
+  const addNotification = (title, message, type, icon, color) => {
     if (!user.settings.notifications) return;
     const id = Math.random().toString(36).substr(2, 9);
     setNotifications(prev => [...prev, { id, title, message, type, icon, color }]);
@@ -254,7 +278,6 @@ const App: React.FC = () => {
         body.style.removeProperty('--custom-bg');
       }
 
-      // Scroll lock when modal is open
       if (activeGame || isProfileModalOpen || showInitialModal) {
         body.style.overflow = 'hidden';
         body.classList.add('modal-open');
@@ -281,15 +304,12 @@ const App: React.FC = () => {
     }
   }, [user, activeGame]);
 
-  // Daily Picks Logic (Refreshes at midnight EST)
   const dailyPicks = useMemo(() => {
     const now = new Date();
-    // Convert to EST (UTC-5)
     const estOffset = -5;
     const estDate = new Date(now.getTime() + (estOffset * 60 * 60 * 1000));
-    const dateString = estDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateString = estDate.toISOString().split('T')[0];
     
-    // Simple hash function for the date string
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
       hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
@@ -305,11 +325,10 @@ const App: React.FC = () => {
     return shuffled.slice(0, 3);
   }, []);
 
-  // Reactive Badge Unlocking
   useEffect(() => {
     if (!user) return;
 
-    const checkBadge = (id: string) => {
+    const checkBadge = (id) => {
       if (!user.unlockedBadges.includes(id)) {
         const badge = BADGES.find(b => b.id === id);
         if (badge) {
@@ -347,10 +366,14 @@ const App: React.FC = () => {
     user?.unlockedCharacters.length
   ]);
 
-  const addExpAndTrackPlay = () => {
+  const addExpAndTrackPlay = (game) => {
     setUser(prev => {
       const multiplier = boosts.reduce((acc, b) => acc + (b.multiplier - 1), 1);
-      const newExp = prev.exp + Math.floor(EXP_PER_PLAY * multiplier);
+      const baseExp = 50;
+      const bonusExp = Math.floor(Math.random() * 25);
+      const earnedExp = Math.floor((baseExp + bonusExp) * multiplier);
+      
+      const newExp = prev.exp + earnedExp;
       const requiredForNext = prev.level * LEVEL_UP_BASE;
       const newGamesPlayed = (prev.gamesPlayed || 0) + 1;
 
@@ -361,22 +384,21 @@ const App: React.FC = () => {
 
       if (newExp >= requiredForNext) {
         newLevel += 1;
-
-        const themeUnlocks: Record<number, string> = {
+        const themeUnlocks = {
           10: 'emerald', 15: 'violet', 20: 'cobalt', 75: 'gold', 100: 'galaxy'
         };
         if (themeUnlocks[newLevel] && !unlockedThemes.includes(themeUnlocks[newLevel])) {
           unlockedThemes.push(themeUnlocks[newLevel]);
         }
 
-        const frameUnlocks: Record<number, string> = {
+        const frameUnlocks = {
           5: 'default', 10: 'neon', 60: 'solar', 100: 'interstellar'
         };
         if (frameUnlocks[newLevel] && !unlockedFrames.includes(frameUnlocks[newLevel])) {
           unlockedFrames.push(frameUnlocks[newLevel]);
         }
 
-        const charUnlocks: Record<number, string> = {
+        const charUnlocks = {
           15: 'viper', 30: 'ghost', 50: 'phantom', 75: 'titan', 90: 'nova', 100: 'overlord'
         };
         if (charUnlocks[newLevel] && !unlockedCharacters.includes(charUnlocks[newLevel])) {
@@ -388,7 +410,7 @@ const App: React.FC = () => {
         ...prev, 
         exp: newExp, 
         level: newLevel, 
-        score: prev.score + (EXP_PER_PLAY * 5),
+        score: prev.score + (earnedExp * 5),
         unlockedThemes,
         unlockedFrames,
         unlockedCharacters,
@@ -397,27 +419,39 @@ const App: React.FC = () => {
     });
   };
 
-  const setTheme = (theme: string) => setUser({ ...user, currentTheme: theme });
-  const setFrame = (frame: string) => setUser({ ...user, currentFrame: frame });
-  const setCharacter = (char: string) => setUser({ ...user, currentCharacter: char });
+  const setTheme = (theme) => setUser({ ...user, currentTheme: theme });
+  const setFrame = (frame) => setUser({ ...user, currentFrame: frame });
+  const setCharacter = (char) => setUser({ ...user, currentCharacter: char });
 
-  const setFeaturedBadge = (badgeId: string) => {
+  const setFeaturedBadge = (badgeId) => {
     setUser(prev => ({ 
       ...prev, 
       featuredBadgeId: prev.featuredBadgeId === badgeId ? null : badgeId 
     }));
   };
 
-  const updateSettings = (settings: any) => {
+  const updateSettings = (settings) => {
     setUser(prev => ({ ...prev, settings: { ...prev.settings, ...settings } }));
   };
 
-  const redeemCode = (code: string) => {
+  const redeemCode = (code) => {
     const cleanCode = code.trim().toLowerCase();
+    const alreadyRedeemed = user.redeemedCodes?.includes(cleanCode);
+
+    if (alreadyRedeemed && cleanCode !== 'codes211') {
+      return { success: false, message: 'DECRYPTION KEY ALREADY USED' };
+    }
+
+    if (cleanCode === 'codes211') {
+      setQuests(prev => prev.map(q => ({ ...q, progress: q.target, isCompleted: true })));
+      addNotification('Daily Override', 'ALL DAILY OBJECTIVES COMPLETED', 'system', <Zap className="text-theme" />);
+      return { success: true, message: 'OVERRIDE SUCCESSFUL: DAILY QUESTS COMPLETED' };
+    }
 
     if (cleanCode === 'glitch') {
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'glitch'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'glitch'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'glitch']))
       }));
@@ -428,6 +462,7 @@ const App: React.FC = () => {
     if (cleanCode === 'rainbow') {
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'rainbow'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'rainbow']))
       }));
       addNotification('Neural Link Established', 'PROTOCOL: SPECTRUM_MODE_ACTIVE', 'system', <Palette className="text-theme" />);
@@ -437,6 +472,7 @@ const App: React.FC = () => {
     if (cleanCode === 'spongebob') {
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'spongebob'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'spongebob'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'spongebob']))
       }));
@@ -447,6 +483,7 @@ const App: React.FC = () => {
     if (cleanCode === 'hologram') {
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'hologram'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'hologram'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'hologram']))
       }));
@@ -457,6 +494,7 @@ const App: React.FC = () => {
     if (cleanCode === 'jarvis') {
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'jarvis'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'ironman'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'stark']))
       }));
@@ -470,13 +508,14 @@ const App: React.FC = () => {
       const allChars = ['agent-x', 'viper', 'ghost', 'phantom', 'titan', 'nova', 'overlord'];
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), '9xisback'])),
         level: prev.level + 10,
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...allChars]))
       }));
-      addNotification('Code Redeemed!', 'OPERATIVE CLEARANCE GRANTED', 'system', <Shield className="text-theme" />);
-      return { success: true, message: 'OPERATIVE CLEARANCE GRANTED: +10 LEVELS' };
+      addNotification('Code Redeemed!', 'PROFILE CLEARANCE GRANTED', 'system', <Shield className="text-theme" />);
+      return { success: true, message: 'PROFILE CLEARANCE GRANTED: +10 LEVELS' };
     }
 
     if (cleanCode === 'admin6') {
@@ -484,10 +523,12 @@ const App: React.FC = () => {
       const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester'];
       const allChars = ['agent-x', 'viper', 'ghost', 'phantom', 'titan', 'nova', 'overlord', 'spongebob', 'stark', 'glitch', 'doge-king', 'cyber-samurai', 'royal-knight', 'neon-cat', 'space-ranger', 'kanye', 'ye-mask'];
       const allBadges = BADGES.map(b => b.id);
+      const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'CODES211'];
       
       setUser(prev => ({
         ...prev,
         level: 999,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), ...allCodes])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...allChars])),
@@ -505,6 +546,7 @@ const App: React.FC = () => {
       const kanyeChars = ['kanye', 'ye-mask'];
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'imagenius'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...kanyeThemes])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...kanyeChars])),
       }));
@@ -515,6 +557,7 @@ const App: React.FC = () => {
     if (cleanCode === 'tester9832') {
       setUser(prev => ({
         ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'tester9832'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'tester'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'tester'])),
         unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), 'tester-badge'])),
@@ -525,7 +568,7 @@ const App: React.FC = () => {
     return { success: false, message: 'INVALID DECRYPTION KEY' };
   };
 
-  const toggleFavorite = (gameId: string) => {
+  const toggleFavorite = (gameId) => {
     const isAdding = !user.favorites.includes(gameId);
     const newFavorites = isAdding 
       ? [...user.favorites, gameId]
@@ -533,14 +576,14 @@ const App: React.FC = () => {
     setUser({ ...user, favorites: newFavorites });
   };
 
-  const handleGameSelect = (game: any) => {
+  const handleGameSelect = (game) => {
     setActiveGame(game);
-    addExpAndTrackPlay();
+    addExpAndTrackPlay(game);
     updateQuestProgress('play', 1);
-    updateQuestProgress('score', EXP_PER_PLAY * 5);
+    updateQuestProgress('score', 250);
   };
 
-  const handleInitialNameSubmit = (name: string) => {
+  const handleInitialNameSubmit = (name) => {
     setUser(prev => ({ ...prev, username: name, hasSetProfile: true }));
     setShowInitialModal(false);
   };
@@ -566,6 +609,7 @@ const App: React.FC = () => {
           onSetFrame={setFrame}
           onSetCharacter={setCharacter}
           onSetBanner={(banner) => setUser(prev => ({ ...prev, currentBanner: banner }))}
+          onSetCustomTheme={handleSetCustomTheme}
         />
       );
       case AppRoute.SETTINGS: return <Settings user={user} onUpdateSettings={updateSettings} onSetTheme={setTheme} onRedeemCode={redeemCode} />;
@@ -573,7 +617,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSetCustomTheme = (config: { primary: string; glow: string; bg: string }) => {
+  const handleSetCustomTheme = (config) => {
     setUser(prev => ({
       ...prev,
       customTheme: config,
@@ -598,7 +642,6 @@ const App: React.FC = () => {
       {renderContent()}
       <Footer />
       
-      {/* Notification System */}
       <div className="fixed bottom-8 left-8 z-[200] flex flex-col gap-4 pointer-events-none">
         {notifications.map(n => (
           <div 

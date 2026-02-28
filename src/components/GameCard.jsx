@@ -2,14 +2,7 @@ import React from 'react';
 import { Play, Heart, Star, Flame } from 'lucide-react';
 import { motion } from 'motion/react';
 
-interface GameCardProps {
-  game: any;
-  isFavorite: boolean;
-  onToggleFavorite: (id: string) => void;
-  onPlay: (game: any) => void;
-}
-
-export const GameCard: React.FC<GameCardProps> = ({ game, isFavorite, onToggleFavorite, onPlay }) => {
+export const GameCard = ({ game, isFavorite, onToggleFavorite, onPlay }) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -31,7 +24,6 @@ export const GameCard: React.FC<GameCardProps> = ({ game, isFavorite, onToggleFa
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
         
-        {/* Shimmer Effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none"></div>
 
         {game.isFeatured && (
@@ -50,9 +42,9 @@ export const GameCard: React.FC<GameCardProps> = ({ game, isFavorite, onToggleFa
         <div className="absolute top-5 right-5 z-10 flex flex-col gap-2 translate-x-16 group-hover:translate-x-0 transition-transform duration-500">
           <button 
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(game.id); }}
-            className={`p-3 rounded-2xl backdrop-blur-xl border border-white/10 transition-all active:scale-90 ${isFavorite ? 'bg-rose-500 text-white border-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.4)]' : 'bg-slate-950/60 text-white hover:bg-slate-950 hover:border-theme/50'}`}
+            className={`p-3 rounded-2xl backdrop-blur-xl border transition-all active:scale-90 ${isFavorite ? 'bg-rose-500 text-white border-rose-400 shadow-[0_0_25px_rgba(244,63,94,0.6)] scale-110' : 'bg-slate-950/60 text-white border-white/10 hover:bg-slate-950 hover:border-theme/50 hover:scale-110'}`}
           >
-            <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
+            <Heart size={20} className={`${isFavorite ? 'fill-current animate-pulse' : ''} transition-all`} />
           </button>
         </div>
       </div>
@@ -74,7 +66,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game, isFavorite, onToggleFa
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => onPlay(game)}
-          className="w-full py-4 bg-slate-800 hover:bg-theme text-slate-400 hover:text-slate-950 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-lg"
+          className="w-full py-4 bg-slate-800 hover:bg-theme text-slate-400 hover:text-slate-950 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-lg btn-hover-effect"
         >
           <Play size={14} fill="currentColor" className="group-hover/btn:scale-110 transition-transform" />
           Play Now

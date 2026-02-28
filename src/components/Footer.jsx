@@ -1,7 +1,7 @@
 import React from 'react';
 import { Rocket, Shield, Scale, Code } from 'lucide-react';
 
-export const Footer: React.FC = () => (
+export const Footer = () => (
   <footer className="mt-20 border-t border-slate-900 pt-10 pb-20">
     <div className="flex flex-col md:flex-row justify-between items-center gap-8">
       <div className="flex flex-col items-center md:items-start gap-4">
@@ -17,18 +17,9 @@ export const Footer: React.FC = () => (
       </div>
       
       <div className="flex flex-wrap justify-center gap-8">
-        <a href="#" className="flex items-center gap-2 text-slate-500 hover:text-theme transition-colors text-[10px] font-black uppercase tracking-widest">
-          <Shield size={14} />
-          Infrastructure
-        </a>
-        <a href="#" className="flex items-center gap-2 text-slate-500 hover:text-theme transition-colors text-[10px] font-black uppercase tracking-widest">
-          <Scale size={14} />
-          Legal Disclaimers
-        </a>
-        <a href="#" className="flex items-center gap-2 text-slate-500 hover:text-theme transition-colors text-[10px] font-black uppercase tracking-widest">
-          <Code size={14} />
-          Dev Portal
-        </a>
+        <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest">
+          The elite unblocked library for high-performance browser gaming.
+        </span>
       </div>
     </div>
     <div className="mt-10 text-center">

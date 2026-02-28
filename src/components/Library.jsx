@@ -1,15 +1,8 @@
 import React from 'react';
-import { GameCard } from './GameCard';
+import { GameCard } from './GameCard.jsx';
 import { Library as LibraryIcon } from 'lucide-react';
 
-interface LibraryProps {
-  games: any[];
-  favorites: string[];
-  onToggleFavorite: (id: string) => void;
-  onPlayGame: (game: any) => void;
-}
-
-export const Library: React.FC<LibraryProps> = ({ 
+export const Library = ({ 
   games, 
   favorites, 
   onToggleFavorite, 

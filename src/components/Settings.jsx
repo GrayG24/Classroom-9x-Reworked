@@ -5,23 +5,16 @@ import {
   RotateCcw, Cpu, Zap, Database
 } from 'lucide-react';
 
-interface SettingsProps {
-  user: any;
-  onUpdateSettings: (settings: any) => void;
-  onSetTheme: (theme: string) => void;
-  onRedeemCode: (code: string) => { success: boolean; message: string };
-}
-
-export const Settings: React.FC<SettingsProps> = ({ 
+export const Settings = ({ 
   user, 
   onUpdateSettings, 
   onRedeemCode 
 }) => {
   const [code, setCode] = useState('');
-  const [redeemResult, setRedeemResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [redeemResult, setRedeemResult] = useState(null);
   const [volume, setVolume] = useState(80);
 
-  const handleRedeem = (e: React.FormEvent) => {
+  const handleRedeem = (e) => {
     e.preventDefault();
     if (!code.trim()) return;
     const result = onRedeemCode(code);
@@ -43,7 +36,6 @@ export const Settings: React.FC<SettingsProps> = ({
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
         <div className="flex items-center gap-6">
           <div className="w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center text-theme border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden group">
@@ -55,7 +47,7 @@ export const Settings: React.FC<SettingsProps> = ({
               <div className="w-2 h-2 rounded-full bg-theme animate-pulse"></div>
               <span className="text-[10px] font-black text-theme uppercase tracking-[0.3em]">System Configuration</span>
             </div>
-            <h2 className="font-orbitron font-black text-4xl uppercase tracking-tighter text-white italic">Control <span className="text-theme">Center</span></h2>
+            <h2 className="font-orbitron font-black text-4xl uppercase tracking-tighter text-white italic">Settings</h2>
           </div>
         </div>
         
@@ -72,7 +64,6 @@ export const Settings: React.FC<SettingsProps> = ({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Interface Settings */}
         <section className="lg:col-span-2 space-y-8">
           <div className="p-8 bg-slate-900/40 rounded-[2.5rem] border border-white/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
@@ -136,18 +127,18 @@ export const Settings: React.FC<SettingsProps> = ({
               </button>
 
               <button 
-                onClick={() => onUpdateSettings({ hideHeroImage: !user.settings.hideHeroImage })}
-                className={`flex flex-col gap-4 p-6 rounded-3xl border transition-all text-left ${user.settings.hideHeroImage ? 'bg-slate-950 border-theme/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
+                onClick={() => onUpdateSettings({ homeBanner: !user.settings.homeBanner })}
+                className={`flex flex-col gap-4 p-6 rounded-3xl border transition-all text-left ${user.settings.homeBanner ? 'bg-slate-950 border-theme/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
               >
                 <div className="flex items-center justify-between w-full">
-                  <Monitor size={20} className={user.settings.hideHeroImage ? 'text-theme' : 'text-slate-500'} />
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${user.settings.hideHeroImage ? 'bg-theme' : 'bg-slate-800'}`}>
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${user.settings.hideHeroImage ? 'left-6' : 'left-1'}`}></div>
+                   <Monitor size={20} className={user.settings.homeBanner ? 'text-theme' : 'text-slate-500'} />
+                  <div className={`w-10 h-5 rounded-full relative transition-colors ${user.settings.homeBanner ? 'bg-theme' : 'bg-slate-800'}`}>
+                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${user.settings.homeBanner ? 'left-6' : 'left-1'}`}></div>
                   </div>
                 </div>
                 <div>
-                  <span className="text-xs font-black text-white uppercase tracking-widest block">Hide Hero Image</span>
-                  <span className="text-[10px] text-slate-500 uppercase mt-1 block">Disable the large featured image on the home page</span>
+                  <span className="text-xs font-black text-white uppercase tracking-widest block">Home Banner</span>
+                  <span className="text-[10px] text-slate-500 uppercase mt-1 block">Toggle the featured image on the home page</span>
                 </div>
               </button>
             </div>
@@ -162,6 +153,24 @@ export const Settings: React.FC<SettingsProps> = ({
             </div>
 
             <div className="space-y-4">
+              <button 
+                onClick={() => onUpdateSettings({ lagNotifications: !user.settings.lagNotifications })}
+                className={`w-full flex items-center justify-between p-6 border rounded-2xl transition-all group ${user.settings.lagNotifications ? 'bg-theme/5 border-theme/20' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`p-2 rounded-lg transition-transform duration-500 ${user.settings.lagNotifications ? 'bg-theme/10 text-theme' : 'bg-slate-800 text-slate-500'}`}>
+                    <Zap size={20} />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs font-black text-white uppercase tracking-widest block">Lag Notifications</span>
+                    <span className="text-[10px] text-slate-500 uppercase mt-1 block">Notify when performance drops below threshold</span>
+                  </div>
+                </div>
+                <div className={`w-12 h-6 rounded-full relative transition-colors ${user.settings.lagNotifications ? 'bg-theme shadow-[0_0_10px_rgba(var(--theme-rgb),0.5)]' : 'bg-slate-800'}`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${user.settings.lagNotifications ? 'left-7' : 'left-1'}`}></div>
+                </div>
+              </button>
+
               <button 
                 onClick={handleReset}
                 className={`w-full flex items-center gap-4 p-6 border rounded-2xl transition-all group ${showWipeConfirm ? 'bg-rose-600 border-rose-400 animate-pulse' : 'bg-rose-500/5 hover:bg-rose-500/10 border-rose-500/20'}`}
@@ -182,25 +191,24 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
         </section>
 
-        {/* Command Center */}
         <section className="space-y-8">
           <div className="p-8 bg-slate-900/40 rounded-[2.5rem] border border-white/5 h-full">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 bg-theme/10 rounded-xl text-theme">
                 <Terminal size={20} />
               </div>
-              <h3 className="font-orbitron font-black text-lg text-white uppercase tracking-tight italic">Command Center</h3>
+              <h3 className="font-orbitron font-black text-lg text-white uppercase tracking-tight italic">Codes</h3>
             </div>
 
             <form onSubmit={handleRedeem} className="space-y-6">
               <div className="p-6 bg-slate-950 rounded-2xl border border-white/5 space-y-4">
-                <p className="text-[10px] text-slate-500 uppercase tracking-widest leading-relaxed font-bold">Enter decryption keys to unlock restricted themes, frames, and operative clearance.</p>
+                <p className="text-[10px] text-slate-500 uppercase tracking-widest leading-relaxed font-bold">Enter codes here to unlock cool items!</p>
                 <div className="relative">
                   <input 
                     type="text" 
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    placeholder="ACCESS CODE..." 
+                    placeholder="ENTER CODE..." 
                     className="w-full bg-slate-900 border border-white/10 rounded-xl py-4 px-5 text-sm font-mono tracking-[0.2em] text-theme focus:outline-none focus:border-theme transition-all uppercase"
                   />
                 </div>
@@ -208,7 +216,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   type="submit"
                   className="w-full py-4 bg-theme text-slate-950 rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-theme/20"
                 >
-                  Execute Command
+                  Enter
                 </button>
               </div>
 
@@ -224,23 +232,19 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
               )}
 
-              <div className="p-6 bg-slate-950/30 rounded-2xl border border-dashed border-white/10">
-                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Known Protocols</h4>
-                <ul className="space-y-3">
-                  <li className="flex items-center justify-between text-[9px] font-bold uppercase tracking-tighter">
-                    <span className="text-slate-600">GLITCH</span>
-                    <span className="text-slate-400">Restricted Operative</span>
-                  </li>
-                  <li className="flex items-center justify-between text-[9px] font-bold uppercase tracking-tighter">
-                    <span className="text-slate-600">RAINBOW</span>
-                    <span className="text-slate-400">Spectrum Module</span>
-                  </li>
-                  <li className="flex items-center justify-between text-[9px] font-bold uppercase tracking-tighter">
-                    <span className="text-slate-600">JARVIS</span>
-                    <span className="text-slate-400">Stark Protocol</span>
-                  </li>
-                </ul>
-              </div>
+              {user.redeemedCodes && user.redeemedCodes.length > 0 && (
+                <div className="p-6 bg-slate-950/30 rounded-2xl border border-dashed border-white/10">
+                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Redeemed Codes</h4>
+                  <ul className="space-y-3">
+                    {user.redeemedCodes.map((c) => (
+                      <li key={c} className="flex items-center justify-between text-[9px] font-bold uppercase tracking-tighter">
+                        <span className="text-theme">{c}</span>
+                        <span className="text-slate-400">UNLOCKED</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </form>
           </div>
         </section>

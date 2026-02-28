@@ -1,26 +1,37 @@
 import React from 'react';
-import { House, Library, Heart, Sword, Car, BrainCircuit, Target, Gamepad2, Zap, Settings, Crown, Sparkles } from 'lucide-react';
+import { House, Library, Heart, Sword, Car, BrainCircuit, Target, Gamepad2, Zap, Settings, Crown, Sparkles, User, ZapOff, Shield, Ghost, Bot, Star, Cat, Rocket } from 'lucide-react';
 import { motion } from 'motion/react';
-import { AppRoute } from '../types';
-import { CHARACTERS } from '../constants';
+import { AppRoute } from '../types.js';
+import { CHARACTERS } from '../constants.js';
 
-interface SidebarProps {
-  user: any;
-  currentView: AppRoute;
-  selectedCategoryId: string | null;
-  onSetTheme: (theme: string) => void;
-  onViewChange: (view: AppRoute, param?: string) => void;
-  onProfileClick: () => void;
-}
-
-export const Sidebar: React.FC<SidebarProps> = ({ 
+export const Sidebar = ({ 
   user, 
   currentView, 
   selectedCategoryId,
   onViewChange,
   onProfileClick
 }) => {
+  const avatarIcons = {
+    'agent-x': User,
+    'viper': Zap,
+    'ghost': Ghost,
+    'phantom': ZapOff,
+    'titan': Shield,
+    'nova': Star,
+    'overlord': Crown,
+    'stark': Bot,
+    'glitch': ZapOff,
+    'spongebob': Star,
+    'ye-mask': Star,
+    'doge-king': Crown,
+    'cyber-samurai': Shield,
+    'royal-knight': Shield,
+    'neon-cat': Cat,
+    'space-ranger': Rocket
+  };
+
   const currentChar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
+  const CurrentAvatarIcon = avatarIcons[user.currentCharacter || 'agent-x'] || User;
   const menuItems = [
     { id: AppRoute.HOME, label: 'Home Page', icon: House },
     { id: AppRoute.LIBRARY, label: 'Library', icon: Library },
@@ -95,14 +106,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {currentChar.img ? (
                     <img src={currentChar.img} alt={currentChar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
                   ) : (
-                    <Crown size={16} />
+                    <CurrentAvatarIcon size={16} />
                   )}
                 </div>
                 <div className={`absolute inset-0 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20 opacity-40 group-hover:opacity-100 transition-opacity`}></div>
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Operative</span>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Profile</span>
                   <span className="text-[10px] font-black text-theme uppercase">LVL {user.level}</span>
                 </div>
                 <div className="text-[11px] font-orbitron font-bold text-white uppercase truncate">{user.username}</div>
@@ -120,7 +131,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="relative h-2 bg-black/60 rounded-full border border-white/5 overflow-hidden">
                 <div 
                   className="absolute inset-y-0 left-0 bg-gradient-to-r from-theme to-white/40 transition-all duration-1000 shadow-[0_0_10px_var(--primary-glow)]"
-                  style={{ width: `${Math.min(100, (user.exp / (user.level * 100)) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (user.exp / (user.level * 200)) * 100)}%` }}
                 ></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] pointer-events-none"></div>
               </div>

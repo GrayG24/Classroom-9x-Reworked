@@ -1,33 +1,41 @@
-import React from 'react';
-import { Target, CheckCircle2, Circle, Star, Zap, Trophy } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Target, CheckCircle2, Circle, Star, Zap, Trophy, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export interface Quest {
-  id: string;
-  title: string;
-  description: string;
-  reward: number;
-  progress: number;
-  target: number;
-  isCompleted: boolean;
-  claimed?: boolean;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  type: 'exp' | 'rare' | 'item';
-  rewardItem?: {
-    type: 'frame' | 'character' | 'theme';
-    id: string;
-    name: string;
-  };
-}
+export const DailyQuests = ({ quests, onClaimReward }) => {
+  const [timeLeft, setTimeLeft] = useState('');
 
-interface DailyQuestsProps {
-  quests: Quest[];
-  onClaimReward: (questId: string) => void;
-}
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      
+      const diff = tomorrow - now;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
 
-export const DailyQuests: React.FC<DailyQuestsProps> = ({ quests, onClaimReward }) => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    setTimeLeft(calculateTimeLeft());
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <section className="space-y-6">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2 text-slate-500">
+          <Clock size={14} />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em]">Resets in: <span className="text-theme">{timeLeft}</span></span>
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {quests.map((quest, index) => (
           <motion.div 
@@ -38,7 +46,6 @@ export const DailyQuests: React.FC<DailyQuestsProps> = ({ quests, onClaimReward 
             whileHover={{ y: -5 }}
             className={`group relative p-6 rounded-[2rem] border transition-all duration-500 overflow-hidden ${quest.claimed ? 'bg-slate-950/80 border-white/5 opacity-60' : quest.isCompleted ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]' : 'bg-slate-900/40 border-white/5 hover:border-theme/30'}`}
           >
-            {/* Rarity Badge */}
             <div className={`absolute top-0 right-0 px-4 py-1 rounded-bl-2xl text-[8px] font-black uppercase tracking-[0.2em] z-10 ${
               quest.rarity === 'legendary' ? 'bg-amber-500 text-slate-950' :
               quest.rarity === 'epic' ? 'bg-purple-600 text-white' :

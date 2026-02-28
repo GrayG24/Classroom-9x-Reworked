@@ -1,4 +1,4 @@
-import { User, Zap, Ghost, Cat, Crown, Bot, ZapOff, Award, Star, Heart, Layers, Target, Palette, PanelsTopLeft, Binary, Activity, ShieldCheck, Rocket, Trophy } from 'lucide-react';
+import { User, Zap, Ghost, Cat, Crown, Bot, ZapOff, Award, Star, Heart, Layers, Target, Palette, PanelsTopLeft, Binary, Activity, ShieldCheck, Rocket, Trophy, Hammer, Search } from 'lucide-react';
 
 export const CATEGORIES = [
   { id: 'action', name: 'Action', icon: 'Sword' },
@@ -37,8 +37,8 @@ export const BADGES = [
   { id: 'recruiter', name: 'Recruiter', requirement: '4 Avatars Unlocked', icon: User, color: '#ef4444', rarity: 'Epic' },
   { id: 'the-glitch', name: 'The Glitch', requirement: 'Secret Module Found', icon: Binary, color: 'rainbow', rarity: 'Mythic' },
   { id: 'endurance', name: 'Endurance', requirement: '100 Games Played', icon: Activity, color: '#eab308', rarity: 'Legendary' },
-  { id: 'owner-badge', name: 'Secret Owner', requirement: 'System Administrator Access', icon: Crown, color: '#facc15', rarity: 'Mythic' },
-  { id: 'tester-badge', name: 'Early Access', requirement: 'Redeem TESTER9832', icon: Trophy, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'owner-badge', name: 'Owner', requirement: 'System Administrator Access', icon: Hammer, color: '#facc15', rarity: 'Mythic' },
+  { id: 'tester-badge', name: 'Early Access', requirement: 'be an early access tester', icon: Search, color: 'rainbow', rarity: 'Mythic' },
 ];
 
 export const QUEST_POOL = [
@@ -163,7 +163,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://geometrydash.fr/wp-content/uploads/games/html5/G/geometry-dash/index.html',
     category: 'action',
     isFeatured: true,
-    rating: 4.9
+    rating: 4.8,
+    controls: { move: 'WASD', action: 'SPACE' }
   },
   {
     id: 'ovo-classic',
@@ -173,7 +174,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/ovo/index.html',
     category: 'action',
     isFeatured: true,
-    rating: 4.8
+    rating: 4.9,
+    controls: { move: 'ARROWS', action: 'SPACE' }
   },
   {
     id: 'basket-random',
@@ -183,7 +185,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/basket_random/index.html',
     category: 'sports',
     isFeatured: true,
-    rating: 4.7
+    rating: 4.5,
+    controls: { move: 'W / UP', action: 'W / UP' }
   },
   {
     id: 'soccer-random',
@@ -193,7 +196,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://labgstore311.github.io/g20/class-825',
     category: 'sports',
     isFeatured: true,
-    rating: 4.6
+    rating: 4.4,
+    controls: { move: 'W / UP', action: 'W / UP' }
   },
   {
     id: 'minecraft-classic-edition',
@@ -203,7 +207,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/minecraft/index.html',
     category: 'classic',
     isFeatured: true,
-    rating: 4.9
+    rating: 4.9,
+    controls: { move: 'WASD', action: 'L-CLICK' }
   },
   {
     id: 'moto-x3m-classic',
@@ -213,7 +218,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/motox3m/index.html',
     category: 'driving',
     isFeatured: true,
-    rating: 4.8
+    rating: 4.7,
+    controls: { move: 'ARROWS', action: 'ARROWS' }
   },
   {
     id: 'cookie-clicker-new',
@@ -223,7 +229,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/cookie_clicker/index.html',
     category: 'casual',
     isFeatured: true,
-    rating: 4.9
+    rating: 4.9,
+    controls: { move: 'MOUSE', action: 'L-CLICK' }
   },
   {
     id: 'idle-breakout-classic',
@@ -233,7 +240,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://ubg67.gitlab.io/idle-breakout/',
     category: 'casual',
     isFeatured: true,
-    rating: 4.5
+    rating: 4.3,
+    controls: { move: 'MOUSE', action: 'L-CLICK' }
   },
   {
     id: 'crazy-cattle-3d',
@@ -243,7 +251,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/crazycattle3d/index.html',
     category: 'action',
     isFeatured: true,
-    rating: 4.4
+    rating: 4.2,
+    controls: { move: 'WASD', action: 'SPACE' }
   },
   {
     id: 'crossy-road-classic',
@@ -253,7 +262,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://i.gamesgo.net/uploads/game/html5/4072/',
     category: 'action',
     isFeatured: true,
-    rating: 4.7
+    rating: 4.8,
+    controls: { move: 'ARROWS', action: 'ARROWS' }
   },
   {
     id: 'dino-game-classic',
@@ -263,7 +273,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://gameshost.io/HTML5GAMES/dino/',
     category: 'classic',
     isFeatured: true,
-    rating: 4.9
+    rating: 4.9,
+    controls: { move: 'SPACE', action: 'SPACE' }
   },
   {
     id: 'doge-miner-classic',
@@ -273,7 +284,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/doge_miner/index.html',
     category: 'casual',
     isFeatured: true,
-    rating: 4.8
+    rating: 4.8,
+    controls: { move: 'MOUSE', action: 'L-CLICK' }
   },
   {
     id: 'doge-miner-2',
@@ -283,7 +295,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://machita66.com/d/dgmn2',
     category: 'casual',
     isFeatured: true,
-    rating: 4.9
+    rating: 4.9,
+    controls: { move: 'MOUSE', action: 'L-CLICK' }
   },
   {
     id: 'drift-boss-pro',
@@ -293,7 +306,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/drift_boss/index.html',
     category: 'driving',
     isFeatured: true,
-    rating: 4.6
+    rating: 4.6,
+    controls: { move: 'L-CLICK', action: 'L-CLICK' }
   },
   {
     id: 'drive-mad-original',
@@ -303,7 +317,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/drive_mad/index.html',
     category: 'driving',
     isFeatured: true,
-    rating: 4.8
+    rating: 4.8,
+    controls: { move: 'WASD / ARROWS', action: 'WASD / ARROWS' }
   },
   {
     id: 'dune-surfer',
@@ -313,7 +328,8 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/dune/index.html',
     category: 'casual',
     isFeatured: true,
-    rating: 4.5
+    rating: 4.5,
+    controls: { move: 'L-CLICK', action: 'L-CLICK' }
   },
   {
     id: 'flappy-bird-classic',
@@ -323,6 +339,7 @@ export const GAMES_DATA = [
     iframeUrl: 'https://db.duck.tinyexams.com/html/flappy_bird/index.html',
     category: 'casual',
     isFeatured: true,
-    rating: 4.4
+    rating: 4.4,
+    controls: { move: 'SPACE / CLICK', action: 'SPACE / CLICK' }
   }
 ];

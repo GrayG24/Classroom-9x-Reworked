@@ -1,16 +1,8 @@
 import React, { useMemo } from 'react';
-import { GameCard } from './GameCard';
-import { CATEGORIES } from '../constants';
+import { GameCard } from './GameCard.jsx';
+import { CATEGORIES } from '../constants.js';
 
-interface CategoryPageProps {
-  categoryId: string;
-  games: any[];
-  favorites: string[];
-  onToggleFavorite: (id: string) => void;
-  onPlayGame: (game: any) => void;
-}
-
-export const CategoryPage: React.FC<CategoryPageProps> = ({ 
+export const CategoryPage = ({ 
   categoryId, 
   games, 
   favorites, 
