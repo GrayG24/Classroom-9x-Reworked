@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Settings as SettingsIcon, Terminal, Monitor, MousePointer2, 
   Sparkles, Check, AlertCircle, Volume2, Bell, Shield, 
-  RotateCcw, Cpu, Zap, Database
+  RotateCcw, Cpu, Zap, Database, Battery, Activity
 } from 'lucide-react';
+import { FPSCounter } from './FPSCounter.jsx';
 
 export const Settings = ({ 
   user, 
@@ -13,6 +14,23 @@ export const Settings = ({
   const [code, setCode] = useState('');
   const [redeemResult, setRedeemResult] = useState(null);
   const [volume, setVolume] = useState(80);
+  const [battery, setBattery] = useState({ level: 100, charging: false });
+
+  useEffect(() => {
+    if ('getBattery' in navigator) {
+      navigator.getBattery().then(bat => {
+        const updateBattery = () => {
+          setBattery({
+            level: Math.round(bat.level * 100),
+            charging: bat.charging
+          });
+        };
+        updateBattery();
+        bat.addEventListener('levelchange', updateBattery);
+        bat.addEventListener('chargingchange', updateBattery);
+      });
+    }
+  }, []);
 
   const handleRedeem = (e) => {
     e.preventDefault();
@@ -53,12 +71,13 @@ export const Settings = ({
         
         <div className="flex items-center gap-4">
           <div className="px-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3">
+            <Battery size={14} className={battery.charging ? "text-emerald-500" : "text-slate-500"} />
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Power: {battery.level}% {battery.charging && "(Charging)"}</span>
+          </div>
+          <FPSCounter className="!bg-transparent !border-none !p-0" />
+          <div className="px-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3">
             <Cpu size={14} className="text-slate-500" />
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core: v4.2.0-Stable</span>
-          </div>
-          <div className="px-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3">
-            <Zap size={14} className="text-slate-500" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status: Optimal</span>
           </div>
         </div>
       </div>
@@ -153,6 +172,24 @@ export const Settings = ({
             </div>
 
             <div className="space-y-4">
+              <button 
+                onClick={() => onUpdateSettings({ performanceMode: !user.settings.performanceMode })}
+                className={`w-full flex items-center justify-between p-6 border rounded-2xl transition-all group ${user.settings.performanceMode ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`p-2 rounded-lg transition-transform duration-500 ${user.settings.performanceMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-500'}`}>
+                    <Activity size={20} />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs font-black text-white uppercase tracking-widest block">Performance Mode</span>
+                    <span className="text-[10px] text-slate-500 uppercase mt-1 block">Disable heavy visuals to reduce lag</span>
+                  </div>
+                </div>
+                <div className={`w-12 h-6 rounded-full relative transition-colors ${user.settings.performanceMode ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}>
+                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${user.settings.performanceMode ? 'left-7' : 'left-1'}`}></div>
+                </div>
+              </button>
+
               <button 
                 onClick={() => onUpdateSettings({ lagNotifications: !user.settings.lagNotifications })}
                 className={`w-full flex items-center justify-between p-6 border rounded-2xl transition-all group ${user.settings.lagNotifications ? 'bg-theme/5 border-theme/20' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}

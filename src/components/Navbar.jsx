@@ -51,19 +51,34 @@ export const Navbar = ({ user, onSearch, onLogoClick }) => {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex flex-col items-end text-right">
             <span className="text-xs font-black text-white uppercase tracking-wider">{user.username}</span>
-            <span className="text-[10px] font-bold text-theme uppercase">Profile Active</span>
+            <span className={`text-[9px] font-bold uppercase tracking-[0.2em] ${user.level >= 999 ? 'text-amber-500 animate-pulse' : 'text-theme opacity-70'}`}>
+              {user.level >= 999 ? 'MAX LEVEL REACHED' : 'OPERATOR ACTIVE'}
+            </span>
           </div>
-          <div className="flex items-center gap-2 p-1.5 bg-slate-900 rounded-full border border-white/5">
-            <div className="relative w-8 h-8 rounded-full bg-theme flex items-center justify-center text-slate-950 font-black text-xs shadow-theme overflow-hidden">
-              {currentChar?.img ? (
-                <img src={currentChar.img} alt={currentChar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
-              ) : (
-                <CurrentAvatarIcon size={14} />
-              )}
-              <div className={`absolute inset-0 frame-${user.currentFrame || 'solar'} pointer-events-none scale-125`}></div>
+          
+          <div className="flex items-center gap-4 p-1.5 pr-4 bg-slate-900/40 rounded-2xl border border-white/5 shadow-2xl backdrop-blur-xl group/profile cursor-pointer hover:bg-slate-800/60 transition-all duration-500">
+            <div className="relative">
+              <div className="w-11 h-11 rounded-xl bg-slate-950 flex items-center justify-center text-slate-950 font-black text-xs shadow-theme overflow-hidden border border-white/10 group-hover/profile:border-theme/50 transition-colors">
+                {currentChar?.img ? (
+                  <img src={currentChar.img} alt={currentChar.name} className={`w-full h-full object-cover transition-transform duration-700 group-hover/profile:scale-110 ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
+                ) : (
+                  <CurrentAvatarIcon size={20} className="text-theme" />
+                )}
+              </div>
+              <div className={`absolute -inset-1 frame-${user.currentFrame || 'solar'} pointer-events-none scale-110 opacity-70 group-hover/profile:opacity-100 transition-opacity`}></div>
             </div>
-            <div className="flex items-center gap-1.5 px-3 bg-slate-800 rounded-full">
-               <span className="text-[10px] font-black text-white uppercase">LVL {user.level}</span>
+            
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-[10px] font-black text-white uppercase tracking-tighter">{user.level >= 999 ? 'MAX' : `LVL ${user.level}`}</span>
+                <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">{Math.round((user.exp / (user.level * 200)) * 100)}%</span>
+              </div>
+              <div className="w-24 h-1.5 bg-black/60 rounded-full overflow-hidden p-[1px] border border-white/5">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500 bg-[length:200%_100%] animate-[gold-liquid-pan_3s_linear_infinite] rounded-full shadow-[0_0_10px_rgba(16,185,129,0.4)] transition-all duration-1000" 
+                  style={{ width: user.level >= 999 ? '100%' : `${(user.exp / (user.level * 200)) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>

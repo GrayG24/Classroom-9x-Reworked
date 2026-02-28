@@ -12,7 +12,7 @@ import { Settings } from './components/Settings.jsx';
 import { Customization } from './components/Customization.jsx';
 import { InitialNameModal } from './components/InitialNameModal.jsx';
 import { Footer } from './components/Footer.jsx';
-import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown } from 'lucide-react';
+import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff } from 'lucide-react';
 
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;
@@ -51,7 +51,8 @@ const DEFAULT_USER = {
     animatedBg: true,
     notifications: true,
     homeBanner: true,
-    lagNotifications: true
+    lagNotifications: true,
+    performanceMode: false
   }
 };
 
@@ -72,6 +73,14 @@ const App = () => {
   const lastNotifiedCharsCount = useRef(user.unlockedCharacters.length);
   const fpsHistory = useRef([]);
   const lastLagNotification = useRef(0);
+
+  useEffect(() => {
+    if (user.settings.performanceMode) {
+      document.body.classList.add('performance-mode');
+    } else {
+      document.body.classList.remove('performance-mode');
+    }
+  }, [user.settings.performanceMode]);
 
   useEffect(() => {
     if (!user.settings.lagNotifications) return;
@@ -266,16 +275,16 @@ const App = () => {
     if (body) {
       body.setAttribute('data-theme', user.currentTheme);
       
-      if (user.currentTheme === 'custom') {
+      if (user.currentTheme === 'custom' && user.customTheme) {
         body.classList.add('custom-theme');
-        body.style.setProperty('--custom-primary', user.customTheme.primary);
-        body.style.setProperty('--custom-glow', user.customTheme.glow);
-        body.style.setProperty('--custom-bg', user.customTheme.bg);
+        body.style.setProperty('--primary', user.customTheme.primary);
+        body.style.setProperty('--primary-glow', user.customTheme.glow);
+        body.style.setProperty('--bg-dark', user.customTheme.bg);
       } else {
         body.classList.remove('custom-theme');
-        body.style.removeProperty('--custom-primary');
-        body.style.removeProperty('--custom-glow');
-        body.style.removeProperty('--custom-bg');
+        body.style.removeProperty('--primary');
+        body.style.removeProperty('--primary-glow');
+        body.style.removeProperty('--bg-dark');
       }
 
       if (activeGame || isProfileModalOpen || showInitialModal) {
@@ -382,7 +391,7 @@ const App = () => {
       let unlockedFrames = [...(prev.unlockedFrames || ['obsidian'])];
       let unlockedCharacters = [...(prev.unlockedCharacters || ['agent-x'])];
 
-      if (newExp >= requiredForNext) {
+      if (newExp >= requiredForNext && newLevel < 999) {
         newLevel += 1;
         const themeUnlocks = {
           10: 'emerald', 15: 'violet', 20: 'cobalt', 75: 'gold', 100: 'galaxy'
@@ -408,7 +417,7 @@ const App = () => {
 
       return { 
         ...prev, 
-        exp: newExp, 
+        exp: newLevel >= 999 ? 0 : newExp, 
         level: newLevel, 
         score: prev.score + (earnedExp * 5),
         unlockedThemes,
@@ -500,6 +509,17 @@ const App = () => {
       }));
       addNotification('Neural Link Established', 'PROTOCOL: JARVIS_ONLINE', 'system', <Bot className="text-theme" />);
       return { success: true, message: 'WELCOME HOME, SIR: STARK AVATAR UNLOCKED' };
+    }
+
+    if (cleanCode === 'merica') {
+      setUser(prev => ({
+        ...prev,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'merica'])),
+        unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'usa'])),
+        unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'patriot']))
+      }));
+      addNotification('Neural Link Established', 'PROTOCOL: FREEDOM_SYNCED', 'system', <Zap className="text-theme" />);
+      return { success: true, message: 'PROTOCOL INITIATED: USA THEME & PATRIOT AVATAR UNLOCKED' };
     }
 
     if (cleanCode === '9xisback') {

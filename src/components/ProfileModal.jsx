@@ -66,12 +66,12 @@ export const ProfileModal = ({
                   <span>Experience</span>
                   <span className="text-theme">{user.exp} / {user.level * 200}</span>
                 </div>
-                <div className="relative h-3 bg-black/60 rounded-full border border-white/5 overflow-hidden shadow-inner">
+                <div className="exp-bar-container h-4">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${(user.exp / (user.level * 200)) * 100}%` }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-theme to-white/40 shadow-[0_0_15px_var(--primary-glow)]"
+                    className="exp-bar-fill"
                   ></motion.div>
                 </div>
               </div>
@@ -132,10 +132,10 @@ export const ProfileModal = ({
                       const isFeatured = user.featuredBadgeId === badge.id;
                       const rarityColor = {
                         'Common': 'text-slate-400',
-                        'Uncommon': 'text-emerald-400',
-                        'Rare': 'text-blue-400',
-                        'Epic': 'text-purple-400',
-                        'Legendary': 'text-yellow-400',
+                        'Uncommon': 'text-emerald-500',
+                        'Rare': 'text-blue-500',
+                        'Epic': 'text-purple-500',
+                        'Legendary': 'text-amber-500',
                         'Mythic': 'mythic-rainbow-text'
                       }[badge.rarity] || 'text-slate-400';
 
@@ -146,7 +146,7 @@ export const ProfileModal = ({
                           onClick={() => isUnlocked && onSetFeaturedBadge(badge.id)}
                           className={`p-8 rounded-[3rem] border transition-all flex flex-col items-center text-center gap-5 relative overflow-hidden cursor-pointer group ${
                             isUnlocked 
-                              ? 'bg-slate-800/80 border-theme/40 shadow-[0_20px_50px_rgba(0,0,0,0.5)]' 
+                              ? `bg-slate-800/80 border-theme/40 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${badge.rarity === 'Mythic' ? 'mythic-card-glow' : ''}` 
                               : 'bg-slate-950/40 border-white/5 opacity-40 grayscale cursor-not-allowed'
                           }`}
                         >

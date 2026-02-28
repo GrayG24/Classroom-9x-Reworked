@@ -57,8 +57,9 @@ export const Home = ({
             {boosts.map(boost => (
               <motion.div 
                 key={boost.id} 
-                whileHover={{ scale: 1.05, y: -5 }}
-                className="relative px-8 py-6 bg-slate-900/60 border border-emerald-500/30 rounded-[2.5rem] flex items-center gap-8 shadow-2xl overflow-hidden group"
+                whileHover={{ scale: 1.05, y: -8, rotate: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                className="relative px-8 py-6 bg-slate-900/60 border border-emerald-500/30 rounded-[2.5rem] flex items-center gap-8 shadow-2xl overflow-hidden group hover-lift"
               >
                 <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors"></div>
                 <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">

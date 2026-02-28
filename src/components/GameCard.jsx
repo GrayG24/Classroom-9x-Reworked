@@ -9,8 +9,8 @@ export const GameCard = ({ game, isFavorite, onToggleFavorite, onPlay }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       whileHover={{ y: -15, scale: 1.02, rotate: 1 }}
-      transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-      className="group relative bg-slate-900/40 rounded-[2.5rem] overflow-hidden border border-white/5 hover:border-theme/30 transition-all duration-700 hover:shadow-[0_30px_60px_rgba(0,0,0,0.6)] card-float"
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative bg-slate-900/40 rounded-[2.5rem] overflow-hidden border border-white/5 hover:border-theme/30 transition-all duration-1000 hover:shadow-[0_40px_80px_rgba(0,0,0,0.7)] card-float hover-lift"
       id={`game-card-${game.id}`}
     >
       <div className="aspect-[4/3] relative overflow-hidden">

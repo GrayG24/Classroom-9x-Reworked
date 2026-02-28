@@ -2,6 +2,7 @@ import React from 'react';
 import { Navbar } from './Navbar.jsx';
 import { Sidebar } from './Sidebar.jsx';
 import { AppRoute } from '../types.js';
+import { FPSCounter } from './FPSCounter.jsx';
 
 export const Layout = ({ 
   children, 
@@ -29,7 +30,10 @@ export const Layout = ({
           />
         </div>
         
-        <main className="flex-1 lg:ml-72 p-4 md:p-8 bg-slate-950 min-h-full">
+        <main className="flex-1 lg:ml-72 p-4 md:p-8 bg-slate-950 min-h-full relative">
+          <div className="fixed bottom-6 right-6 z-[100] hidden md:block">
+            <FPSCounter />
+          </div>
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

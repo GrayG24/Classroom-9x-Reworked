@@ -19,7 +19,8 @@ export const CHARACTERS = [
   { id: 'overlord', name: 'Overlord', level: 100, desc: 'System administrator. Total control.', icon: Crown },
   { id: 'spongebob', name: 'SpongeBob SquarePants', isCode: true, desc: 'Who lives in a pineapple under the sea? SPONGEBOB SQUAREPANTS!', img: 'https://i.pinimg.com/236x/2f/04/58/2f04582f337a1909f55340b30412f20d.jpg', icon: Star },
   { id: 'stark', name: 'Jarvis', isCode: true, desc: 'Advanced AI assistant. Integrated system intelligence.', img: 'https://i.pinimg.com/originals/60/98/2e/60982ea675870ee7b9703e29ab94ce55.jpg', icon: Bot },
-  { id: 'kanye', name: 'Ye', isCode: true, desc: 'I am a genius. I am a god.', img: 'https://i.pinimg.com/originals/1b/d8/38/1bd838c7669dbb652d03ec21d0dc9573.jpg', icon: Star },
+  { id: 'kanye', name: 'Ye', isCode: true, desc: 'I am a genius. I am a god.', img: 'https://images.genius.com/cd83ad3baf919c5d988894bec3d6ea74.1000x1000x1.jpg', icon: Star },
+  { id: 'patriot', name: 'The Patriot', isCode: true, desc: 'Freedom and justice for all.', img: 'https://cdn.openart.ai/uploads/image_qa4FI6Vn_1705156204757_raw.jpg', icon: ShieldCheck },
   { id: 'glitch', name: 'Glitch', isCode: true, desc: 'An anomaly in the system. Unpredictable.', icon: ZapOff },
   { id: 'doge-king', name: 'Doge King', isCode: true, desc: 'Exclusive quest reward. Much royalty. Very wow.', img: 'https://wallpapercave.com/wp/wp6956389.jpg', icon: Crown },
 ];

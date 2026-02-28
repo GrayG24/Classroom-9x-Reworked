@@ -3,6 +3,7 @@ import {
   X, Heart, Maximize2, Play, Info, Star, Share2, Monitor,
   Activity, Shield, Zap, ExternalLink, Gamepad2
 } from 'lucide-react';
+import { FPSCounter } from './FPSCounter.jsx';
 
 export const GameModal = ({ game, isFavorite, onToggleFavorite, onClose }) => {
   const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -160,9 +161,10 @@ export const GameModal = ({ game, isFavorite, onToggleFavorite, onClose }) => {
 
         <div className="h-14 shrink-0 px-6 flex items-center justify-between bg-slate-950 border-t border-white/5 z-50">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-900 rounded-full border border-white/5">
-              <Activity size={12} className="text-theme animate-pulse" />
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">FPS: 60.0 // LATENCY: 12MS</span>
+            <FPSCounter className="!bg-transparent !border-none !p-0" />
+            <div className="w-px h-4 bg-white/10"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Latency: 12ms</span>
             </div>
           </div>
 
