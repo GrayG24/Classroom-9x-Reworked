@@ -1486,8 +1486,8 @@ body.animated-bg-enabled .grid-bg { animation: grid-move 40s linear infinite; op
 
 /* --- CUSTOM CURSOR (REWORKED) --- */
 .glow-cursor { 
-    width: 8px; 
-    height: 8px; 
+    width: 6px; 
+    height: 6px; 
     background-color: var(--primary); 
     border-radius: 50%; 
     position: fixed; 
@@ -1497,43 +1497,97 @@ body.animated-bg-enabled .grid-bg { animation: grid-move 40s linear infinite; op
     left: -100px; 
     top: -100px; 
     display: none; 
-    box-shadow: 0 0 15px var(--primary); 
-    transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease; 
+    box-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary-glow); 
+    transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1), height 0.3s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.3s ease; 
 }
 
 .glow-cursor.active { 
-    width: 12px; 
-    height: 12px; 
-    box-shadow: 0 0 25px var(--primary); 
+    width: 4px; 
+    height: 4px; 
+    background-color: #fff;
+    box-shadow: 0 0 20px #fff, 0 0 40px var(--primary); 
 }
 
 body.custom-cursor-enabled .glow-cursor { display: block; }
 
 .glow-cursor-follower { 
-    width: 40px; 
-    height: 40px; 
-    border: 1.5px solid var(--primary); 
+    width: 32px; 
+    height: 32px; 
+    border: 1px solid var(--primary); 
     border-radius: 50%; 
     position: fixed; 
     pointer-events: none; 
     z-index: 9999; 
     transform: translate(-50%, -50%); 
-    opacity: 0.5; 
+    opacity: 0.4; 
     left: -100px; 
     top: -100px; 
     display: none; 
-    transition: width 0.4s cubic-bezier(0.19, 1, 0.22, 1), height 0.4s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.3s ease, border-color 0.3s ease; 
+    transition: width 0.5s cubic-bezier(0.19, 1, 0.22, 1), height 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.3s ease, border-color 0.3s ease, transform 0.1s linear; 
+}
+
+.glow-cursor-follower::before,
+.glow-cursor-follower::after {
+    content: '';
+    position: absolute;
+    background-color: var(--primary);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+/* Crosshair lines */
+.glow-cursor-follower::before {
+    width: 1px;
+    height: 8px;
+    left: 50%;
+    top: -4px;
+    transform: translateX(-50%);
+}
+
+.glow-cursor-follower::after {
+    width: 8px;
+    height: 1px;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .glow-cursor-follower.active { 
-    width: 60px; 
-    height: 60px; 
-    opacity: 0.2; 
-    background-color: var(--primary); 
-    border-color: transparent;
+    width: 48px; 
+    height: 48px; 
+    opacity: 0.8; 
+    border-width: 2px;
+    background-color: var(--primary-glow);
+    border-color: var(--primary);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
 
+.glow-cursor-follower.active::before { height: 12px; top: -6px; }
+.glow-cursor-follower.active::after { width: 12px; left: -6px; }
+
 body.custom-cursor-enabled .glow-cursor-follower { display: block; }
+
+/* Hover state for links/buttons */
+.glow-cursor.hovering {
+    width: 8px;
+    height: 8px;
+    background-color: #fff;
+    transform: translate(-50%, -50%);
+}
+
+.glow-cursor-follower.hovering {
+    width: 36px;
+    height: 36px;
+    opacity: 0.2;
+    border-style: dashed;
+    animation: cursor-spin 4s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes cursor-spin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
 
 /* --- CUSTOM CURSOR TRAILS (USA) --- */
 [data-theme="usa"] .glow-cursor {
@@ -1791,17 +1845,4 @@ body::before {
     50% { opacity: 0.7; }
 }
 
-.glow-cursor.hovering {
-    width: 60px;
-    height: 60px;
-    background-color: transparent;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 30px var(--primary-glow);
-}
-
-.glow-cursor-follower.hovering {
-    width: 15px;
-    height: 15px;
-    opacity: 1;
-    background-color: var(--primary);
-}
+/* --- END OF FILE --- */

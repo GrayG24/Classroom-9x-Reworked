@@ -32,15 +32,49 @@
             }
         };
 
+        let mouseX = -100;
+        let mouseY = -100;
+        let followerX = -100;
+        let followerY = -100;
+
         document.addEventListener('mousemove', (e) => {
             if (!document.body.classList.contains('custom-cursor-enabled')) return;
-            window.requestAnimationFrame(() => {
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
-                follower.style.left = e.clientX + 'px';
-                follower.style.top = e.clientY + 'px';
-            });
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            cursor.style.left = mouseX + 'px';
+            cursor.style.top = mouseY + 'px';
+
+            // Hover detection
+            const target = e.target;
+            const isHoverable = target.closest('button, a, [role="button"], .cursor-pointer');
+            if (isHoverable) {
+                cursor.classList.add('hovering');
+                follower.classList.add('hovering');
+            } else {
+                cursor.classList.remove('hovering');
+                follower.classList.remove('hovering');
+            }
         });
+
+        // Smooth follower tracking
+        const animateFollower = () => {
+            const dx = mouseX - followerX;
+            const dy = mouseY - followerY;
+            
+            followerX += dx * 0.35;
+            followerY += dy * 0.35;
+            
+            follower.style.left = followerX + 'px';
+            follower.style.top = followerY + 'px';
+            
+            requestAnimationFrame(animateFollower);
+        };
+        animateFollower();
+
+        document.addEventListener('mousedown', () => window.setCursorActive(true));
+        document.addEventListener('mouseup', () => window.setCursorActive(false));
+
         document.addEventListener('mouseleave', () => {
             cursor.style.opacity = '0';
             follower.style.opacity = '0';
@@ -50,7 +84,7 @@
             follower.style.opacity = '1';
         });
     </script>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="src/main.jsx"></script>
   </body>
 </html>
 
