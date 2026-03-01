@@ -14,8 +14,8 @@ export const Hero = ({ user, onBrowseLibrary }) => {
       case 'usa': return 'https://media1.tenor.com/m/f0_gejcWnfAAAAAd/freedom-america.gif';
       case 'kanye': return 'https://images.genius.com/cd83ad3baf919c5d988894bec3d6ea74.1000x1000x1.jpg';
       case 'retrofuture': return 'https://i.pinimg.com/originals/31/bf/7a/31bf7a5cf849cacc18b507e768060416.jpg';
-      case 'ironman': return 'https://i.imgflip.com/alf0tu.jpg';
-      case 'hologram': return 'https://media.istockphoto.com/id/499729334/photo/abstract-blue-digitally-generated-technology-style-background.jpg?s=170667a&w=0&k=20&c=XIwcI8IPgO2DvP2C9uu4WwCoa4P1Ig1uz18VVCHSjPA=';
+      case 'ironman': return 'https://i.imgflip.com/alh55z.jpg';
+      case 'hologram': return 'https://wallpaper.dog/large/20532228.jpg';
       case 'galaxy': return 'https://tse2.mm.bing.net/th/id/OIP.XhwEntG7wYwGMXpfy7qHXgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3';
       case 'gold': return 'https://imagedelivery.net/9sCnq8t6WEGNay0RAQNdvQ/clajv3uzq004bmr08oooao8lt_4/public';
       default: return 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop';
@@ -53,16 +53,9 @@ export const Hero = ({ user, onBrowseLibrary }) => {
   const rarityStyles = featuredBadge ? getRarityColor(featuredBadge) : 'text-theme bg-theme/10 border-theme/30 shadow-[0_0_20px_var(--primary-glow)]';
 
   return (
-    <section className="relative h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950 transition-all duration-700 ease-out hover:shadow-theme/20 hover:border-theme/20">
-      {user.settings.homeBanner && (
-        <div className="absolute inset-0 bg-slate-950">
-          <img className="w-full h-full object-contain opacity-100 group-hover:scale-105 transition-transform duration-[2000ms] ease-out" alt="Home Banner" src={heroImage} />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/20 to-transparent"></div>
-          {/* Scanline Effect */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-20"></div>
-        </div>
-      )}
-      <div className={`absolute inset-y-0 left-0 flex flex-col justify-center px-10 md:px-20 w-full md:w-3/5 lg:w-1/2 space-y-8 z-10 bg-slate-950 transition-all duration-700 ease-out ${user.settings.homeBanner ? 'shadow-[60px_0_100px_rgba(2,6,23,1)]' : ''} group-hover:bg-slate-900/40`}>
+    <section className="relative min-h-[500px] md:h-[600px] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950 transition-all duration-700 ease-out hover:shadow-theme/20 hover:border-theme/20 flex flex-col md:flex-row">
+      {/* Left Side: Content (Blank Background) */}
+      <div className="flex-1 flex flex-col justify-center px-10 md:px-20 py-12 md:py-0 space-y-8 z-10 relative bg-slate-950">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
           <motion.div 
             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -142,10 +135,21 @@ export const Hero = ({ user, onBrowseLibrary }) => {
           <button onClick={onBrowseLibrary} className="bg-theme text-slate-950 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all hover:scale-105 hover:brightness-110 shadow-theme">Browse Library</button>
         </div>
       </div>
-      <div className="absolute bottom-10 right-10 hidden lg:flex flex-col items-end opacity-100 z-0">
-        <span className="font-orbitron font-black text-8xl leading-none text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">9X</span>
-        <span className="font-bold tracking-[0.5em] text-sm uppercase text-white drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)]">Reworked</span>
-      </div>
+
+      {/* Right Side: Image (Square Container) */}
+      {user.settings.homeBanner && (
+        <div className="w-full md:w-[600px] h-[600px] bg-slate-900/10 flex items-center justify-center overflow-hidden relative shrink-0 border-l border-white/5">
+          <img 
+            className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-[2000ms] ease-out" 
+            alt="Home Banner" 
+            src={heroImage} 
+          />
+          {/* Scanline Effect */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-10"></div>
+          {/* Inner Shadow for Depth */}
+          <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(2,6,23,0.8)] pointer-events-none"></div>
+        </div>
+      )}
     </section>
   );
 };

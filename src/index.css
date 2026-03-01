@@ -112,25 +112,36 @@
 }
 
 .frame-hologram {
-    border: 2px solid #00ffff;
+    border: 1px solid rgba(0, 255, 255, 0.5);
     border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-    width: calc(100% + 8px);
-    height: calc(100% + 8px);
-    top: -4px;
-    left: -4px;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
 }
 
 .frame-hologram::after {
     content: '';
     position: absolute;
-    inset: -4px;
+    inset: -2px;
     border-radius: 50%;
-    border: 2px solid #00ffff;
+    border: 1px solid #00ffff;
     border-top-color: transparent;
     border-bottom-color: transparent;
-    animation: spin 2s linear infinite;
-    opacity: 0.6;
+    animation: spin 4s linear infinite;
+    opacity: 0.8;
+}
+
+.frame-hologram::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px dashed rgba(0, 255, 255, 0.3);
+    animation: spin 8s linear reverse infinite;
 }
 
 .frame-glitch {
@@ -632,35 +643,70 @@ body[data-theme="galaxy"]::after {
 /* --- HOLOGRAM THEME (REWORKED) --- */
 body[data-theme="hologram"] {
     --primary: #00ffff;
-    --primary-glow: rgba(0, 255, 255, 0.6);
+    --primary-glow: rgba(0, 255, 255, 0.8);
     --primary-dark: #0891b2;
     --bg-dark: #00080f;
+}
+
+body[data-theme="hologram"]::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+        radial-gradient(circle at 50% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0, 255, 255, 0.03) 1px, rgba(0, 255, 255, 0.03) 2px);
+    pointer-events: none;
+    z-index: -1;
 }
 
 body[data-theme="hologram"]::after {
     content: '';
     position: fixed;
-    inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 255, 255, 0.05) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 255, 255, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
     background-size: 100% 4px, 3px 100%;
     pointer-events: none;
     z-index: 100;
-    animation: holo-flicker 0.1s infinite;
+    animation: holo-flicker 0.15s infinite;
 }
 
 @keyframes holo-flicker {
-    0% { opacity: 0.8; }
+    0% { opacity: 0.7; }
     50% { opacity: 1; }
-    100% { opacity: 0.9; }
+    100% { opacity: 0.8; }
 }
 
 [data-theme="hologram"] .bg-theme {
-    background: rgba(0, 255, 255, 0.1) !important;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 10px rgba(0, 255, 255, 0.2) !important;
-    backdrop-filter: blur(4px) !important;
+    background: rgba(0, 20, 30, 0.8) !important;
+    border: 1px solid rgba(0, 255, 255, 0.4) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2), inset 0 0 10px rgba(0, 255, 255, 0.1) !important;
+    backdrop-filter: blur(12px) !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.5) !important;
+}
+
+[data-theme="hologram"] .text-theme {
     color: #00ffff !important;
-    text-shadow: 0 0 5px #00ffff !important;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.4) !important;
+}
+
+[data-theme="hologram"] button.bg-theme {
+    background: rgba(0, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="hologram"] button.bg-theme:hover {
+    background: rgba(0, 255, 255, 0.25) !important;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.4) !important;
+}
+
+[data-theme="hologram"] .glass-morphism {
+    background: rgba(0, 10, 20, 0.7) !important;
+    border: 1px solid rgba(0, 255, 255, 0.1) !important;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.05) !important;
 }
 
 /* --- BASIC THEMES FIX --- */
@@ -1092,16 +1138,56 @@ body[data-theme="usa"]::before {
     100% { transform: scale(1); filter: brightness(1); }
 }
 
+/* --- USA FRAME --- */
+.frame-usa {
+    border: 4px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #ef4444, inset 0 0 10px #3b82f6;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    background: transparent;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.frame-usa::after {
+    content: '★';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+    text-shadow: 0 0 10px #ef4444;
+    animation: pulse 2s infinite;
+}
+
+.frame-usa::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    background: conic-gradient(from 0deg, #ef4444, #fff, #3b82f6, #ef4444) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    animation: spin 4s linear infinite;
+}
+
 /* --- MATRIX FRAME (REWORKED) --- */
 .frame-matrix {
     border: 2px solid #00ff41;
     border-radius: 50%;
     box-shadow: 0 0 20px #00ff41, inset 0 0 10px #00ff41;
-    width: 110%;
-    height: 110%;
+    width: 100%;
+    height: 100%;
     position: absolute;
-    top: -5%;
-    left: -5%;
+    top: 0;
+    left: 0;
     overflow: hidden;
     background: transparent;
     pointer-events: none;
@@ -1116,13 +1202,14 @@ body[data-theme="usa"]::before {
     width: 100%;
     height: 200%;
     font-family: 'Courier New', Courier, monospace;
-    font-size: 6px;
+    font-size: 8px;
     color: #00ff41;
     word-break: break-all;
     line-height: 1;
-    animation: matrix-rain 5s linear infinite;
-    opacity: 0.6;
+    animation: matrix-rain 3s linear infinite;
+    opacity: 0.9;
     text-shadow: 0 0 10px #00ff41;
+    z-index: 21;
 }
 
 @keyframes matrix-rain {

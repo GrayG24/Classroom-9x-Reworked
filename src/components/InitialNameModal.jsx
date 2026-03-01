@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Rocket, ShieldCheck } from 'lucide-react';
+import { Rocket, ShieldCheck, Terminal, Cpu, Activity } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export const InitialNameModal = ({ onSubmit }) => {
   const [name, setName] = useState('');
@@ -13,42 +14,94 @@ export const InitialNameModal = ({ onSubmit }) => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/98 backdrop-blur-2xl"></div>
-      <div className="relative w-full max-w-md bg-slate-900 rounded-[3rem] p-10 border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-700">
-        <div className="flex flex-col items-center text-center space-y-8">
-          <div className="w-20 h-20 bg-theme/10 rounded-3xl flex items-center justify-center text-theme border border-theme/20 shadow-[0_0_30px_var(--primary-glow)]">
-            <Rocket size={40} />
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="absolute inset-0 bg-slate-950/98 backdrop-blur-3xl"
+      ></motion.div>
+      
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className="relative w-full max-w-xl bg-slate-900/40 border border-white/10 rounded-[4rem] p-12 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden group"
+      >
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-theme to-transparent opacity-50"></div>
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-theme to-transparent opacity-50"></div>
+        <div className="absolute -left-20 -top-20 w-64 h-64 bg-theme/5 rounded-full blur-[100px]"></div>
+        <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-theme/5 rounded-full blur-[100px]"></div>
+
+        <div className="flex flex-col items-center text-center space-y-10 relative z-10">
+          <div className="relative">
+            <div className="w-24 h-24 bg-theme/10 rounded-[2.5rem] flex items-center justify-center text-theme border border-theme/20 shadow-[0_0_50px_var(--primary-glow)] relative z-10 overflow-hidden">
+              <Cpu size={48} className="animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-t from-theme/20 to-transparent"></div>
+            </div>
+            <div className="absolute -inset-4 border border-theme/10 rounded-[3rem] animate-[spin_10s_linear_infinite]"></div>
           </div>
           
-          <div className="space-y-2">
-            <h2 className="font-orbitron font-black text-3xl text-white uppercase tracking-tighter italic">Enter a <span className="text-theme">Username</span></h2>
-            <p className="text-slate-500 text-sm font-medium">Welcome to Classroom 9x. Please identify yourself to begin your high-performance gaming session.</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-3 text-theme/60 mb-2">
+              <Terminal size={14} />
+              <span className="text-[10px] font-black uppercase tracking-[0.5em]">System Initialization</span>
+            </div>
+            <h2 className="font-orbitron font-black text-4xl text-white uppercase tracking-tighter italic leading-none">
+              Create a <span className="text-theme">Username</span>
+            </h2>
+            <p className="text-slate-400 text-sm font-medium max-w-xs mx-auto leading-relaxed">
+              Create a username and get to playing on Classroom 9x
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="w-full space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] ml-4">Username</label>
-              <input 
-                autoFocus
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="ENTER NAME..." 
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-5 px-8 text-center font-orbitron font-bold text-white tracking-widest focus:outline-none focus:border-theme transition-all uppercase"
-                maxLength={15}
-              />
+          <form onSubmit={handleSubmit} className="w-full space-y-8">
+            <div className="relative group/input">
+              <div className="absolute -inset-1 bg-gradient-to-r from-theme/20 via-theme/40 to-theme/20 rounded-3xl blur opacity-25 group-focus-within/input:opacity-100 transition duration-1000"></div>
+              <div className="relative">
+                <input 
+                  autoFocus
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="TYPE HERE..." 
+                  className="w-full bg-slate-950/80 border border-white/10 rounded-3xl py-6 px-10 text-center font-orbitron font-black text-2xl text-white tracking-[0.2em] focus:outline-none focus:border-theme transition-all uppercase placeholder:text-slate-800"
+                  maxLength={15}
+                />
+                <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-700">
+                  <Activity size={20} />
+                </div>
+              </div>
             </div>
 
             <button 
               disabled={name.trim().length < 2}
-              className="w-full bg-theme text-slate-950 py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-theme disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              className="w-full relative group/btn overflow-hidden rounded-3xl disabled:opacity-20 disabled:cursor-not-allowed transition-all"
             >
-              <ShieldCheck size={18} />
-              Enter
+              <div className="absolute inset-0 bg-theme transition-transform duration-500 group-hover/btn:scale-105"></div>
+              <div className="relative py-6 flex items-center justify-center gap-4 text-slate-950 font-black uppercase tracking-[0.3em] text-sm">
+                <ShieldCheck size={20} />
+                Continue
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
             </button>
           </form>
+
+          <div className="flex items-center gap-8 pt-4">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-theme shadow-[0_0_10px_var(--primary-glow)]"></div>
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Neural Link</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-theme shadow-[0_0_10px_var(--primary-glow)]"></div>
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Secure Auth</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-1 h-1 rounded-full bg-theme shadow-[0_0_10px_var(--primary-glow)]"></div>
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">9X Protocol</span>
+            </div>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

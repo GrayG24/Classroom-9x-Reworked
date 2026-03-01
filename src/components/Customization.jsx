@@ -47,6 +47,7 @@ export const Customization = ({
     { id: 'matrix', name: 'Matrix', isCode: true },
     { id: 'tester', name: 'Tester', isCode: true },
     { id: 'owner', name: 'Owner', isCode: true },
+    { id: 'usa', name: 'USA', isCode: true, special: true },
   ];
 
   const characters = CHARACTERS;

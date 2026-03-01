@@ -516,34 +516,29 @@ const App = () => {
         ...prev,
         redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'merica'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'usa'])),
+        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'usa'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'patriot']))
       }));
       addNotification('Neural Link Established', 'PROTOCOL: FREEDOM_SYNCED', 'system', <Zap className="text-theme" />);
-      return { success: true, message: 'PROTOCOL INITIATED: USA THEME & PATRIOT AVATAR UNLOCKED' };
+      return { success: true, message: 'PROTOCOL INITIATED: USA THEME, FRAME & PATRIOT AVATAR UNLOCKED' };
     }
 
     if (cleanCode === '9xisback') {
-      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy'];
-      const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar'];
-      const allChars = ['agent-x', 'viper', 'ghost', 'phantom', 'titan', 'nova', 'overlord'];
       setUser(prev => ({
         ...prev,
         redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), '9xisback'])),
-        level: prev.level + 10,
-        unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
-        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
-        unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...allChars]))
+        level: prev.level + 10
       }));
       addNotification('Code Redeemed!', 'PROFILE CLEARANCE GRANTED', 'system', <Shield className="text-theme" />);
       return { success: true, message: 'PROFILE CLEARANCE GRANTED: +10 LEVELS' };
     }
 
     if (cleanCode === 'admin6') {
-      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester'];
-      const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester'];
-      const allChars = ['agent-x', 'viper', 'ghost', 'phantom', 'titan', 'nova', 'overlord', 'spongebob', 'stark', 'glitch', 'doge-king', 'cyber-samurai', 'royal-knight', 'neon-cat', 'space-ranger', 'kanye', 'ye-mask'];
+      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa'];
+      const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
+      const allChars = ['agent-x', 'viper', 'ghost', 'phantom', 'titan', 'nova', 'overlord', 'spongebob', 'stark', 'glitch', 'doge-king', 'cyber-samurai', 'royal-knight', 'neon-cat', 'space-ranger', 'kanye', 'ye-mask', 'patriot'];
       const allBadges = BADGES.map(b => b.id);
-      const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'CODES211'];
+      const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'CODES211', 'merica'];
       
       setUser(prev => ({
         ...prev,
