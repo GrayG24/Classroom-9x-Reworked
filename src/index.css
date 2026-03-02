@@ -6,6 +6,65 @@
 @property --primary-dark { syntax: '<color>'; initial-value: #0891b2; inherits: true; }
 @property --theme-hue { syntax: '<number>'; initial-value: 0; inherits: true; }
 
+/* --- CUSTOM SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(2, 6, 23, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+/* --- TECH EFFECTS --- */
+.tech-glow {
+    text-shadow: 0 0 10px var(--primary-glow), 0 0 20px var(--primary-glow);
+}
+
+.tech-border {
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow), inset 0 0 10px var(--primary-glow);
+}
+
+.section-header-glow {
+    text-shadow: 0 0 20px var(--primary-glow);
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.shimmer-effect {
+    position: relative;
+    overflow: hidden;
+}
+
+.shimmer-effect::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 2s infinite;
+}
+
 :root {
     --primary: #22d3ee;
     --primary-glow: rgba(34, 211, 238, 0.4);

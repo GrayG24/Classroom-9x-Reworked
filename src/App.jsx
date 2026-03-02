@@ -12,7 +12,8 @@ import { Settings } from './components/Settings.jsx';
 import { Customization } from './components/Customization.jsx';
 import { InitialNameModal } from './components/InitialNameModal.jsx';
 import { Footer } from './components/Footer.jsx';
-import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff } from 'lucide-react';
+import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;
@@ -599,6 +600,15 @@ const App = () => {
   };
 
   const handleInitialNameSubmit = (name) => {
+    const FORBIDDEN_WORDS = [
+      'fuck', 'shit', 'ass', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'faggot', 'bastard',
+      'slut', 'whore', 'cock', 'cum', 'penis', 'vagina', 'porn', 'sex', 'hitler', 'nazi'
+    ];
+    const cleanName = name.trim().toLowerCase();
+    if (FORBIDDEN_WORDS.some(word => cleanName.includes(word))) {
+      addNotification('System Error', 'INAPPROPRIATE USERNAME DETECTED', 'error', <ShieldAlert className="text-rose-500" />);
+      return;
+    }
     setUser(prev => ({ ...prev, username: name, hasSetProfile: true }));
     setShowInitialModal(false);
   };
@@ -641,21 +651,31 @@ const App = () => {
   };
 
   return (
-    <Layout 
-      user={user}
-      onSearch={setSearchQuery} 
-      onSetTheme={setTheme}
-      currentView={currentView}
-      selectedCategoryId={selectedCategoryId}
-      onViewChange={(view, param) => {
-        setCurrentView(view);
-        setSelectedCategoryId(param || null);
-        setSearchQuery('');
-      }}
-      onProfileClick={() => setIsProfileModalOpen(true)}
-    >
-      {renderContent()}
-      <Footer />
+      <Layout 
+        user={user}
+        onSearch={setSearchQuery} 
+        onSetTheme={setTheme}
+        currentView={currentView}
+        selectedCategoryId={selectedCategoryId}
+        onViewChange={(view, param) => {
+          setCurrentView(view);
+          setSelectedCategoryId(param || null);
+          setSearchQuery('');
+        }}
+        onProfileClick={() => setIsProfileModalOpen(true)}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentView + (selectedCategoryId || '') + searchQuery}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
+        <Footer />
       
       <div className="fixed bottom-8 left-8 z-[200] flex flex-col gap-4 pointer-events-none">
         {notifications.map(n => (

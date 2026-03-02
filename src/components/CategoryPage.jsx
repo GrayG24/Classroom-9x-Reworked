@@ -1,6 +1,16 @@
 import React, { useMemo } from 'react';
 import { GameCard } from './GameCard.jsx';
 import { CATEGORIES } from '../constants.js';
+import { Sword, Car, BrainCircuit, Target, Gamepad2, Zap } from 'lucide-react';
+
+const CATEGORY_ICONS = {
+  action: Sword,
+  driving: Car,
+  puzzle: BrainCircuit,
+  sports: Target,
+  classic: Gamepad2,
+  casual: Zap,
+};
 
 export const CategoryPage = ({ 
   categoryId, 
@@ -11,12 +21,13 @@ export const CategoryPage = ({
 }) => {
   const category = useMemo(() => CATEGORIES.find(c => c.id === categoryId), [categoryId]);
   const filteredGames = useMemo(() => games.filter(g => g.category === categoryId), [games, categoryId]);
+  const Icon = CATEGORY_ICONS[categoryId] || Zap;
 
   return (
     <div className="space-y-10 pb-20 animate-in fade-in duration-500">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 bg-theme/20 rounded-2xl flex items-center justify-center text-theme border border-theme/20 shadow-[0_0_15px_var(--primary-glow)]">
-          {category?.name[0]}
+          <Icon size={24} />
         </div>
         <div>
           <h2 className="font-orbitron font-bold text-3xl uppercase tracking-tight">{category?.name} <span className="text-theme">Games</span></h2>
