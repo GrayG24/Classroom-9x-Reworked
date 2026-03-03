@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar, Clock, Flame, ChevronRight, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Hero } from './Hero.tsx';
-import { GameCard } from './GameCard.tsx';
+import { Hero } from './Hero';
+import { GameCard } from './GameCard';
 
 export const Home = ({ 
   user, 

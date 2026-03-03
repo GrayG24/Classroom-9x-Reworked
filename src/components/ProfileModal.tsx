@@ -4,8 +4,8 @@ import {
   Flame, Sparkles, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CHARACTERS, BADGES } from '../constants.ts';
-import { DailyQuests } from './DailyQuests.tsx';
+import { CHARACTERS, BADGES } from '../constants';
+import { DailyQuests } from './DailyQuests';
 
 export const ProfileModal = ({ 
   user, 

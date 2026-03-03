@@ -4,7 +4,7 @@ import {
   Sparkles, Check, AlertCircle, Volume2, Bell, Shield, 
   RotateCcw, Cpu, Zap, Database, Battery, Activity
 } from 'lucide-react';
-import { FPSCounter } from './FPSCounter.tsx';
+import { FPSCounter } from './FPSCounter';
 
 export const Settings = ({ 
   user, 

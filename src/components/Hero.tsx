@@ -1,7 +1,7 @@
 import React from 'react';
 import { Crown, ShieldAlert, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { CHARACTERS, BADGES } from '../constants.ts';
+import { CHARACTERS, BADGES } from '../constants';
 
 export const Hero = ({ user, onBrowseLibrary }) => {
   const currentAvatar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { GameCard } from './GameCard.tsx';
+import { GameCard } from './GameCard';
 import { Heart } from 'lucide-react';
 
 export const Favorites = ({ 

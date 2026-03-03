@@ -1,8 +1,8 @@
 import React from 'react';
 import { House, Library, Heart, Sword, Car, BrainCircuit, Target, Gamepad2, Zap, Settings, Crown, Sparkles, User, ZapOff, Shield, Ghost, Bot, Star, Cat, Rocket } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { AppRoute } from '../types.ts';
-import { CHARACTERS } from '../constants.ts';
+import { AppRoute } from '../types';
+import { CHARACTERS } from '../constants';
 
 export const Sidebar = ({ 
   user, 

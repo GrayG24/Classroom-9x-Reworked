@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameCard } from './GameCard.tsx';
+import { GameCard } from './GameCard';
 import { Library as LibraryIcon } from 'lucide-react';
 
 export const Library = ({ 

@@ -3,7 +3,7 @@ import {
   X, Heart, Maximize2, Play, Info, Star, Share2, Monitor,
   Activity, Shield, Zap, ExternalLink, Gamepad2
 } from 'lucide-react';
-import { FPSCounter } from './FPSCounter.jsx';
+import { FPSCounter } from './FPSCounter';
 
 export const GameModal = ({ game, isFavorite, onToggleFavorite, onClose }) => {
   const [isTheaterMode, setIsTheaterMode] = useState(false);
