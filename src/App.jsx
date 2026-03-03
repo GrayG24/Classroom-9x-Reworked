@@ -11,6 +11,7 @@ import { Library } from './components/Library.jsx';
 import { Settings } from './components/Settings.jsx';
 import { Customization } from './components/Customization.jsx';
 import { InitialNameModal } from './components/InitialNameModal.jsx';
+import { EducationalCloak } from './components/EducationalCloak.jsx';
 import { Footer } from './components/Footer.jsx';
 import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -65,6 +66,7 @@ const App = () => {
   const [activeGame, setActiveGame] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showInitialModal, setShowInitialModal] = useState(false);
+  const [isCloaked, setIsCloaked] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [quests, setQuests] = useState([]);
   const [boosts, setBoosts] = useState([]);
@@ -649,6 +651,21 @@ const App = () => {
       currentTheme: 'custom'
     }));
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Shift + G to toggle cloak
+      if (e.shiftKey && e.key === 'G') {
+        setIsCloaked(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  if (isCloaked) {
+    return <EducationalCloak onToggleCloak={() => setIsCloaked(false)} />;
+  }
 
   return (
       <Layout 
