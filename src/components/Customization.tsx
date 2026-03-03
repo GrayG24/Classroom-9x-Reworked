@@ -4,7 +4,7 @@ import {
   Crown, User, Zap, Ghost, Bot, ZapOff, Sparkles, Star, Shield, Layers
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { CHARACTERS } from '../constants.js';
+import { CHARACTERS } from '../constants.ts';
 
 export const Customization = ({
   user,

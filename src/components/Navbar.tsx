@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Rocket, User as UserIcon, Zap as ZapIcon, Shield, Ghost, Crown, ZapOff, Bot, Star, Cat } from 'lucide-react';
-import { CHARACTERS } from '../constants.js';
+import { CHARACTERS } from '../constants.ts';
 
 export const Navbar = ({ user, onSearch, onLogoClick, onProfileClick }) => {
   // Avatar Icon Mapping

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { GameCard } from './GameCard.jsx';
-import { CATEGORIES } from '../constants.js';
+import { GameCard } from './GameCard.tsx';
+import { CATEGORIES } from '../constants.ts';
 import { Sword, Car, BrainCircuit, Target, Gamepad2, Zap } from 'lucide-react';
 
 const CATEGORY_ICONS = {

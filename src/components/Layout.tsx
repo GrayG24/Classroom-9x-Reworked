@@ -1,9 +1,9 @@
 import React from 'react';
 import { House, Library as LibraryIcon, Heart, Sparkles, User } from 'lucide-react';
-import { Navbar } from './Navbar.jsx';
-import { Sidebar } from './Sidebar.jsx';
-import { AppRoute } from '../types.js';
-import { FPSCounter } from './FPSCounter.jsx';
+import { Navbar } from './Navbar.tsx';
+import { Sidebar } from './Sidebar.tsx';
+import { AppRoute } from '../types.ts';
+import { FPSCounter } from './FPSCounter.tsx';
 
 export const Layout = ({ 
   children, 
