@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Calendar, Clock, Flame, ChevronRight, Zap } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Hero } from './Hero.jsx';
 import { GameCard } from './GameCard.jsx';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Rocket, ShieldCheck, Terminal, Cpu, Activity, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FORBIDDEN_WORDS = [
   'fuck', 'shit', 'ass', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'faggot', 'bastard',

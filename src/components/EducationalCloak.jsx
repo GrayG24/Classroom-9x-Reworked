@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Calculator as CalcIcon, Globe, Atom, GraduationCap, Search, Menu, Bell, User, ChevronRight, Star, Clock, CheckCircle2, RotateCcw, Equal, Plus, Minus, X as CloseIcon, Divide, Percent } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CalculatorTool = () => {
   const [display, setDisplay] = useState('0');
@@ -224,7 +224,7 @@ const ScienceTool = () => {
     <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl max-w-5xl mx-auto overflow-x-auto">
       <div className="min-w-[800px]">
         <h3 className="text-xl font-bold text-slate-800 mb-8">Interactive Periodic Table</h3>
-        <div className="grid grid-cols-18 gap-1 mb-12">
+        <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1 mb-12">
           {Array.from({ length: 5 }).map((_, rowIdx) => (
             Array.from({ length: 18 }).map((_, colIdx) => {
               const element = elements.find(el => el.pos[0] === rowIdx + 1 && el.pos[1] === colIdx + 1);

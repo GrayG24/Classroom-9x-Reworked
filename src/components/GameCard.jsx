@@ -1,6 +1,6 @@
 import React from 'react';
 import { Play, Heart, Star, Flame } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 export const GameCard = ({ game, isFavorite, onToggleFavorite, onPlay }) => {
   return (

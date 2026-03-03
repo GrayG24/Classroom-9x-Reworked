@@ -3,7 +3,7 @@ import {
   X, Crown, Trophy, Gamepad2, Award, Star, Heart, Layers, Target, 
   Flame, Sparkles, Check
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CHARACTERS, BADGES } from '../constants.js';
 import { DailyQuests } from './DailyQuests.jsx';
 

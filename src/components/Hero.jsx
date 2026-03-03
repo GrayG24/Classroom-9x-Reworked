@@ -1,6 +1,6 @@
 import React from 'react';
 import { Crown, ShieldAlert, Activity } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { CHARACTERS, BADGES } from '../constants.js';
 
 export const Hero = ({ user, onBrowseLibrary }) => {

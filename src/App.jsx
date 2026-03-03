@@ -14,7 +14,7 @@ import { InitialNameModal } from './components/InitialNameModal.jsx';
 import { EducationalCloak } from './components/EducationalCloak.jsx';
 import { Footer } from './components/Footer.jsx';
 import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;

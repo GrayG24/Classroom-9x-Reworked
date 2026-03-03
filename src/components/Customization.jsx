@@ -3,7 +3,7 @@ import {
   Palette, PanelsTopLeft, Eye, Lock, Check, 
   Crown, User, Zap, Ghost, Bot, ZapOff, Sparkles, Star, Shield, Layers
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { CHARACTERS } from '../constants.js';
 
 export const Customization = ({

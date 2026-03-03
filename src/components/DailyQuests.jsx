@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Target, CheckCircle2, Circle, Star, Zap, Trophy, Clock } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 export const DailyQuests = ({ quests, onClaimReward }) => {
   const [timeLeft, setTimeLeft] = useState('');
