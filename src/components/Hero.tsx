@@ -53,7 +53,7 @@ export const Hero = ({ user, onBrowseLibrary }) => {
   const rarityStyles = featuredBadge ? getRarityColor(featuredBadge) : 'text-theme bg-theme/10 border-theme/30 shadow-[0_0_20px_var(--primary-glow)]';
 
   return (
-    <section className="relative min-h-[500px] md:h-[600px] rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950 transition-all duration-700 ease-out hover:shadow-theme/20 hover:border-theme/20 flex flex-col md:flex-row">
+    <section className="relative min-h-[400px] md:min-h-[500px] lg:h-[600px] rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950 transition-all duration-700 ease-out hover:shadow-theme/20 hover:border-theme/20 flex flex-col md:flex-row">
       {/* Left Side: Content (Blank Background) */}
       <div className="flex-1 flex flex-col justify-center px-6 md:px-20 py-10 md:py-0 space-y-6 md:space-y-8 z-10 relative bg-slate-950">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">

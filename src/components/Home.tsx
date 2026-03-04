@@ -37,7 +37,7 @@ export const Home = ({
   const trendingGames = useMemo(() => games.slice(3, 7), [games]);
 
   return (
-    <div className="space-y-16 md:space-y-32 pb-32 animate-in fade-in duration-1000">
+    <div className="space-y-12 md:space-y-24 pb-32 animate-in fade-in duration-1000">
       <Hero user={user} onBrowseLibrary={onSwitchToLibrary} />
 
       {boosts.length > 0 && (

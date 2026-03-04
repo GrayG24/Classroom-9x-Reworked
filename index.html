@@ -2,89 +2,95 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Classroom 9x Games | Elite Gaming</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        background-color: #020617;
+      }
+      #root {
+        min-height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
   </head>
-  <body id="app-body" data-theme="gold" class="custom-cursor-enabled animated-bg-enabled cursor-default">
-    <!-- Iron Man HUD Overlay Elements -->
-    <div class="hud-line hud-line-h" style="top: 20%; opacity: 0.05;"></div>
-    <div class="hud-line hud-line-h" style="top: 80%; opacity: 0.05;"></div>
-    <div class="hud-line hud-line-v" style="left: 15%; opacity: 0.05;"></div>
-    <div class="hud-line hud-line-v" style="left: 85%; opacity: 0.05;"></div>
-
-    <div class="grid-bg"></div>
+  <body id="app-body" data-theme="cyan" class="custom-cursor-enabled animated-bg-enabled cursor-default">
     <div id="root"></div>
     
-    <div class="glow-cursor" id="cursor" style="opacity: 1; left: -100px; top: -100px;"></div>
-    <div class="glow-cursor-follower" id="cursor-follower" style="opacity: 1; left: -100px; top: -100px;"></div>
+    <!-- Custom Cursor Elements -->
+    <div class="glow-cursor" id="cursor" style="opacity: 0; pointer-events: none; position: fixed; z-index: 9999;"></div>
+    <div class="glow-cursor-follower" id="cursor-follower" style="opacity: 0; pointer-events: none; position: fixed; z-index: 9998;"></div>
     
     <script>
-        const cursor = document.getElementById('cursor');
-        const follower = document.getElementById('cursor-follower');
+      const cursor = document.getElementById('cursor');
+      const follower = document.getElementById('cursor-follower');
+      
+      let mouseX = -100;
+      let mouseY = -100;
+      let followerX = -100;
+      let followerY = -100;
+
+      document.addEventListener('mousemove', (e) => {
+        if (!document.body.classList.contains('custom-cursor-enabled')) {
+          cursor.style.opacity = '0';
+          follower.style.opacity = '0';
+          return;
+        }
         
-        window.setCursorActive = (active) => {
-            if (active) {
-                cursor.classList.add('active');
-                follower.classList.add('active');
-            } else {
-                cursor.classList.remove('active');
-                follower.classList.remove('active');
-            }
-        };
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        cursor.style.opacity = '1';
+        follower.style.opacity = '1';
+        cursor.style.left = mouseX + 'px';
+        cursor.style.top = mouseY + 'px';
 
-        let mouseX = -100;
-        let mouseY = -100;
-        let followerX = -100;
-        let followerY = -100;
+        const target = e.target;
+        const isHoverable = target.closest('button, a, [role="button"], .cursor-pointer');
+        if (isHoverable) {
+          cursor.classList.add('hovering');
+          follower.classList.add('hovering');
+        } else {
+          cursor.classList.remove('hovering');
+          follower.classList.remove('hovering');
+        }
+      });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!document.body.classList.contains('custom-cursor-enabled')) return;
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            
-            cursor.style.left = mouseX + 'px';
-            cursor.style.top = mouseY + 'px';
+      const animateFollower = () => {
+        const dx = mouseX - followerX;
+        const dy = mouseY - followerY;
+        
+        followerX += dx * 0.2;
+        followerY += dy * 0.2;
+        
+        follower.style.left = followerX + 'px';
+        follower.style.top = followerY + 'px';
+        
+        requestAnimationFrame(animateFollower);
+      };
+      animateFollower();
 
-            // Hover detection
-            const target = e.target;
-            const isHoverable = target.closest('button, a, [role="button"], .cursor-pointer');
-            if (isHoverable) {
-                cursor.classList.add('hovering');
-                follower.classList.add('hovering');
-            } else {
-                cursor.classList.remove('hovering');
-                follower.classList.remove('hovering');
-            }
-        });
+      document.addEventListener('mousedown', () => {
+        cursor.classList.add('active');
+        follower.classList.add('active');
+      });
+      document.addEventListener('mouseup', () => {
+        cursor.classList.remove('active');
+        follower.classList.remove('active');
+      });
 
-        // Smooth follower tracking
-        const animateFollower = () => {
-            const dx = mouseX - followerX;
-            const dy = mouseY - followerY;
-            
-            followerX += dx * 0.35;
-            followerY += dy * 0.35;
-            
-            follower.style.left = followerX + 'px';
-            follower.style.top = followerY + 'px';
-            
-            requestAnimationFrame(animateFollower);
-        };
-        animateFollower();
-
-        document.addEventListener('mousedown', () => window.setCursorActive(true));
-        document.addEventListener('mouseup', () => window.setCursorActive(false));
-
-        document.addEventListener('mouseleave', () => {
-            cursor.style.opacity = '0';
-            follower.style.opacity = '0';
-        });
-        document.addEventListener('mouseenter', () => {
-            cursor.style.opacity = '1';
-            follower.style.opacity = '1';
-        });
+      document.addEventListener('mouseleave', () => {
+        cursor.style.opacity = '0';
+        follower.style.opacity = '0';
+      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
