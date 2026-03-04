@@ -66,7 +66,7 @@ const App = () => {
   const [activeGame, setActiveGame] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showInitialModal, setShowInitialModal] = useState(false);
-  const [isCloaked, setIsCloaked] = useState(true);
+  const [isCloaked, setIsCloaked] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [quests, setQuests] = useState([]);
   const [boosts, setBoosts] = useState([]);
