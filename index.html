@@ -1,32 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Classroom 9x Games | Elite Gaming</title>
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow-x: hidden;
-        background-color: #020617;
-      }
-      #root {
-        min-height: 100%;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-    </style>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classroom 9x Games</title>
   </head>
-  <body id="app-body" data-theme="cyan" class="custom-cursor-enabled animated-bg-enabled cursor-default">
+  <body id="app-body" data-theme="cyan" class="custom-cursor-enabled">
     <div id="root"></div>
     
     <!-- Custom Cursor Elements -->
-    <div class="glow-cursor" id="cursor" style="opacity: 0; pointer-events: none; position: fixed; z-index: 9999;"></div>
-    <div class="glow-cursor-follower" id="cursor-follower" style="opacity: 0; pointer-events: none; position: fixed; z-index: 9998;"></div>
+    <div class="glow-cursor" id="cursor"></div>
+    <div class="glow-cursor-follower" id="cursor-follower"></div>
     
     <script>
       const cursor = document.getElementById('cursor');
@@ -38,17 +23,9 @@
       let followerY = -100;
 
       document.addEventListener('mousemove', (e) => {
-        if (!document.body.classList.contains('custom-cursor-enabled')) {
-          cursor.style.opacity = '0';
-          follower.style.opacity = '0';
-          return;
-        }
-        
         mouseX = e.clientX;
         mouseY = e.clientY;
         
-        cursor.style.opacity = '1';
-        follower.style.opacity = '1';
         cursor.style.left = mouseX + 'px';
         cursor.style.top = mouseY + 'px';
 
@@ -67,8 +44,8 @@
         const dx = mouseX - followerX;
         const dy = mouseY - followerY;
         
-        followerX += dx * 0.2;
-        followerY += dy * 0.2;
+        followerX += dx * 0.15;
+        followerY += dy * 0.15;
         
         follower.style.left = followerX + 'px';
         follower.style.top = followerY + 'px';
@@ -90,7 +67,12 @@
         cursor.style.opacity = '0';
         follower.style.opacity = '0';
       });
+
+      document.addEventListener('mouseenter', () => {
+        cursor.style.opacity = '1';
+        follower.style.opacity = '1';
+      });
     </script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="src/main.tsx"></script>
   </body>
 </html>
