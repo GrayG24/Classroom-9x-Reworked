@@ -14,7 +14,7 @@ export const Favorites = ({
     <div className="space-y-8 md:space-y-10 pb-20 animate-in fade-in duration-500">
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 md:w-12 md:h-12 bg-theme/20 rounded-xl md:rounded-2xl flex items-center justify-center text-theme border border-theme/20 shadow-[0_0_15px_var(--primary-glow)]">
-          <Heart size={20} md:size={24} className="fill-current" />
+          <Heart className="w-5 h-5 md:w-6 md:h-6 fill-current" />
         </div>
         <div>
           <h2 className="font-orbitron font-bold text-2xl md:text-3xl uppercase tracking-tight">Your <span className="text-theme">Favorites</span></h2>

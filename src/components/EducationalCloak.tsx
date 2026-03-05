@@ -31,12 +31,12 @@ const CalculatorTool = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl max-w-md mx-auto">
+    <div className="bg-white p-4 md:p-8 rounded-3xl border border-slate-200 shadow-xl max-w-md mx-auto w-full">
       <div className="mb-6 text-right">
-        <div className="text-slate-400 text-sm h-6 mb-1">{equation}</div>
-        <div className="text-4xl font-bold text-slate-800 overflow-hidden">{display}</div>
+        <div className="text-slate-400 text-sm h-6 mb-1 truncate">{equation}</div>
+        <div className="text-3xl md:text-4xl font-bold text-slate-800 overflow-hidden">{display}</div>
       </div>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-2 md:gap-3">
         <button onClick={clear} className="p-4 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 transition-colors">AC</button>
         <button onClick={() => setDisplay(prev => String(parseFloat(prev) * -1))} className="p-4 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 transition-colors">+/-</button>
         <button onClick={() => setDisplay(prev => String(parseFloat(prev) / 100))} className="p-4 bg-slate-100 hover:bg-slate-200 rounded-2xl font-bold text-slate-600 transition-colors">%</button>
@@ -95,22 +95,22 @@ const UnitConverter = () => {
   }, [value, from, to, type]);
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl max-w-2xl mx-auto">
-      <div className="flex gap-4 mb-8">
+    <div className="bg-white p-4 md:p-8 rounded-3xl border border-slate-200 shadow-xl max-w-2xl mx-auto w-full">
+      <div className="flex flex-wrap gap-2 md:gap-4 mb-8">
         {['length', 'weight', 'temp'].map(t => (
           <button 
             key={t}
             onClick={() => { setType(t); setFrom(Object.keys(units[t])[0]); setTo(Object.keys(units[t])[1]); }}
-            className={`px-4 py-2 rounded-xl font-bold text-sm capitalize transition-all ${type === t ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+            className={`px-4 py-2 rounded-xl font-bold text-sm capitalize transition-all flex-1 ${type === t ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
           >
             {t}
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-center">
         <div className="space-y-4">
           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">From</label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <input 
               type="number" 
               value={value} 
@@ -128,7 +128,7 @@ const UnitConverter = () => {
         </div>
         <div className="space-y-4">
           <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">To</label>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="w-full p-4 bg-blue-50 border-transparent rounded-2xl font-bold text-xl text-blue-700">
               {result}
             </div>
@@ -221,8 +221,8 @@ const ScienceTool = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl max-w-5xl mx-auto overflow-x-auto">
-      <div className="min-w-[800px]">
+    <div className="bg-white p-4 md:p-8 rounded-3xl border border-slate-200 shadow-xl max-w-5xl mx-auto overflow-x-auto w-full">
+      <div className="min-w-[700px] md:min-w-[800px]">
         <h3 className="text-xl font-bold text-slate-800 mb-8">Interactive Periodic Table</h3>
         <div className="grid grid-cols-[repeat(18,minmax(0,1fr))] gap-1 mb-12">
           {Array.from({ length: 5 }).map((_, rowIdx) => (
@@ -363,16 +363,16 @@ const NotesTool = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl max-w-4xl mx-auto">
+    <div className="bg-white p-4 md:p-8 rounded-3xl border border-slate-200 shadow-xl max-w-4xl mx-auto w-full">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-slate-800">Quick Study Notes</h3>
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Auto-saving...</span>
+        <h3 className="text-lg md:text-xl font-bold text-slate-800">Quick Study Notes</h3>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Auto-saving...</span>
       </div>
       <textarea 
         value={notes}
         onChange={(e) => handleSave(e.target.value)}
         placeholder="Type your study notes here..."
-        className="w-full h-96 p-6 bg-slate-50 border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-700 resize-none"
+        className="w-full h-64 md:h-96 p-4 md:p-6 bg-slate-50 border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all font-medium text-slate-700 resize-none"
       />
     </div>
   );
@@ -387,6 +387,16 @@ export const EducationalCloak = ({ onToggleCloak }) => {
     { id: 'science', title: 'Science Tools', desc: 'Periodic table & data', icon: <Atom size={20} />, color: 'amber' },
     { id: 'notes', title: 'Study Notes', desc: 'Quick capture & save', icon: <BookOpen size={20} />, color: 'emerald' },
   ];
+
+  const getToolColors = (color) => {
+    const colors = {
+      blue: { bg: 'bg-blue-500', lightBg: 'bg-blue-50', text: 'text-blue-600' },
+      purple: { bg: 'bg-purple-500', lightBg: 'bg-purple-50', text: 'text-purple-600' },
+      amber: { bg: 'bg-amber-500', lightBg: 'bg-amber-50', text: 'text-amber-600' },
+      emerald: { bg: 'bg-emerald-500', lightBg: 'bg-emerald-50', text: 'text-emerald-600' },
+    };
+    return colors[color] || colors.blue;
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -433,28 +443,31 @@ export const EducationalCloak = ({ onToggleCloak }) => {
               <button className="text-blue-600 text-sm font-semibold hover:underline">View all</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {tools.map((tool, idx) => (
-                <motion.div 
-                  key={idx}
-                  whileHover={{ y: -4 }}
-                  onClick={() => setActiveTab(tool.id)}
-                  className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden group cursor-pointer"
-                >
-                  <div className={`h-2 w-full bg-${tool.color}-500`}></div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className={`p-2 rounded-lg bg-${tool.color}-50 text-${tool.color}-600`}>
-                        {tool.icon}
+              {tools.map((tool, idx) => {
+                const toolColors = getToolColors(tool.color);
+                return (
+                  <motion.div 
+                    key={idx}
+                    whileHover={{ y: -4 }}
+                    onClick={() => setActiveTab(tool.id)}
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden group cursor-pointer"
+                  >
+                    <div className={`h-2 w-full ${toolColors.bg}`}></div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`p-2 rounded-lg ${toolColors.lightBg} ${toolColors.text}`}>
+                          {tool.icon}
+                        </div>
+                        <h3 className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{tool.title}</h3>
                       </div>
-                      <h3 className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{tool.title}</h3>
+                      <p className="text-sm text-slate-500 mb-4">{tool.desc}</p>
+                      <div className="flex items-center text-xs font-bold text-blue-600 uppercase tracking-wider">
+                        Open Tool <ChevronRight size={14} className="ml-1" />
+                      </div>
                     </div>
-                    <p className="text-sm text-slate-500 mb-4">{tool.desc}</p>
-                    <div className="flex items-center text-xs font-bold text-blue-600 uppercase tracking-wider">
-                      Open Tool <ChevronRight size={14} className="ml-1" />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           </section>
         </>
@@ -465,11 +478,11 @@ export const EducationalCloak = ({ onToggleCloak }) => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-100">
       {/* Top Navigation */}
-      <nav className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 sticky top-0 z-50">
-        <div className="flex items-center gap-8">
+      <nav className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-50">
+        <div className="flex items-center gap-4 md:gap-8">
           <div className="flex items-center gap-2 text-blue-600">
-            <GraduationCap size={28} strokeWidth={2.5} />
-            <span className="font-bold text-xl tracking-tight text-slate-800">EduPortal <span className="text-blue-600">Pro</span></span>
+            <GraduationCap className="w-6 h-6 md:w-7 md:h-7" strokeWidth={2.5} />
+            <span className="font-bold text-lg md:text-xl tracking-tight text-slate-800">Edu<span className="text-blue-600">Portal</span></span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-500">
             <button onClick={() => setActiveTab('dashboard')} className={`${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'hover:text-slate-800'} h-16 flex items-center transition-all`}>Dashboard</button>
