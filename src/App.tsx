@@ -656,6 +656,7 @@ const App = () => {
     const handleKeyDown = (e) => {
       // Shift + G to toggle cloak
       if (e.shiftKey && e.key === 'G') {
+        e.preventDefault();
         setIsCloaked(prev => !prev);
       }
     };
