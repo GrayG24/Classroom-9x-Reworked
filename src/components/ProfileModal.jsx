@@ -1,16 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, User, Shield, Star, Settings, Award, History, Zap, Crown, Heart, Activity, Trophy, Flame, MessageSquare, Rocket, ChevronRight } from 'lucide-react';
-import { User as UserType } from '../types';
 import { CHARACTERS } from '../constants';
 
-interface ProfileModalProps {
-  user: UserType;
-  onUpdateUser: (user: UserType) => void;
-  onClose: () => void;
-}
-
-export const ProfileModal: React.FC<ProfileModalProps> = ({ user, onUpdateUser, onClose }) => {
+export const ProfileModal = ({ user, onUpdateUser, onClose }) => {
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
 
   const stats = [

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { AppRoute } from './types';
+import { AppRoute } from './constants';
 import { GAMES_DATA, BADGES, QUEST_POOL, CHARACTERS } from './constants';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
@@ -29,7 +29,7 @@ import { motion, AnimatePresence } from 'motion/react';
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;
 
-const LockedPage = ({ title, onReturn }: { title: string, onReturn: () => void }) => (
+const LockedPage = ({ title, onReturn }) => (
   <div className="min-h-[70vh] flex flex-col items-center justify-center p-12 text-center space-y-8">
     <motion.div 
       initial={{ scale: 0.8, opacity: 0 }}
@@ -136,11 +136,11 @@ const CustomCursor = () => {
   const [isMouseDown, setIsMouseDown] = useState(false);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e) => {
       setPosition({ x: e.clientX, y: e.clientY });
       if (!isVisible) setIsVisible(true);
       
-      const target = e.target as HTMLElement;
+      const target = e.target;
       const isClickable = target.closest('button, a, [role="button"], .cursor-pointer, input, select, textarea');
       setIsHovering(!!isClickable);
     };
@@ -229,7 +229,7 @@ const EpilepsyWarning = ({ onProceed, onSkip }) => {
 };
 
 const InteractiveBackground = ({ performanceMode, lowQualityParticles, currentTheme }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef(null);
   const mouse = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -238,8 +238,8 @@ const InteractiveBackground = ({ performanceMode, lowQualityParticles, currentTh
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let particles: any[] = [];
-    let animationFrameId: number;
+    let particles = [];
+    let animationFrameId;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -295,7 +295,7 @@ const InteractiveBackground = ({ performanceMode, lowQualityParticles, currentTh
 
     createParticles();
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e) => {
       mouse.current = { x: e.clientX, y: e.clientY };
     };
 
@@ -486,7 +486,7 @@ const BossEvent = ({ onDefeat }) => {
 };
 
 const MatrixRain = ({ performanceMode }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -679,10 +679,9 @@ const App = () => {
       const unlockedFrames = [...(prev.unlockedFrames || ['obsidian'])];
       const unlockedCharacters = [...(prev.unlockedCharacters || ['agent-x'])];
       
-      // Check for admin status based on email (if available) or existing isAdmin
-      // For this environment, we'll assume the user is an admin if they have the specific email
+      // Check for admin status based on existing isAdmin
       // Note: In a real app, this would be handled by a secure backend
-      const isAdmin = prev.isAdmin || prev.email === 'softball_chik_007@yahoo.com';
+      const isAdmin = prev.isAdmin;
 
       Object.entries(themeUnlocks).forEach(([lvl, theme]) => {
         if (prev.level >= parseInt(lvl) && !unlockedThemes.includes(theme)) {
@@ -756,7 +755,7 @@ const App = () => {
   const [playingGame, setPlayingGame] = useState(null);
 
   useEffect(() => {
-    const handlePlayGame = (e: any) => {
+    const handlePlayGame = (e) => {
       setPlayingGame(e.detail);
       setActiveGame(null);
     };
@@ -775,9 +774,9 @@ const App = () => {
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [adminAnnouncement, setAdminAnnouncement] = useState(null);
   const [gameOfTheWeek, setGameOfTheWeek] = useState({ id: 'classroom-9x', name: 'Classroom 9x' });
-  const ws = useRef<WebSocket | null>(null);
+  const ws = useRef(null);
   const [showInitialModal, setShowInitialModal] = useState(false);
-  const [initialModalError, setInitialModalError] = useState<string | null>(null);
+  const [initialModalError, setInitialModalError] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCloaked, setIsCloaked] = useState(false);
   const [isExitingCloak, setIsExitingCloak] = useState(false);
@@ -1458,15 +1457,15 @@ const App = () => {
     });
   };
 
-  const setTheme = (theme: string) => {
+  const setTheme = (theme) => {
     if (typeof theme !== 'string') return;
     setUser(prev => ({ ...prev, currentTheme: theme }));
   };
-  const setFrame = (frameId: string) => {
+  const setFrame = (frameId) => {
     if (typeof frameId !== 'string') return;
     setUser(prev => ({ ...prev, currentFrame: frameId }));
   };
-  const setCharacter = (charId: string) => {
+  const setCharacter = (charId) => {
     if (typeof charId !== 'string') return;
     setUser(prev => ({ ...prev, currentCharacter: charId }));
   };
@@ -1537,6 +1536,16 @@ const App = () => {
 
     if (alreadyRedeemed && cleanCode !== 'codes211') {
       return { success: false, message: 'DECRYPTION KEY ALREADY USED' };
+    }
+
+    if (cleanCode === 'admin6') {
+      setUser(prev => ({
+        ...prev,
+        isAdmin: true,
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'admin6']))
+      }));
+      addNotification('Security Override', 'ADMINISTRATIVE PRIVILEGES GRANTED', 'system', <Shield className="text-rose-500" />);
+      return { success: true, message: 'ACCESS GRANTED: ADMIN CONSOLE UNLOCKED' };
     }
 
     if (cleanCode === 'codes211') {

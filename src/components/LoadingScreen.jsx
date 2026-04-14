@@ -1,16 +1,12 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface LoadingScreenProps {
-  onComplete: () => void;
-}
-
 const StarField = ({ isSucking, isBlast, phase }) => {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const particles = React.useRef<any[]>([]);
-  const planets = React.useRef<any[]>([]);
-  const animationRef = React.useRef<number>();
-  const initialized = React.useRef(false);
+  const canvasRef = useRef(null);
+  const particles = useRef([]);
+  const planets = useRef([]);
+  const animationRef = useRef();
+  const initialized = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -64,7 +60,7 @@ const StarField = ({ isSucking, isBlast, phase }) => {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      const drawEntity = (p: any, isPlanet: boolean) => {
+      const drawEntity = (p, isPlanet) => {
         if (phase === 'blast') {
           if (p.vx === 0) {
             const angle = Math.atan2(p.y - centerY, p.x - centerX);
@@ -152,8 +148,8 @@ const StarField = ({ isSucking, isBlast, phase }) => {
   return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />;
 };
 
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
-  const [phase, setPhase] = useState<'sucking' | 'shaking' | 'collapse' | 'blast' | 'reveal'>('sucking');
+export const LoadingScreen = ({ onComplete }) => {
+  const [phase, setPhase] = useState('sucking');
   const [showButton, setShowButton] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);

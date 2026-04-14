@@ -99,7 +99,7 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
               <div className="flex gap-4">
                 <button 
                   onClick={() => setShowResetConfirm(false)}
-                  className="flex-1 py-4 rounded-xl bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all italic"
+                  className="flex-1 py-4 bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all italic"
                 >
                   CANCEL
                 </button>
@@ -108,7 +108,7 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                     onResetProgress();
                     setShowResetConfirm(false);
                   }}
-                  className="flex-1 py-4 rounded-xl bg-red-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all italic shadow-[0_0_30px_rgba(239,68,68,0.3)]"
+                  className="flex-1 py-4 bg-red-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all italic shadow-[0_0_30px_rgba(239,68,68,0.3)]"
                 >
                   RESET DATA
                 </button>

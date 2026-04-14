@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, UserPlus, UserMinus, Check, X, User, MessageSquare, Shield, Star, Trophy, Clock, Users } from 'lucide-react';
-import { User as UserType } from '../types';
 
-interface FriendsProps {
-  user: UserType;
-  onUpdateUser: (updatedUser: UserType) => void;
-}
-
-export const Friends: React.FC<FriendsProps> = ({ user, onUpdateUser }) => {
+export const Friends = ({ user, onUpdateUser }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'search'>('friends');
-  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState('friends');
+  const [selectedUser, setSelectedUser] = useState(null);
 
   // Mock data for search results - in a real app this would be an API call
   const mockUsers = [
@@ -40,7 +34,7 @@ export const Friends: React.FC<FriendsProps> = ({ user, onUpdateUser }) => {
     }
   }, [searchQuery, user.uid]);
 
-  const handleSendRequest = (targetUid: string) => {
+  const handleSendRequest = (targetUid) => {
     if (user.sentRequests.includes(targetUid)) return;
     onUpdateUser({
       ...user,
@@ -48,7 +42,7 @@ export const Friends: React.FC<FriendsProps> = ({ user, onUpdateUser }) => {
     });
   };
 
-  const handleAcceptRequest = (targetUid: string) => {
+  const handleAcceptRequest = (targetUid) => {
     onUpdateUser({
       ...user,
       friendRequests: user.friendRequests.filter(id => id !== targetUid),
@@ -56,14 +50,14 @@ export const Friends: React.FC<FriendsProps> = ({ user, onUpdateUser }) => {
     });
   };
 
-  const handleDeclineRequest = (targetUid: string) => {
+  const handleDeclineRequest = (targetUid) => {
     onUpdateUser({
       ...user,
       friendRequests: user.friendRequests.filter(id => id !== targetUid)
     });
   };
 
-  const handleRemoveFriend = (targetUid: string) => {
+  const handleRemoveFriend = (targetUid) => {
     onUpdateUser({
       ...user,
       friends: user.friends.filter(id => id !== targetUid)
@@ -85,7 +79,7 @@ export const Friends: React.FC<FriendsProps> = ({ user, onUpdateUser }) => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center justify-between px-6 py-4 rounded-2xl transition-all font-black text-[11px] uppercase tracking-widest italic ${
                   activeTab === tab.id 
                     ? 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.2)]' 

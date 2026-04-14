@@ -38,12 +38,12 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   const wss = new WebSocketServer({ server });
-  const clients = new Set<WebSocket>();
+  const clients = new Set();
 
   const isProd = process.env.NODE_ENV === 'production';
   console.log('Starting server. Mode:', isProd ? 'production' : 'development');
 
-  let vite: any;
+  let vite;
   if (!isProd) {
     console.log('Initializing Vite in middleware mode (custom)...');
     try {
@@ -72,10 +72,10 @@ async function startServer() {
 
   // --- API ROUTES ---
   // Global Leaderboard (In-memory storage for now)
-  let leaderboardData: any[] = [];
+  let leaderboardData = [];
   try {
     const rows = db_sqlite.prepare('SELECT * FROM leaderboard ORDER BY score DESC').all();
-    leaderboardData = rows.map((row: any) => ({
+    leaderboardData = rows.map((row) => ({
       ...row,
       unlockedBadges: row.unlockedBadges ? JSON.parse(row.unlockedBadges) : []
     }));
@@ -97,7 +97,7 @@ async function startServer() {
   apiRouter.get('/check-username', (req, res) => {
     const { username } = req.query;
     if (!username) return res.status(400).json({ error: 'Username required' });
-    const exists = leaderboardData.some(e => e.username.toLowerCase() === (username as string).toLowerCase());
+    const exists = leaderboardData.some(e => e.username.toLowerCase() === username.toLowerCase());
     res.json({ exists });
   });
 
@@ -111,13 +111,13 @@ async function startServer() {
       const sorted = [...leaderboardData]
         .filter(e => e && typeof e.score === 'number')
         .sort((a, b) => b.score - a.score)
-        .slice(0, 50); // Return more than 10 for better experience
+        .slice(0, 50);
       
       console.log(`Returning ${sorted.length} leaderboard entries`);
       res.json(sorted);
     } catch (err) {
       console.error('Error in /api/leaderboard:', err);
-      res.status(500).json({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) });
+      res.status(500).json({ error: 'Internal Server Error', message: err.message });
     }
   });
 
@@ -282,8 +282,6 @@ async function startServer() {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
     
-    // In a real app, we'd have a banned_users table
-    // For now, just remove them from leaderboard and broadcast a ban event
     leaderboardData = leaderboardData.filter(e => e.username !== username);
     try {
       db_sqlite.prepare('DELETE FROM leaderboard WHERE username = ?').run(username);
@@ -388,7 +386,7 @@ async function startServer() {
     const payload = JSON.stringify({
       ...req.body,
       type: 'ADMIN_ACTION',
-      actionType: type, // for backward compatibility if needed
+      actionType: type,
       timestamp: new Date().toISOString()
     });
 
@@ -400,16 +398,13 @@ async function startServer() {
     res.json({ success: true });
   });
 
-  // Mount the API router
   app.use('/api', apiRouter);
 
-  // --- API CATCH-ALL ---
   app.all('/api/*', (req, res) => {
     console.warn(`API route not found: ${req.method} ${req.url}`);
     res.status(404).json({ error: 'API route not found', method: req.method, path: req.url });
   });
 
-  // --- WEBSOCKET CHAT ---
   wss.on('connection', (ws) => {
     clients.add(ws);
     console.log('New client connected');
@@ -431,10 +426,9 @@ async function startServer() {
         });
       } else if (message.type === 'GAME_START' || message.type === 'GAME_END') {
         totalGamesPlayed++;
-        return; // Don't broadcast game events for now
+        return;
       } else {
         totalMessages++;
-        // Broadcast to all clients
         payload = JSON.stringify({
           type: 'CHAT_MESSAGE',
           ...message,
@@ -455,7 +449,6 @@ async function startServer() {
     });
   });
 
-  // --- STATIC ASSETS & SPA FALLBACK ---
   if (isProd) {
     app.use(express.static(path.join(__dirname, 'dist')));
     app.get('*', (req, res) => {
@@ -465,16 +458,11 @@ async function startServer() {
     app.use('*', async (req, res, next) => {
       const url = req.originalUrl;
       try {
-        // 1. Read index.html
         let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
-        
-        // 2. Apply Vite HTML transforms.
         template = await vite.transformIndexHtml(url, template);
-        
-        // 3. Send the rendered HTML back.
         res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
       } catch (e) {
-        vite?.ssrFixStacktrace(e as Error);
+        vite?.ssrFixStacktrace(e);
         next(e);
       }
     });

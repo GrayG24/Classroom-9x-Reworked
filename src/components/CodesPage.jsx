@@ -2,14 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Key, Zap, Shield, Star, Cpu, Activity, Lock } from 'lucide-react';
 
-interface CodesPageProps {
-  user: any;
-  onRedeemCode: (code: string) => { success: boolean, message: string };
-}
-
-export const CodesPage: React.FC<CodesPageProps> = ({ user, onRedeemCode }) => {
+export const CodesPage = ({ user, onRedeemCode }) => {
   const [redeemInput, setRedeemInput] = useState('');
-  const [status, setStatus] = useState<{ success: boolean, message: string } | null>(null);
+  const [status, setStatus] = useState(null);
 
   const handleRedeem = () => {
     if (!redeemInput.trim()) return;

@@ -2,20 +2,8 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { LayoutGrid, MessageSquare, Music, Globe, Terminal, Shield, Zap, Cpu, Activity, Plus, Lock } from 'lucide-react';
 
-interface AppItem {
-  id: string;
-  name: string;
-  icon: any;
-  description: string;
-  category: string;
-  status: string;
-  version: string;
-  action?: () => void;
-  disabled?: boolean;
-}
-
-export const AppsPage: React.FC<{ onToggleChat: () => void }> = ({ onToggleChat }) => {
-  const apps: AppItem[] = [
+export const AppsPage = ({ onToggleChat }) => {
+  const apps = [
     {
       id: 'chat',
       name: 'Global Chat',

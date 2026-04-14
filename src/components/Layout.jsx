@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { House, Gamepad2, LayoutGrid, Globe, Shield, Palette, Settings as SettingsIcon, User, Users, Music, Key } from 'lucide-react';
-import { AppRoute } from '../types';
+import { AppRoute } from '../constants'; // Changed from types to constants
 import { FPSCounter } from './FPSCounter';
 import { VaporMusicPlayer } from './VaporMusicPlayer';
 import { Sidebar } from './Sidebar';
@@ -20,7 +20,7 @@ export const Layout = ({
   const [isVaporMusicFullScreen, setIsVaporMusicFullScreen] = useState(false);
 
   useEffect(() => {
-    const handleToggle = (e: any) => {
+    const handleToggle = (e) => {
       setIsVaporMusicOpen(true);
       if (e.detail?.fullScreen !== undefined) {
         setIsVaporMusicFullScreen(e.detail.fullScreen);

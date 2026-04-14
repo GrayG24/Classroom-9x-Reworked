@@ -2,15 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { User, ChevronRight } from 'lucide-react';
 
-interface InitialNameModalProps {
-  onSubmit: (name: string) => void;
-  error?: string | null;
-}
-
-export const InitialNameModal: React.FC<InitialNameModalProps> = ({ onSubmit, error }) => {
+export const InitialNameModal = ({ onSubmit, error }) => {
   const [name, setName] = useState('');
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = (e) => {
     if (e) e.preventDefault();
     const trimmedName = name.trim();
     if (trimmedName.length >= 3) {

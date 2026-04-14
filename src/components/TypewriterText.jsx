@@ -4,7 +4,7 @@ export const TypewriterText = ({ text, delay = 0 }) => {
   const [displayedText, setDisplayedText] = useState("");
   
   useEffect(() => {
-    let timeoutId: any;
+    let timeoutId;
     let currentIndex = 0;
     
     const type = () => {

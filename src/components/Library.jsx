@@ -1,18 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Game } from '../types';
 import { Search, Play, Star, LayoutGrid, Filter, Activity, Bot, Zap } from 'lucide-react';
 
-interface LibraryProps {
-  games: Game[];
-  favorites: string[];
-  pinnedGames: string[];
-  onToggleFavorite: (gameId: string) => void;
-  onTogglePin: (gameId: string) => void;
-  onPlayGame: (game: Game) => void;
-}
-
-export const Library: React.FC<LibraryProps> = ({ 
+export const Library = ({ 
   games, 
   favorites, 
   pinnedGames = [], 
@@ -21,7 +11,7 @@ export const Library: React.FC<LibraryProps> = ({
   onPlayGame 
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const categories = Array.from(new Set(games.map(g => g.category)));
 

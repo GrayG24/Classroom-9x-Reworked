@@ -2,14 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, GripHorizontal, Music, ExternalLink, Minus, Maximize2 } from 'lucide-react';
 
-interface VaperMusicPlayerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  isFullScreen?: boolean;
-  onToggleFullScreen?: () => void;
-}
-
-export const VaporMusicPlayer: React.FC<VaporMusicPlayerProps> = ({ 
+export const VaporMusicPlayer = ({ 
   isOpen, 
   onClose, 
   isFullScreen = false,

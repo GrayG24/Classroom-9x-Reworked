@@ -2,12 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, Minimize2, RefreshCw, Shield, Zap } from 'lucide-react';
 
-interface GameViewProps {
-  game: any;
-  onClose: () => void;
-}
-
-export const GameView: React.FC<GameViewProps> = ({ game, onClose }) => {
+export const GameView = ({ game, onClose }) => {
   const [isFullscreen, setIsFullscreen] = React.useState(false);
 
   const toggleFullscreen = () => {

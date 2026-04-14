@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Shield, Globe, Lock, Search, ChevronRight, Zap, Star, LayoutGrid } from 'lucide-react';
 
-export const ProxyPage: React.FC = () => {
+export const ProxyPage = () => {
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-12 text-center space-y-12">
       <motion.div 

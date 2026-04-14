@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, MessageSquare, Shield, Zap, Globe } from 'lucide-react';
 
 export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     if (scrollRef.current) {

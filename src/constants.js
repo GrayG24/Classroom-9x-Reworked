@@ -1,5 +1,19 @@
 import { User, Zap, Ghost, Cat, Crown, Bot, ZapOff, Award, Star, Heart, Layers, Target, Palette, PanelsTopLeft, Binary, Activity, ShieldCheck, Rocket, Trophy, Hammer, Search } from 'lucide-react';
 
+export const AppRoute = {
+  HOME: 'home',
+  LIBRARY: 'library',
+  SETTINGS: 'settings',
+  CUSTOMIZATION: 'customization',
+  LEADERBOARD: 'leaderboard',
+  APPS: 'apps',
+  PROXY: 'proxy',
+  CATEGORY: 'category',
+  ADMIN: 'admin',
+  FRIENDS: 'friends',
+  CODES: 'codes'
+};
+
 export const CATEGORIES = [
   { id: 'action', name: 'Action', icon: 'Sword' },
   { id: 'driving', name: 'Driving', icon: 'Car' },

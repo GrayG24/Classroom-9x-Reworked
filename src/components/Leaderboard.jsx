@@ -1,15 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Crown, Palette, TrendingUp, Medal, Target } from 'lucide-react';
-import { User as UserType } from '../types';
 
-interface LeaderboardProps {
-  user: UserType;
-  leaderboardData: any[];
-  onPlayerClick: (player: any) => void;
-}
-
-export const Leaderboard: React.FC<LeaderboardProps> = ({ user, leaderboardData, onPlayerClick }) => {
+export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
   // Ensure we have at least some data to show
   const displayData = (leaderboardData && leaderboardData.length > 0) ? leaderboardData : [
     { username: 'VoidWalker', score: 125430, level: 99, currentCharacter: 'ghost', title: 'VOID_LORD' },

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { House, Library, Sparkles, Settings, Crown, Shield, Ghost, Bot, Star, Cat, Rocket, Clock, User, Users, Trophy, Zap, ChevronRight, LayoutGrid, Search, Menu, X, ZapOff, MessageSquare, Music, Key } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AppRoute } from '../types';
-import { CHARACTERS } from '../constants';
+import { AppRoute, CHARACTERS } from '../constants';
 
 export const Sidebar = ({ 
   user, 
@@ -206,7 +205,7 @@ export const Sidebar = ({
                   exit={{ opacity: 0, x: -10 }}
                   className="text-[9px] font-black text-white/40 tabular-nums uppercase tracking-widest whitespace-nowrap"
                 >
-                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}
                 </motion.span>
               ) : (
                 <motion.span 
@@ -216,7 +215,7 @@ export const Sidebar = ({
                   exit={{ opacity: 0 }}
                   className="text-[10px] font-black text-white/40 tabular-nums w-full text-center"
                 >
-                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}
                 </motion.span>
               )}
             </AnimatePresence>
