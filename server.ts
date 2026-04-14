@@ -5,6 +5,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
 
@@ -12,6 +13,8 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+console.log('Server __dirname:', __dirname);
+console.log('Current working directory:', process.cwd());
 
 const db_sqlite = new Database('leaderboard.db');
 db_sqlite.exec(`
@@ -37,12 +40,17 @@ async function startServer() {
   const wss = new WebSocketServer({ server });
   const clients = new Set<WebSocket>();
 
+  const isProd = process.env.NODE_ENV === 'production';
+  console.log('Starting server. Mode:', isProd ? 'production' : 'development');
+
   app.use(cors());
   app.use(express.json());
 
   // Logging middleware
   app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    if (!req.url.includes('node_modules') && !req.url.includes('@vite')) {
+      console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    }
     next();
   });
 
@@ -431,18 +439,25 @@ async function startServer() {
     });
   });
 
-  // --- VITE MIDDLEWARE ---
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
+  // --- STATIC ASSETS & SPA FALLBACK ---
+  if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'dist')));
     app.get('*', (req, res) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
+  } else {
+    console.log('Initializing Vite in middleware mode...');
+    try {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+        root: process.cwd(),
+      });
+      app.use(vite.middlewares);
+      console.log('Vite middleware attached.');
+    } catch (err) {
+      console.error('Failed to initialize Vite:', err);
+    }
   }
 
   server.listen(PORT, '0.0.0.0', () => {
