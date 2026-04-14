@@ -43,6 +43,22 @@ async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
   console.log('Starting server. Mode:', isProd ? 'production' : 'development');
 
+  let vite: any;
+  if (!isProd) {
+    console.log('Initializing Vite in middleware mode (custom)...');
+    try {
+      vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'custom',
+        root: process.cwd(),
+      });
+      app.use(vite.middlewares);
+      console.log('Vite middleware attached at top of stack.');
+    } catch (err) {
+      console.error('Failed to initialize Vite:', err);
+    }
+  }
+
   app.use(cors());
   app.use(express.json());
 
@@ -440,24 +456,28 @@ async function startServer() {
   });
 
   // --- STATIC ASSETS & SPA FALLBACK ---
-  if (process.env.NODE_ENV === 'production') {
+  if (isProd) {
     app.use(express.static(path.join(__dirname, 'dist')));
     app.get('*', (req, res) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
   } else {
-    console.log('Initializing Vite in middleware mode...');
-    try {
-      const vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-        root: process.cwd(),
-      });
-      app.use(vite.middlewares);
-      console.log('Vite middleware attached.');
-    } catch (err) {
-      console.error('Failed to initialize Vite:', err);
-    }
+    app.use('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      try {
+        // 1. Read index.html
+        let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+        
+        // 2. Apply Vite HTML transforms.
+        template = await vite.transformIndexHtml(url, template);
+        
+        // 3. Send the rendered HTML back.
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite?.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   }
 
   server.listen(PORT, '0.0.0.0', () => {
