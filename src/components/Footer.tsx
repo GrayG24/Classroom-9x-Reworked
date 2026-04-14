@@ -1,29 +1,31 @@
 import React from 'react';
-import { Rocket, Shield, Scale, Code } from 'lucide-react';
+import { Shield, Zap, Star, Flame, Trophy, Crown, MessageSquare, Users, Globe, Lock, Heart, Github, Twitter, Youtube, Instagram, ExternalLink, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { motion } from 'motion/react';
 
-export const Footer = () => (
-  <footer className="mt-20 border-t border-slate-900 pt-10 pb-20">
-    <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-      <div className="flex flex-col items-center md:items-start gap-4">
-        <div className="flex items-center gap-2">
-          <Rocket className="text-theme w-5 h-5" />
-          <span className="font-orbitron font-black text-lg tracking-tighter text-white uppercase italic">Classroom<span className="text-theme not-italic">9x</span></span>
-        </div>
-        <div className="flex items-center gap-4 text-[10px] font-black text-slate-600 uppercase tracking-widest">
-          <span>v4.0.2-STABLE</span>
-          <span className="w-1 h-1 rounded-full bg-slate-800"></span>
-          <span>BUILD: 2024.03.15</span>
+export const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="relative z-10 py-12 border-t border-white/5">
+      <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+              <Zap size={20} fill="currentColor" />
+            </div>
+            <span className="text-sm font-black text-white uppercase tracking-tighter italic">CLASSROOM 9X</span>
+          </div>
+          
+          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">
+            © {currentYear} VOID_NETWORK // ALL_RIGHTS_RESERVED
+          </p>
+
+          <div className="flex items-center gap-6">
+            <button className="text-[10px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">PRIVACY</button>
+            <button className="text-[10px] font-black text-white/20 uppercase tracking-widest hover:text-white transition-colors">TERMS</button>
+          </div>
         </div>
       </div>
-      
-      <div className="flex flex-wrap justify-center gap-8">
-        <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest">
-          The elite unblocked library for high-performance browser gaming.
-        </span>
-      </div>
-    </div>
-    <div className="mt-10 text-center">
-      <p className="text-[9px] font-black text-slate-700 uppercase tracking-[0.5em]">Classroom 9x Games © 2024 • All Systems Operational</p>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};

@@ -10,7 +10,7 @@ export const CATEGORIES = [
 ];
 
 export const CHARACTERS = [
-  { id: 'agent-x', name: 'Agent X', level: 1, desc: 'Standard operative. Reliable and versatile.', icon: User },
+  { id: 'agent-x', name: 'Default', level: 1, desc: 'Standard operative. Reliable and versatile.', icon: User },
   { id: 'viper', name: 'Viper', level: 15, desc: 'Speed specialist. Strikes before detection.', icon: Zap },
   { id: 'ghost', name: 'Ghost', level: 30, desc: 'Stealth expert. Infiltrates restricted sectors.', icon: Ghost },
   { id: 'phantom', name: 'Phantom', level: 50, desc: 'Ethereal presence. Moves between dimensions.', icon: ZapOff },
@@ -190,7 +190,7 @@ export const GAMES_DATA = [
     controls: { move: 'W / UP', action: 'W / UP' }
   },
   {
-    id: 'soccer-random',
+    id: 'boxing-random',
     title: 'Boxing Random',
     description: 'Boxing like you have never seen it before! Two-player physics-based fun where one button is all you need to jump, punch, and knockout your opponent.',
     thumbnail: 'https://play-lh.googleusercontent.com/jku-om6R4p5KuvMRlOFjH6blrRjw1EnDb5S7h7WXm1J0bFrY18LXKbmjQnv7SDUWYn8=w526-h296',

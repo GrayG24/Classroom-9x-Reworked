@@ -1,144 +1,228 @@
-import React from 'react';
-import { House, Library, Heart, Sword, Car, BrainCircuit, Target, Gamepad2, Zap, Settings, Crown, Sparkles, User, ZapOff, Shield, Ghost, Bot, Star, Cat, Rocket } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { House, Library, Sparkles, Settings, Crown, Shield, Ghost, Bot, Star, Cat, Rocket, Clock, User, Users, Trophy, Zap, ChevronRight, LayoutGrid, Search, Menu, X, ZapOff, MessageSquare, Music, Key } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AppRoute } from '../types';
 import { CHARACTERS } from '../constants';
 
 export const Sidebar = ({ 
   user, 
   currentView, 
-  selectedCategoryId,
   onViewChange,
   onProfileClick
 }) => {
-  const avatarIcons = {
-    'agent-x': User,
-    'viper': Zap,
-    'ghost': Ghost,
-    'phantom': ZapOff,
-    'titan': Shield,
-    'nova': Star,
-    'overlord': Crown,
-    'stark': Bot,
-    'glitch': ZapOff,
-    'spongebob': Star,
-    'ye-mask': Star,
-    'doge-king': Crown,
-    'cyber-samurai': Shield,
-    'royal-knight': Shield,
-    'neon-cat': Cat,
-    'space-ranger': Rocket
-  };
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [time, setTime] = useState(new Date());
+  const [onlineCount, setOnlineCount] = useState(1);
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchStatus = () => {
+      fetch('/api/system/status')
+        .then(res => res.json())
+        .then(data => setOnlineCount(data.activeUsers || 1))
+        .catch(() => {});
+    };
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const currentChar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
-  const CurrentAvatarIcon = avatarIcons[user.currentCharacter || 'agent-x'] || User;
+
   const menuItems = [
-    { id: AppRoute.HOME, label: 'Home Page', icon: House },
-    { id: AppRoute.LIBRARY, label: 'Library', icon: Library },
-    { id: AppRoute.FAVORITES, label: 'Favorites', icon: Heart },
+    { id: AppRoute.HOME, label: 'Home', icon: House },
+    { id: AppRoute.LIBRARY, label: 'Games', icon: Library },
+    { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid },
+    { id: AppRoute.FRIENDS, label: 'Social', icon: Users },
     { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Sparkles },
+    { id: AppRoute.SETTINGS, label: 'Settings', icon: Settings },
   ];
 
-  const categories = [
-    { id: 'action', label: 'Action', icon: Sword },
-    { id: 'driving', label: 'Driving', icon: Car },
-    { id: 'puzzle', label: 'Puzzle', icon: BrainCircuit },
-    { id: 'sports', label: 'Sports', icon: Target },
-    { id: 'classic', label: 'Classics', icon: Gamepad2 },
-    { id: 'casual', label: 'Casual', icon: Zap },
-  ];
+  if (user.isAdmin) {
+    menuItems.push({ id: AppRoute.ADMIN, label: 'Admin', icon: Shield, color: 'text-rose-500' });
+  }
 
   return (
-    <div className="p-4 flex flex-col gap-8 h-full">
-      <div className="flex flex-col gap-1">
-        <p className="px-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] mb-4">Menu</p>
-        {menuItems.map((item) => (
-          <motion.button 
-            key={item.id}
-            whileHover={{ x: 5 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onViewChange(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${currentView === item.id ? 'bg-[var(--primary)]/10 text-theme' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`}
-          >
-            <item.icon className={`w-5 h-5 ${currentView === item.id ? 'text-theme' : 'group-hover:text-theme'}`} />
-            <span className="font-bold text-sm tracking-tight">{item.label}</span>
-            {currentView === item.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-theme shadow-theme"></div>}
-          </motion.button>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <p className="px-4 text-[10px] font-black text-slate-600 uppercase tracking-[0.3em] mb-4">Categories</p>
-        {categories.map((cat) => (
-          <motion.button 
-            key={cat.id}
-            whileHover={{ x: 5 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => onViewChange(AppRoute.CATEGORY, cat.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${selectedCategoryId === cat.id ? 'bg-[var(--primary)]/10 text-theme' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`}
-          >
-            <span className={`${selectedCategoryId === cat.id ? 'text-theme' : 'group-hover:text-theme'} shrink-0 transition-colors`}>
-              <cat.icon size={18} />
-            </span>
-            <span className="font-bold text-sm tracking-tight">{cat.label}</span>
-          </motion.button>
-        ))}
-      </div>
-
-      <div className="mt-auto space-y-4">
-        <button 
-          onClick={() => onViewChange(AppRoute.SETTINGS)}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${currentView === AppRoute.SETTINGS ? 'bg-[var(--primary)]/10 text-theme' : 'text-slate-400 hover:bg-slate-900 hover:text-white'}`}
-        >
-          <Settings className={`w-5 h-5 ${currentView === AppRoute.SETTINGS ? 'text-theme' : 'group-hover:text-theme'}`} />
-          <span className="font-bold text-sm tracking-tight">Settings</span>
-        </button>
-        
-        <div className="px-4 pb-4">
-          <button 
-            onClick={onProfileClick}
-            className="w-full text-left p-5 bg-slate-900/80 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group hover:border-theme/40 hover:-translate-y-2 hover:shadow-[0_20px_40px_var(--primary-glow)] transition-all active:scale-95 duration-500 card-float"
-          >
-            <div className="absolute inset-0 bg-theme/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="flex items-center gap-4 relative z-10 mb-3">
-              <div className="relative shrink-0">
-                <div className="w-10 h-10 rounded-full bg-theme/5 flex items-center justify-center text-theme border border-theme/20 shadow-[inset_0_0_10px_var(--primary-glow)] relative z-10 overflow-hidden">
-                  {currentChar.img ? (
-                    <img src={currentChar.img} alt={currentChar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
-                  ) : (
-                    <CurrentAvatarIcon size={16} />
-                  )}
-                </div>
-                <div className={`absolute inset-0 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20 opacity-40 group-hover:opacity-100 transition-opacity`}></div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Profile</span>
-                  <span className="text-[10px] font-black text-theme uppercase">LVL {user.level}</span>
-                </div>
-                <div className="text-[11px] font-orbitron font-bold text-white uppercase truncate">{user.username}</div>
-              </div>
-            </div>
-            <div className="space-y-2 relative z-10">
-              <div className="flex justify-between text-[8px] font-bold text-slate-500 uppercase tracking-wider items-center">
-                <span>EXP BAR</span>
-                <div className="flex items-center gap-1 font-black">
-                  <span className="text-white">{user.level}</span>
-                  <span className="text-theme opacity-50">→</span>
-                  <span className="text-slate-400">{user.level + 1}</span>
-                </div>
-              </div>
-              <div className="relative h-2 bg-black/60 rounded-full border border-white/5 overflow-hidden">
-                <div 
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-theme to-white/40 transition-all duration-1000 shadow-[0_0_10px_var(--primary-glow)]"
-                  style={{ width: `${Math.min(100, (user.exp / (user.level * 200)) * 100)}%` }}
-                ></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] pointer-events-none"></div>
-              </div>
-            </div>
-          </button>
+    <motion.div 
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+      initial={false}
+      animate={{ 
+        width: isExpanded ? 280 : 88,
+        x: 20,
+        y: 20,
+        height: 'calc(100% - 40px)'
+      }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className="fixed left-0 top-0 bg-black/60 backdrop-blur-3xl border border-white/10 z-50 flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2rem] m-5"
+    >
+      {/* Logo Section */}
+      <div className="p-6 pb-10">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-black shadow-[0_0_30px_rgba(255,255,255,0.3)] shrink-0 group cursor-pointer">
+            <Zap size={24} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+          </div>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="flex flex-col"
+              >
+                <span className="font-black text-xl text-white tracking-tighter leading-none italic whitespace-nowrap">
+                  CLASSROOM <span className="text-white/40">9X</span>
+                </span>
+                <span className="text-[7px] font-black text-white/30 uppercase tracking-[0.4em] mt-1 italic">ELITE GAMING</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-    </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 space-y-2">
+        {menuItems.map((item) => {
+          const isActive = currentView === item.id;
+          const isRed = 'color' in item && item.color === 'text-rose-500';
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                if ('action' in item && typeof item.action === 'function') {
+                  item.action();
+                } else {
+                  onViewChange(item.id);
+                }
+              }}
+              className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all group relative overflow-hidden ${
+                isActive 
+                  ? isRed ? 'bg-rose-500 text-white shadow-[0_0_30px_rgba(244,63,94,0.4)]' : 'bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.2)]' 
+                  : isRed ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10' : 'text-white/40 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className="w-6 flex items-center justify-center shrink-0 relative z-10">
+                <item.icon size={20} className={isActive ? isRed ? 'text-white' : 'text-black' : isRed ? 'text-rose-500/60 group-hover:text-rose-500 group-hover:scale-110 transition-all' : 'text-white/40 group-hover:text-white group-hover:scale-110 transition-all'} />
+              </div>
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="text-[11px] font-black uppercase tracking-[0.2em] italic whitespace-nowrap relative z-10"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Profile Section */}
+      <div className="p-3 mt-auto border-t border-white/10 bg-white/[0.02]">
+        <button 
+          onClick={onProfileClick}
+          className="w-full flex items-center gap-4 p-2 rounded-xl hover:bg-white/5 transition-all group"
+        >
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-black border border-white/20 overflow-hidden flex items-center justify-center text-white relative z-10 group-hover:scale-105 transition-transform shadow-2xl">
+              {currentChar.img ? (
+                <img src={currentChar.img} alt={currentChar.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <User size={20} />
+              )}
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-black shadow-[0_0_10px_rgba(16,185,129,0.8)] z-20" />
+          </div>
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="text-left flex-1 min-w-0"
+              >
+                <p className="text-[11px] font-black text-white uppercase tracking-tight truncate italic">{user.username}</p>
+                <p className="text-[8px] font-black text-white/30 uppercase tracking-widest truncate italic">LVL {user.level}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
+
+        <div className="flex flex-col gap-2 mt-6 px-2">
+          <div className="flex items-center gap-2 px-2 py-2 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981] shrink-0"></div>
+            <AnimatePresence mode="wait">
+              {isExpanded ? (
+                <motion.span 
+                  key="expanded-online"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="text-[9px] font-black text-white/40 tabular-nums uppercase tracking-widest whitespace-nowrap"
+                >
+                  {onlineCount} ONLINE
+                </motion.span>
+              ) : (
+                <motion.span 
+                  key="collapsed-online"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-[9px] font-black text-white/40 tabular-nums"
+                >
+                  {onlineCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          <div className="flex items-center gap-2 px-2 py-2 rounded-xl bg-white/[0.03] border border-white/5">
+            <AnimatePresence mode="wait">
+              {isExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="shrink-0"
+                >
+                  <Clock size={10} className="text-white/20" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <AnimatePresence mode="wait">
+              {isExpanded ? (
+                <motion.span 
+                  key="expanded-time"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="text-[9px] font-black text-white/40 tabular-nums uppercase tracking-widest whitespace-nowrap"
+                >
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </motion.span>
+              ) : (
+                <motion.span 
+                  key="collapsed-time"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-[10px] font-black text-white/40 tabular-nums w-full text-center"
+                >
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 };

@@ -1,135 +1,199 @@
 import React from 'react';
-import { Crown, ShieldAlert, Activity } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { CHARACTERS, BADGES } from '../constants';
+import { motion } from 'motion/react';
+import { Zap, Shield, Trophy, ChevronRight, Play, Star, Award, Rocket, Ghost, BrainCircuit, Bot } from 'lucide-react';
 
 export const Hero = ({ user, onBrowseLibrary }) => {
-  const currentAvatar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
-  const featuredBadge = BADGES.find(b => b.id === user.featuredBadgeId);
-
-  const heroImage = (() => {
-    switch (user.currentTheme) {
-      case 'spongebob': return 'https://cdni.fancaps.net/file/fancaps-tvimages/2891461.jpg';
-      case 'synthwave': return 'https://wallpapercave.com/wp/wp2324425.png';
-      case 'usa': return 'https://media1.tenor.com/m/f0_gejcWnfAAAAAd/freedom-america.gif';
-      case 'kanye': return 'https://images.genius.com/cd83ad3baf919c5d988894bec3d6ea74.1000x1000x1.jpg';
-      case 'retrofuture': return 'https://i.pinimg.com/originals/31/bf/7a/31bf7a5cf849cacc18b507e768060416.jpg';
-      case 'ironman': return 'https://i.imgflip.com/alh55z.jpg';
-      case 'hologram': return 'https://wallpaper.dog/large/20532228.jpg';
-      case 'galaxy': return 'https://tse2.mm.bing.net/th/id/OIP.XhwEntG7wYwGMXpfy7qHXgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3';
-      case 'gold': return 'https://imagedelivery.net/9sCnq8t6WEGNay0RAQNdvQ/clajv3uzq004bmr08oooao8lt_4/public';
-      default: return 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=2070&auto=format&fit=crop';
-    }
-  })();
-
-  const expProgress = (user.exp / (user.level * 200)) * 100;
-
-  const getRarityColor = (badge) => {
-    if (badge.color === 'rainbow') return 'text-white border-white/20 bg-white/5 shadow-[0_0_30px_rgba(255,255,255,0.2)]';
-    
-    switch (badge.rarity) {
-      case 'Mythic': return 'text-rose-500 border-rose-500/30 bg-rose-500/10 shadow-[0_0_20px_rgba(244,63,94,0.3)]';
-      case 'Legendary': return 'text-amber-500 border-amber-500/30 bg-amber-500/10 shadow-[0_0_20px_rgba(245,158,11,0.3)]';
-      case 'Epic': return 'text-purple-500 border-purple-500/30 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.3)]';
-      case 'Rare': return 'text-blue-500 border-blue-500/30 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.3)]';
-      case 'Uncommon': return 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.3)]';
-      case 'Common': return 'text-slate-400 border-slate-400/30 bg-slate-400/10';
-      default: return 'text-slate-400 border-slate-400/30 bg-slate-400/10';
-    }
-  };
-
-  const getRarityIconColor = (badge) => {
-    if (badge.color === 'rainbow') return '';
-    switch (badge.rarity) {
-      case 'Mythic': return '#f43f5e';
-      case 'Legendary': return '#f59e0b';
-      case 'Epic': return '#a855f7';
-      case 'Rare': return '#3b82f6';
-      case 'Uncommon': return '#10b981';
-      default: return '#94a3b8';
-    }
-  };
-
-  const rarityStyles = featuredBadge ? getRarityColor(featuredBadge) : 'text-theme bg-theme/10 border-theme/30 shadow-[0_0_20px_var(--primary-glow)]';
-
   return (
-    <section className="relative min-h-[400px] md:min-h-[500px] lg:h-[600px] rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl group bg-slate-950 transition-all duration-700 ease-out hover:shadow-theme/20 hover:border-theme/20 flex flex-col md:flex-row">
-      {/* Left Side: Content (Blank Background) */}
-      <div className="flex-1 flex flex-col justify-center px-6 md:px-20 py-10 md:py-0 space-y-6 md:space-y-8 z-10 relative bg-slate-950">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-8">
-          <motion.div 
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            className="relative shrink-0"
-          >
-            <div className={`w-20 h-20 md:w-32 md:h-32 rounded-full flex items-center justify-center text-theme relative z-10 transition-transform duration-500 group-hover:scale-105 overflow-hidden ${user.currentTheme !== 'spongebob' && user.currentTheme !== 'kanye' ? 'bg-slate-950 border border-theme/20 shadow-[inset_0_0_40px_var(--primary-glow)]' : ''}`}>
-              {currentAvatar.img ? (
-                <img src={currentAvatar.img} alt={currentAvatar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
-              ) : (
-                React.createElement(currentAvatar.icon, { size: 48 })
-              )}
-            </div>
-            <div className={`absolute inset-0 frame-${user.currentFrame || 'solar'} pointer-events-none z-20 scale-110`}></div>
-            <div className="absolute -bottom-1 -right-1 bg-theme text-slate-950 text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 md:py-1.5 rounded-lg md:rounded-xl border-2 md:border-4 border-slate-950 shadow-theme z-30">{user.level >= 999 ? 'MAX' : `LVL ${user.level}`}</div>
-          </motion.div>
-          <div className="flex-1 space-y-3 md:space-y-4 text-center md:text-left">
-            <div className={`flex items-center justify-center md:justify-start gap-2 md:gap-3 font-black uppercase tracking-[0.4em] text-[8px] md:text-[10px] border px-4 md:px-6 py-2 md:py-3 rounded-xl md:rounded-2xl w-fit mx-auto md:mx-0 group/badge cursor-default ${rarityStyles}`}>
-              {featuredBadge ? (
-                <>
-                  <div className="relative">
-                    <featuredBadge.icon size={14} className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} style={{ color: featuredBadge.color !== 'rainbow' ? getRarityIconColor(featuredBadge) : undefined }} />
-                  </div>
-                  <span className={featuredBadge.color === 'rainbow' ? 'mythic-rainbow-text' : ''}>TITLE: {featuredBadge.name}</span>
-                </>
-              ) : (
-                <>
-                  <ShieldAlert size={14} className="text-slate-600" />
-                  <span>NO TITLE EQUIPPED</span>
-                </>
-              )}
-            </div>
-            <h1 className="font-orbitron font-black text-3xl md:text-6xl italic leading-none text-white tracking-tighter uppercase">WELCOME <br/><span className="text-theme drop-shadow-theme">{user.username}</span></h1>
-          </div>
-        </div>
-        <div className="space-y-3 md:space-y-4 max-w-md mx-auto md:mx-0 w-full">
-          <div className="flex justify-between items-center text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-1">
-            <span>EXP PROGRESS</span>
-            <div className="flex items-center gap-2 md:gap-3">
-              <span className="text-white text-[10px] md:text-xs font-orbitron">{user.level}</span>
-              <span className="text-theme opacity-60">→</span>
-              <span className="text-slate-400 text-[10px] md:text-xs font-orbitron">{user.level + 1}</span>
-            </div>
-          </div>
-          <div className="exp-bar-container h-3 md:h-4">
-            <motion.div 
-              initial={{ width: 0 }}
-              animate={{ width: `${expProgress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="exp-bar-fill"
-            />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-[6px] md:text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">{user.level >= 999 ? 'MAX LEVEL REACHED' : `${Math.round(expProgress)}% COMPLETED`}</span>
-            </div>
-          </div>
-        </div>
-        <p className="text-slate-300 text-sm md:text-lg max-w-md font-medium text-center md:text-left">The elite unblocked library for high-performance browser gaming. Zero lag, zero blocks, pure gaming.</p>
-        <div className="flex flex-col sm:flex-row gap-4 pt-2">
-          <button onClick={onBrowseLibrary} className="bg-theme text-slate-950 px-8 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-xs md:text-sm transition-all hover:scale-105 hover:brightness-110 shadow-theme">Browse Library</button>
-        </div>
+    <section className="relative pt-40 pb-32 overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05)_0%,transparent_70%)]"></div>
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] animate-pulse"></div>
       </div>
 
-      {/* Right Side: Image (Square Container) */}
-      {user.settings.homeBanner && (
-        <div className="w-full md:w-[400px] lg:w-[600px] h-[300px] md:h-auto bg-slate-900/10 flex items-center justify-center overflow-hidden relative shrink-0 border-t md:border-t-0 md:border-l border-white/5">
-          <img 
-            className="w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-[2000ms] ease-out" 
-            alt="Home Banner" 
-            src={heroImage} 
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,255,0.03))] bg-[length:100%_4px,3px_100%] pointer-events-none opacity-10"></div>
-          <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(2,6,23,0.8)] pointer-events-none"></div>
+      <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="relative z-30 lg:pr-20"
+            >
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/5 mb-10 backdrop-blur-xl"
+              >
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]"></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/50">VOID NETWORK // PROTOCOL 4.5.0</span>
+              </motion.div>
+              
+              <div className="flex justify-center lg:justify-start items-center gap-x-1 sm:gap-x-2 md:gap-x-3 lg:gap-x-4 mb-8 w-full overflow-visible whitespace-nowrap">
+                {"CLASSROOM 9X".split("").map((char, charIdx) => (
+                  <motion.span
+                    key={charIdx}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 + charIdx * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                    className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter leading-none italic drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] ${char === ' ' ? 'w-3 sm:w-6' : ''}`}
+                    style={{
+                      backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px), radial-gradient(circle, #fff 1.5px, transparent 1.5px)',
+                      backgroundSize: '15px 15px, 25px 25px',
+                      backgroundPosition: '0 0, 5px 5px',
+                      WebkitBackgroundClip: 'text',
+                      textShadow: '0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.4)',
+                    }}
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+              </div>
+            
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1 }}
+              className="text-[10px] font-black text-white/40 uppercase tracking-[1em] italic mb-12 pl-2"
+            >
+              REWORKED EDITION
+            </motion.div>
+            
+            <p className="text-xl text-white/30 max-w-xl leading-relaxed mb-16 font-medium tracking-tight pl-2">
+              The premier unblocked gaming ecosystem. High-performance architecture, social integration, and a curated library of the finest titles.
+            </p>
+            
+            <div className="flex flex-wrap gap-8 items-center pl-2">
+              <motion.button 
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: '0 0 60px rgba(255,255,255,0.3)',
+                  backgroundColor: 'rgba(255,255,255,1)'
+                }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onBrowseLibrary}
+                className="inline-flex items-center justify-center gap-4 whitespace-nowrap text-sm font-black transition-all h-20 rounded-full px-16 bg-white/90 text-black uppercase tracking-[0.3em] shadow-[0_0_40px_rgba(255,255,255,0.1)] group italic"
+              >
+                EXPLORE GAME LIBRARY
+                <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+              </motion.button>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, x: 50 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            className="relative hidden lg:block lg:pl-12 min-h-[600px] flex items-center justify-center"
+          >
+            {/* Pulsing Magical Vine Line */}
+            <div className="absolute inset-0 flex items-center justify-center z-0">
+              <svg width="100%" height="100%" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                <motion.path
+                  d="M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray="10 10"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ 
+                    pathLength: 1, 
+                    opacity: [0.1, 0.4, 0.1],
+                    strokeWidth: [2, 6, 2],
+                    d: [
+                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500",
+                      "M350 120C320 170 270 70 220 320C170 570 120 470 70 520",
+                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
+                    ]
+                  }}
+                  transition={{ 
+                    pathLength: { duration: 3, ease: "easeInOut" },
+                    opacity: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                    strokeWidth: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                    d: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                  className="blur-[3px]"
+                />
+                <motion.path
+                  d="M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ 
+                    pathLength: 1, 
+                    opacity: [0.3, 0.8, 0.3],
+                    d: [
+                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500",
+                      "M350 120C320 170 270 70 220 320C170 570 120 470 70 520",
+                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
+                    ]
+                  }}
+                  transition={{ 
+                    pathLength: { duration: 3, ease: "easeInOut", delay: 0.5 },
+                    opacity: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                    d: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                />
+                {/* Magical Glow Points */}
+                {[0.1, 0.3, 0.5, 0.7, 0.9].map((pos, i) => (
+                  <motion.circle
+                    key={i}
+                    r="5"
+                    fill="white"
+                    initial={{ opacity: 0 }}
+                    animate={{ 
+                      opacity: [0, 1, 0],
+                      scale: [0.5, 2, 0.5],
+                      filter: ["blur(0px)", "blur(4px)", "blur(0px)"]
+                    }}
+                    transition={{ 
+                      duration: 2.5, 
+                      repeat: Infinity, 
+                      delay: i * 0.5,
+                      ease: "easeInOut" 
+                    }}
+                  >
+                    <animateMotion
+                      path="M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
+                      dur="12s"
+                      repeatCount="indefinite"
+                      rotate="auto"
+                      begin={`${i * 2.4}s`}
+                    />
+                  </motion.circle>
+                ))}
+              </svg>
+            </div>
+
+            {/* Floating Tips */}
+            <motion.div 
+              animate={{ y: [0, -15, 0], rotate: [0, 2, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-10 right-10 w-48 h-48 rounded-[3rem] bg-black/60 backdrop-blur-3xl border border-white/10 p-8 shadow-2xl flex flex-col items-center justify-center gap-3 z-20"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white border border-white/10">
+                <Trophy size={24} />
+              </div>
+              <span className="text-[9px] font-black text-white uppercase tracking-[0.2em] text-center">TOP RATED GAMES</span>
+            </motion.div>
+
+            <motion.div 
+              animate={{ y: [0, 15, 0], rotate: [0, -2, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute bottom-10 left-10 w-56 h-56 rounded-[4rem] bg-black/60 backdrop-blur-3xl border border-white/10 p-8 shadow-2xl z-20"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-white border border-white/10">
+                  <Shield size={20} />
+                </div>
+                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">SECURE ACCESS</span>
+              </div>
+              <p className="text-[10px] text-white/30 leading-relaxed font-medium uppercase tracking-wider">End-to-end encryption for all session data and user profiles.</p>
+            </motion.div>
+          </motion.div>
         </div>
-      )}
+      </div>
     </section>
   );
 };

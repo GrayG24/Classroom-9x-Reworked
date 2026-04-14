@@ -1,192 +1,119 @@
 import React from 'react';
-import { 
-  X, Crown, Trophy, Gamepad2, Award, Star, Heart, Layers, Target, 
-  Flame, Sparkles, Check
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { CHARACTERS, BADGES } from '../constants';
-import { DailyQuests } from './DailyQuests';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, User, Shield, Star, Settings, Award, History, Zap, Crown, Heart, Activity, Trophy, Flame, MessageSquare, Rocket, ChevronRight } from 'lucide-react';
+import { User as UserType } from '../types';
+import { CHARACTERS } from '../constants';
 
-export const ProfileModal = ({ 
-  user, 
-  quests,
-  onClaimQuestReward,
-  onSetFeaturedBadge,
-  onClose 
-}) => {
-  const currentChar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
+interface ProfileModalProps {
+  user: UserType;
+  onUpdateUser: (user: UserType) => void;
+  onClose: () => void;
+}
+
+export const ProfileModal: React.FC<ProfileModalProps> = ({ user, onUpdateUser, onClose }) => {
+  const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
+
+  const stats = [
+    { label: 'TOTAL EXP', value: user.score.toLocaleString(), icon: Zap, color: 'text-white', desc: 'Experience points earned' },
+    { label: 'BADGES', value: (user?.unlockedBadges?.length || 0), icon: Award, color: 'text-white', desc: 'Achievements unlocked' },
+    { label: 'FAVORITES', value: (user?.favorites?.length || 0), icon: Star, color: 'text-white', desc: 'Games in your library' }
+  ];
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
-        <motion.div 
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 lg:p-12">
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-slate-950/98 backdrop-blur-2xl"
-        ></motion.div>
+          className="absolute inset-0 bg-black/95 backdrop-blur-3xl"
+        />
         
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-5xl bg-slate-900 border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col md:flex-row h-[90vh] md:h-auto max-h-[90vh]"
-        >
-          <div className="w-full md:w-80 bg-slate-950/50 border-r border-white/5 p-8 flex flex-col items-center text-center">
-            <div className="relative mb-6 group">
-              <div className="w-32 h-32 rounded-full bg-theme/10 flex items-center justify-center text-theme border border-theme/20 shadow-[inset_0_0_30px_var(--primary-glow)] relative z-10 overflow-hidden">
-                {currentChar.img ? (
-                  <img src={currentChar.img} alt={currentChar.name} className={`w-full h-full object-cover ${user.currentTheme === 'spongebob' ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
-                ) : (
-                  React.createElement(currentChar.icon, { size: 48 })
-                )}
-              </div>
-              <div className={`absolute -inset-4 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20`}></div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 40 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 40 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-5xl bg-black/60 border border-white/10 rounded-[3rem] overflow-hidden shadow-[0_0_150px_rgba(0,0,0,0.8)] flex flex-col lg:flex-row h-[85vh] lg:h-auto max-h-[900px] backdrop-blur-3xl"
+          >
+            {/* Left Side - Identity */}
+            <div className="lg:w-[400px] bg-white/[0.02] p-12 flex flex-col items-center text-center relative overflow-hidden border-r border-white/10">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
               
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                className="absolute -inset-2 border-2 border-dashed border-theme/20 rounded-full"
-              ></motion.div>
-            </div>
-
-            <div className="space-y-1 mb-8">
-              <div className="flex items-center justify-center gap-2 text-theme mb-1">
-                <Sparkles size={14} />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Level {user.level} Profile</span>
-              </div>
-              <h2 className="text-3xl font-orbitron font-black text-white uppercase tracking-tighter">{user.username}</h2>
-              <p className="text-slate-500 text-xs font-medium px-4">{currentChar.desc}</p>
-            </div>
-
-            <div className="w-full space-y-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                  <span>Experience</span>
-                  <span className="text-theme">{user.exp} / {user.level * 200}</span>
+              <div className="relative mb-10 group">
+                <div className="absolute -inset-6 bg-white/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <div className="w-48 h-48 rounded-[3rem] bg-black border-2 border-white/10 overflow-hidden flex items-center justify-center text-white relative z-10 shadow-2xl transition-transform duration-700 group-hover:scale-105">
+                  {character.img ? (
+                    <img src={character.img} alt={character.name} className="w-full h-full object-cover transition-all duration-700" referrerPolicy="no-referrer" />
+                  ) : (
+                    <character.icon size={80} />
+                  )}
                 </div>
-                <div className="exp-bar-container h-4">
+                <div className={`absolute -inset-6 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20`}></div>
+                <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-white rounded-2xl flex items-center justify-center border-4 border-black shadow-2xl z-30">
+                  {user.isAdmin ? <Crown size={28} className="text-black" /> : <Shield size={28} className="text-black" />}
+                </div>
+              </div>
+
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic mb-2">{user.username}</h2>
+              <div className="flex items-center gap-3 text-[10px] font-black text-white/40 uppercase tracking-[0.4em] mb-10 italic">
+                <span>LVL {user.level}</span>
+                <div className="w-1 h-1 rounded-full bg-white/10"></div>
+                <span>{user.currentTitle}</span>
+              </div>
+
+              <div className="w-full space-y-3 mb-10">
+                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.2em] mb-1">
+                  <span className="text-white/20 italic">EXP SYNC</span>
+                  <span className="text-white tabular-nums">{user.exp.toLocaleString()} <span className="text-white/20">/</span> {(user.level * 1000).toLocaleString()}</span>
+                </div>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: `${(user.exp / (user.level * 200)) * 100}%` }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    className="exp-bar-fill"
-                  ></motion.div>
+                    animate={{ width: `${(user.exp / (user.level * 1000)) * 100}%` }}
+                    transition={{ duration: 1.5, ease: 'easeOut' }}
+                    className="h-full bg-white rounded-full shadow-[0_0_15px_white]"
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="text-[10px] font-black text-slate-500 uppercase mb-1">Games</div>
-                  <div className="text-xl font-orbitron font-bold text-white">{user.gamesPlayed || 0}</div>
-                </div>
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="text-[10px] font-black text-slate-500 uppercase mb-1">Badges</div>
-                  <div className="text-xl font-orbitron font-bold text-white">{user.unlockedBadges?.length || 0}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col overflow-hidden bg-slate-900/40">
-            <div className="p-8 border-b border-white/5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-theme/10 rounded-2xl flex items-center justify-center text-theme border border-theme/20">
-                  <Trophy size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-orbitron font-black text-white uppercase tracking-tight">Mission <span className="text-theme">Control</span></h3>
-                  <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Daily Objectives & Achievements</p>
-                </div>
-              </div>
               <button 
                 onClick={onClose}
-                className="p-3 hover:bg-white/5 rounded-2xl transition-colors text-slate-500 hover:text-white"
+                className="absolute top-6 left-6 p-2 rounded-xl bg-white/5 text-white/20 hover:text-white hover:bg-white/10 transition-all group"
               >
-                <X size={24} />
+                <X size={20} className="group-hover:rotate-90 transition-transform duration-500" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            {/* Right Side - Content */}
+            <div className="flex-1 p-12 overflow-y-auto custom-scrollbar bg-black/20">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                {stats.map((stat, i) => (
+                  <div key={i} className="p-6 rounded-[2.5rem] bg-white/[0.02] border border-white/5 group hover:border-white/20 hover:bg-white/[0.04] transition-all duration-500">
+                    <div className="flex items-center gap-5 mb-4">
+                      <div className={`w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center ${stat.color} border border-white/5 group-hover:scale-110 transition-transform duration-500`}>
+                        <stat.icon size={24} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{stat.label}</span>
+                      </div>
+                    </div>
+                    <p className="text-3xl font-black text-white italic tracking-tighter tabular-nums">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
               <div className="space-y-12">
-                <section>
-                  <div className="flex items-center gap-3 mb-6">
-                    <Target size={18} className="text-theme" />
-                    <h4 className="font-orbitron font-bold text-sm uppercase tracking-widest text-white">Daily Quests</h4>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-10 border-t border-white/5">
+                  <div className="flex items-center gap-3 text-white/20">
+                    <Activity size={14} />
+                    <span className="text-[9px] font-black uppercase tracking-[0.3em]">STATUS: OPTIMAL</span>
                   </div>
-                  <DailyQuests quests={quests} onClaimReward={onClaimQuestReward} />
-                </section>
-
-                <section>
-                  <div className="flex items-center gap-3 mb-6">
-                    <Crown size={18} className="text-theme" />
-                    <h4 className="font-orbitron font-bold text-sm uppercase tracking-widest text-white">Unlocked Badges</h4>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {[...BADGES].sort((a, b) => {
-                      const order = { 'Common': 0, 'Uncommon': 1, 'Rare': 2, 'Epic': 3, 'Legendary': 4, 'Mythic': 5 };
-                      return order[a.rarity] - order[b.rarity];
-                    }).map(badge => {
-                      const isUnlocked = user.unlockedBadges?.includes(badge.id);
-                      const isFeatured = user.featuredBadgeId === badge.id;
-                      const rarityColor = {
-                        'Common': 'text-slate-400',
-                        'Uncommon': 'text-emerald-500',
-                        'Rare': 'text-blue-500',
-                        'Epic': 'text-purple-500',
-                        'Legendary': 'text-amber-500',
-                        'Mythic': 'mythic-rainbow-text'
-                      }[badge.rarity] || 'text-slate-400';
-
-                      return (
-                        <motion.div 
-                          key={badge.id}
-                          whileHover={isUnlocked ? { y: -12, scale: 1.05, rotate: 1 } : {}}
-                          onClick={() => isUnlocked && onSetFeaturedBadge(badge.id)}
-                          className={`p-8 rounded-[3rem] border transition-all flex flex-col items-center text-center gap-5 relative overflow-hidden cursor-pointer group ${
-                            isUnlocked 
-                              ? `bg-slate-800/80 border-theme/40 shadow-[0_20px_50px_rgba(0,0,0,0.5)] ${badge.rarity === 'Mythic' ? 'mythic-card-glow' : ''}` 
-                              : 'bg-slate-950/40 border-white/5 opacity-40 grayscale cursor-not-allowed'
-                          }`}
-                        >
-                          {isFeatured && (
-                            <div className="absolute inset-0 bg-gradient-to-b from-theme/10 to-transparent pointer-events-none"></div>
-                          )}
-                          
-                          <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center relative z-10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 ${isUnlocked ? 'bg-slate-900 border border-theme/30 text-theme shadow-[0_0_30px_var(--primary-glow)]' : 'bg-slate-800 text-slate-600'}`}>
-                            <badge.icon size={40} className={badge.rarity === 'Mythic' ? 'animate-pulse' : ''} />
-                            {isUnlocked && (
-                              <div className="absolute inset-0 bg-theme/5 animate-pulse rounded-[2rem]"></div>
-                            )}
-                          </div>
-                          
-                          <div className="relative z-10 space-y-2">
-                            <div className="text-sm font-orbitron font-black text-white uppercase tracking-tight">{badge.name}</div>
-                            <div className={`text-[10px] font-black uppercase tracking-[0.3em] py-1 px-3 rounded-full bg-black/40 border border-white/5 w-fit mx-auto ${rarityColor}`}>{badge.rarity}</div>
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight opacity-80 max-w-[120px]">{badge.requirement}</div>
-                          </div>
-
-                          {isFeatured && (
-                            <div className="absolute top-4 right-4 bg-theme text-slate-950 p-1.5 rounded-xl shadow-theme">
-                              <Check size={12} strokeWidth={4} />
-                            </div>
-                          )}
-                          
-                          {isUnlocked && (
-                            <div className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity rotate-12">
-                              <badge.icon size={100} />
-                            </div>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </section>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
       </div>
     </AnimatePresence>
   );

@@ -1,20 +1,25 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Classroom 9x Games - Deployment Guide
 
-# Run and deploy your AI Studio app
+This project is built with React and Vite. To deploy it to GitHub Pages, you **must** deploy the compiled files, not the source code.
 
-This contains everything you need to run your app locally.
+## 🚀 Automated Deployment (Recommended)
 
-View your app in AI Studio: https://ai.studio/apps/40b81f5c-336b-43e9-a232-a635a63fd655
+I have set up a GitHub Action that automatically deploys your site whenever you push to the `main` branch.
 
-## Run Locally
+1. Go to your repository on GitHub.
+2. Click on **Settings** > **Pages**.
+3. Under **Build and deployment** > **Source**, select **GitHub Actions**.
+4. Now, every time you push code to `main`, your site will update automatically at `https://your-username.github.io/your-repo-name/`.
 
-**Prerequisites:**  Node.js
+## 🛠 Manual Deployment
 
+If you prefer to deploy manually:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Run `npm run deploy` in your terminal.
+2. This will build the project and push the `dist` folder to a `gh-pages` branch.
+3. In **Settings** > **Pages**, ensure the source is set to **Deploy from a branch** and the branch is `gh-pages`.
+
+## ⚠️ Common Errors
+
+- **"Unexpected token 'export'"**: This happens if you try to host the `src` folder directly. You must host the `dist` folder created after running `npm run build`.
+- **Blank Screen**: Ensure `base: './'` is set in `vite.config.ts` (I have already done this for you).

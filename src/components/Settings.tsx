@@ -1,291 +1,312 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Settings as SettingsIcon, Terminal, Monitor, MousePointer2, 
-  Sparkles, Check, AlertCircle, Volume2, Bell, Shield, 
-  RotateCcw, Cpu, Zap, Database, Battery, Activity
-} from 'lucide-react';
-import { FPSCounter } from './FPSCounter';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown } from 'lucide-react';
 
-export const Settings = ({ 
-  user, 
-  onUpdateSettings, 
-  onRedeemCode 
-}) => {
-  const [code, setCode] = useState('');
-  const [redeemResult, setRedeemResult] = useState(null);
-  const [volume, setVolume] = useState(80);
-  const [battery, setBattery] = useState({ level: 100, charging: false });
+export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onResetProgress, onUpdateUsername }) => {
+  const [redeemInput, setRedeemInput] = useState('');
+  const [activeTab, setActiveTab] = useState('interface');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [usernameInput, setUsernameInput] = useState(user.username);
 
-  useEffect(() => {
-    if ('getBattery' in navigator) {
-      navigator.getBattery().then(bat => {
-        const updateBattery = () => {
-          setBattery({
-            level: Math.round(bat.level * 100),
-            charging: bat.charging
-          });
-        };
-        updateBattery();
-        bat.addEventListener('levelchange', updateBattery);
-        bat.addEventListener('chargingchange', updateBattery);
-      });
+  const sections = [
+    {
+      id: 'interface',
+      title: 'INTERFACE SYSTEM',
+      icon: Monitor,
+      settings: [
+        { id: 'username', label: 'CHANGE USERNAME', description: 'Update your global identity across the void.', type: 'input' },
+        { id: 'showFPS', label: 'PERFORMANCE OVERLAY', description: 'Display real-time FPS and latency metrics.', type: 'toggle' },
+        { id: 'sidebarAutoHide', label: 'INTELLIGENT SIDEBAR', description: 'Automatically collapse sidebar when not in use.', type: 'toggle' },
+        { id: 'animatedBg', label: 'DYNAMIC BACKGROUND', description: 'Enable interactive particle effects and animations.', type: 'toggle' },
+        { id: 'backgroundEffects', label: 'VOID ATMOSPHERE', description: 'Enable advanced visual effects in the background.', type: 'toggle' },
+        { id: 'showChat', label: 'GLOBAL CHAT', description: 'Enable or disable the global communication channel.', type: 'toggle' },
+        { id: 'disableGlow', label: 'DISABLE GLOW', description: 'Turn off text and icon glow for a cleaner look.', type: 'toggle' },
+        { id: 'highContrast', label: 'HIGH CONTRAST', description: 'Increase visibility with sharper contrast.', type: 'toggle' },
+        { id: 'compactMode', label: 'COMPACT MODE', description: 'Reduce UI padding for a denser layout.', type: 'toggle' },
+        { id: 'showTooltips', label: 'SHOW TOOLTIPS', description: 'Display helpful hints when hovering over elements.', type: 'toggle' }
+      ]
+    },
+    {
+      id: 'privacy',
+      title: 'SECURITY PROTOCOL',
+      icon: Shield,
+      settings: [
+        { id: 'publicProfile', label: 'GLOBAL VISIBILITY', description: 'Allow your profile to be seen by other explorers.', type: 'toggle' },
+        { id: 'notifications', label: 'SYSTEM ALERTS', description: 'Receive notifications about updates and achievements.', type: 'toggle' }
+      ]
+    },
+    {
+      id: 'audio',
+      title: 'SONIC INTERFACE',
+      icon: Volume2,
+      settings: [
+        { id: 'soundEnabled', label: 'HAPTIC AUDIO', description: 'Enable auditory feedback for system interactions.', type: 'toggle' }
+      ]
+    },
+    {
+      id: 'beta',
+      title: 'BETA PROTOCOLS',
+      icon: Rocket,
+      settings: [
+        { id: 'experimentalAnimations', label: 'EXPERIMENTAL ANIMATIONS', description: 'Test new, high-performance UI transitions.', type: 'beta-toggle' },
+        { id: 'debugOverlay', label: 'DEBUG OVERLAY', description: 'Show detailed system performance and state data.', type: 'beta-toggle' },
+        { id: 'earlyAccessFeatures', label: 'EARLY ACCESS', description: 'Enable features currently in development.', type: 'beta-toggle' },
+        { id: 'aiChatAssistant', label: 'AI ASSISTANT', description: 'Enable the experimental neural chat assistant.', type: 'beta-toggle' }
+      ]
+    },
+    {
+      id: 'codes',
+      title: 'CODES',
+      icon: Key,
+      settings: []
     }
-  }, []);
-
-  const handleRedeem = (e) => {
-    e.preventDefault();
-    if (!code.trim()) return;
-    const result = onRedeemCode(code);
-    setRedeemResult(result);
-    if (result.success) setCode('');
-  };
-
-  const [showWipeConfirm, setShowWipeConfirm] = useState(false);
-
-  const handleReset = () => {
-    if (showWipeConfirm) {
-      localStorage.removeItem('classroom9x_local_profile_v4');
-      window.location.reload();
-    } else {
-      setShowWipeConfirm(true);
-      setTimeout(() => setShowWipeConfirm(false), 3000);
-    }
-  };
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center text-theme border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-theme/5 group-hover:bg-theme/10 transition-colors"></div>
-            <SettingsIcon size={32} className="relative z-10" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-theme animate-pulse"></div>
-              <span className="text-[10px] font-black text-theme uppercase tracking-[0.3em]">System Configuration</span>
-            </div>
-            <h2 className="font-orbitron font-black text-4xl uppercase tracking-tighter text-white italic">Settings</h2>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <div className="px-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3">
-            <Battery size={14} className={battery.charging ? "text-emerald-500" : "text-slate-500"} />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Power: {battery.level}% {battery.charging && "(Charging)"}</span>
-          </div>
-          <FPSCounter className="!bg-transparent !border-none !p-0" />
-          <div className="px-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl flex items-center gap-3">
-            <Cpu size={14} className="text-slate-500" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core: v4.2.0-Stable</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <section className="lg:col-span-2 space-y-8">
-          <div className="p-8 bg-slate-900/40 rounded-[2.5rem] border border-white/5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-              <Monitor size={120} />
-            </div>
-            
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-theme/10 rounded-xl text-theme">
-                <Monitor size={20} />
+    <div className="pb-40 animate-in fade-in slide-in-from-bottom-10 duration-1000">
+      <AnimatePresence>
+        {showResetConfirm && (
+          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowResetConfirm(false)}
+              className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-slate-950 border border-red-500/20 rounded-[2.5rem] p-10 shadow-[0_0_100px_rgba(239,68,68,0.1)]"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 mb-8">
+                <AlertTriangle size={32} />
               </div>
-              <h3 className="font-orbitron font-black text-lg text-white uppercase tracking-tight italic">Visual Interface</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button 
-                onClick={() => onUpdateSettings({ customCursor: !user.settings.customCursor })}
-                className={`flex flex-col gap-4 p-6 rounded-3xl border transition-all text-left ${user.settings.customCursor ? 'bg-slate-950 border-theme/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <MousePointer2 size={20} className={user.settings.customCursor ? 'text-theme' : 'text-slate-500'} />
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${user.settings.customCursor ? 'bg-theme' : 'bg-slate-800'}`}>
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${user.settings.customCursor ? 'left-6' : 'left-1'}`}></div>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-xs font-black text-white uppercase tracking-widest block">Custom Cursor</span>
-                  <span className="text-[10px] text-slate-500 uppercase mt-1 block">Enable high-precision neural pointer</span>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => onUpdateSettings({ animatedBg: !user.settings.animatedBg })}
-                className={`flex flex-col gap-4 p-6 rounded-3xl border transition-all text-left ${user.settings.animatedBg ? 'bg-slate-950 border-theme/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <Sparkles size={20} className={user.settings.animatedBg ? 'text-theme' : 'text-slate-500'} />
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${user.settings.animatedBg ? 'bg-theme' : 'bg-slate-800'}`}>
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${user.settings.animatedBg ? 'left-6' : 'left-1'}`}></div>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-xs font-black text-white uppercase tracking-widest block">Animated Grid</span>
-                  <span className="text-[10px] text-slate-500 uppercase mt-1 block">Render dynamic background geometry</span>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => onUpdateSettings({ notifications: !user.settings.notifications })}
-                className={`flex flex-col gap-4 p-6 rounded-3xl border transition-all text-left ${user.settings.notifications ? 'bg-slate-950 border-theme/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <Bell size={20} className={user.settings.notifications ? 'text-theme' : 'text-slate-500'} />
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${user.settings.notifications ? 'bg-theme' : 'bg-slate-800'}`}>
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${user.settings.notifications ? 'left-6' : 'left-1'}`}></div>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-xs font-black text-white uppercase tracking-widest block">System Notifications</span>
-                  <span className="text-[10px] text-slate-500 uppercase mt-1 block">Alerts for unlocks and level ups</span>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => onUpdateSettings({ homeBanner: !user.settings.homeBanner })}
-                className={`flex flex-col gap-4 p-6 rounded-3xl border transition-all text-left ${user.settings.homeBanner ? 'bg-slate-950 border-theme/50 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
-              >
-                <div className="flex items-center justify-between w-full">
-                   <Monitor size={20} className={user.settings.homeBanner ? 'text-theme' : 'text-slate-500'} />
-                  <div className={`w-10 h-5 rounded-full relative transition-colors ${user.settings.homeBanner ? 'bg-theme' : 'bg-slate-800'}`}>
-                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${user.settings.homeBanner ? 'left-6' : 'left-1'}`}></div>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-xs font-black text-white uppercase tracking-widest block">Home Banner</span>
-                  <span className="text-[10px] text-slate-500 uppercase mt-1 block">Toggle the featured image on the home page</span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <div className="p-8 bg-slate-900/40 rounded-[2.5rem] border border-white/5">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-theme/10 rounded-xl text-theme">
-                <Shield size={20} />
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-6">RESET PROGRESS?</h3>
+              <div className="space-y-4 text-slate-400 text-sm leading-relaxed mb-10 font-medium">
+                <p className="text-red-500 font-black uppercase tracking-widest text-[10px]">Warning: Critical Action</p>
+                <p>Are you absolutely sure you want to reset your progress?</p>
+                <p>This action will permanently erase ALL of your data, including:</p>
+                <ul className="list-disc list-inside space-y-1 text-white/60">
+                  <li>Levels</li>
+                  <li>Experience (XP)</li>
+                  <li>Unlocked items</li>
+                  <li>Game progress</li>
+                </ul>
+                <p className="text-red-500/60 italic">This cannot be undone.</p>
               </div>
-              <h3 className="font-orbitron font-black text-lg text-white uppercase tracking-tight italic">Security & Data</h3>
-            </div>
-
-            <div className="space-y-4">
-              <button 
-                onClick={() => onUpdateSettings({ performanceMode: !user.settings.performanceMode })}
-                className={`w-full flex items-center justify-between p-6 border rounded-2xl transition-all group ${user.settings.performanceMode ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg transition-transform duration-500 ${user.settings.performanceMode ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-500'}`}>
-                    <Activity size={20} />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-xs font-black text-white uppercase tracking-widest block">Performance Mode</span>
-                    <span className="text-[10px] text-slate-500 uppercase mt-1 block">Disable heavy visuals to reduce lag</span>
-                  </div>
-                </div>
-                <div className={`w-12 h-6 rounded-full relative transition-colors ${user.settings.performanceMode ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}>
-                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${user.settings.performanceMode ? 'left-7' : 'left-1'}`}></div>
-                </div>
-              </button>
-
-              <button 
-                onClick={() => onUpdateSettings({ lagNotifications: !user.settings.lagNotifications })}
-                className={`w-full flex items-center justify-between p-6 border rounded-2xl transition-all group ${user.settings.lagNotifications ? 'bg-theme/5 border-theme/20' : 'bg-slate-900/60 border-white/5 hover:border-white/10'}`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg transition-transform duration-500 ${user.settings.lagNotifications ? 'bg-theme/10 text-theme' : 'bg-slate-800 text-slate-500'}`}>
-                    <Zap size={20} />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-xs font-black text-white uppercase tracking-widest block">Lag Notifications</span>
-                    <span className="text-[10px] text-slate-500 uppercase mt-1 block">Notify when performance drops below threshold</span>
-                  </div>
-                </div>
-                <div className={`w-12 h-6 rounded-full relative transition-colors ${user.settings.lagNotifications ? 'bg-theme shadow-[0_0_10px_rgba(var(--theme-rgb),0.5)]' : 'bg-slate-800'}`}>
-                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${user.settings.lagNotifications ? 'left-7' : 'left-1'}`}></div>
-                </div>
-              </button>
-
-              <button 
-                onClick={handleReset}
-                className={`w-full flex items-center gap-4 p-6 border rounded-2xl transition-all group ${showWipeConfirm ? 'bg-rose-600 border-rose-400 animate-pulse' : 'bg-rose-500/5 hover:bg-rose-500/10 border-rose-500/20'}`}
-              >
-                <div className={`p-2 rounded-lg transition-transform duration-500 ${showWipeConfirm ? 'bg-white/20 text-white' : 'bg-rose-500/10 text-rose-500 group-hover:rotate-180'}`}>
-                  <RotateCcw size={20} />
-                </div>
-                <div className="text-left">
-                  <span className={`text-xs font-black uppercase tracking-widest block ${showWipeConfirm ? 'text-white' : 'text-rose-500'}`}>
-                    {showWipeConfirm ? 'ARE YOU SURE? CLICK AGAIN TO CONFIRM' : 'Wipe Local Profile'}
-                  </span>
-                  <span className={`text-[10px] uppercase mt-1 block ${showWipeConfirm ? 'text-white/80' : 'text-rose-500/60'}`}>
-                    {showWipeConfirm ? 'This action is irreversible.' : 'Reset all progress, favorites, and unlocks'}
-                  </span>
-                </div>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-8">
-          <div className="p-8 bg-slate-900/40 rounded-[2.5rem] border border-white/5 h-full">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-theme/10 rounded-xl text-theme">
-                <Terminal size={20} />
-              </div>
-              <h3 className="font-orbitron font-black text-lg text-white uppercase tracking-tight italic">Codes</h3>
-            </div>
-
-            <form onSubmit={handleRedeem} className="space-y-6">
-              <div className="p-6 bg-slate-950 rounded-2xl border border-white/5 space-y-4">
-                <p className="text-[10px] text-slate-500 uppercase tracking-widest leading-relaxed font-bold">Enter codes here to unlock cool items!</p>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    placeholder="ENTER CODE..." 
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl py-4 px-5 text-sm font-mono tracking-[0.2em] text-theme focus:outline-none focus:border-theme transition-all uppercase"
-                  />
-                </div>
+              <div className="flex gap-4">
                 <button 
-                  type="submit"
-                  className="w-full py-4 bg-theme text-slate-950 rounded-xl font-black text-xs uppercase tracking-[0.2em] hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-theme/20"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 py-4 rounded-xl bg-white/5 border border-white/10 text-white font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all italic"
                 >
-                  Enter
+                  CANCEL
+                </button>
+                <button 
+                  onClick={() => {
+                    onResetProgress();
+                    setShowResetConfirm(false);
+                  }}
+                  className="flex-1 py-4 rounded-xl bg-red-500 text-white font-black text-[10px] uppercase tracking-widest hover:bg-red-600 transition-all italic shadow-[0_0_30px_rgba(239,68,68,0.3)]"
+                >
+                  RESET DATA
                 </button>
               </div>
-
-              {redeemResult && (
-                <div className={`flex items-start gap-4 p-5 rounded-2xl border animate-in slide-in-from-top-2 duration-300 ${redeemResult.success ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/5 border-rose-500/20 text-rose-500'}`}>
-                  <div className="mt-0.5">
-                    {redeemResult.success ? <Check size={18} /> : <AlertCircle size={18} />}
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest block">{redeemResult.success ? 'Success' : 'Error'}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-tight opacity-80 leading-relaxed block">{redeemResult.message}</span>
-                  </div>
-                </div>
-              )}
-
-              {user.redeemedCodes && user.redeemedCodes.length > 0 && (
-                <div className="p-6 bg-slate-950/30 rounded-2xl border border-dashed border-white/10">
-                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Redeemed Codes</h4>
-                  <ul className="space-y-3">
-                    {user.redeemedCodes.map((c) => (
-                      <li key={c} className="flex items-center justify-between text-[9px] font-bold uppercase tracking-tighter">
-                        <span className="text-theme">{c}</span>
-                        <span className="text-slate-400">UNLOCKED</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </form>
+            </motion.div>
           </div>
-        </section>
-      </div>
+        )}
+      </AnimatePresence>
+
+      <section className="pt-32 pb-12 relative z-10">
+        <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-12 mb-20">
+            <div className="max-w-4xl">
+              <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md">
+                <Cpu size={16} className="text-white animate-pulse" />
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white/40 italic">CORE SYSTEM v3.0.0 // REWORKED</span>
+              </div>
+              <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tighter italic leading-none whitespace-nowrap">
+                SYSTEM <span className="text-white/20 drop-shadow-[0_0_60px_rgba(255,255,255,0.1)]">SETTINGS</span>
+              </h1>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Navigation Sidebar */}
+            <div className="lg:col-span-3">
+              <div className="p-4 bg-white/[0.03] rounded-[2.5rem] border border-white/10 backdrop-blur-3xl shadow-2xl space-y-2">
+                {sections.map(section => (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveTab(section.id)}
+                    className={`w-full flex items-center gap-4 px-6 py-5 rounded-2xl transition-all relative overflow-hidden group ${
+                      activeTab === section.id 
+                        ? 'text-black font-black' 
+                        : 'text-white/30 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {activeTab === section.id && (
+                      <motion.div 
+                        layoutId="active-settings-tab"
+                        className="absolute inset-0 bg-white shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                      />
+                    )}
+                    <section.icon size={20} className="relative z-10" />
+                    <span className="text-[11px] uppercase tracking-[0.2em] relative z-10 italic font-black">{section.id}</span>
+                  </button>
+                ))}
+              </div>
+              
+              <button 
+                onClick={() => setShowResetConfirm(true)}
+                className="w-full mt-8 py-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 font-black text-[9px] uppercase tracking-[0.3em] hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-3 italic"
+              >
+                <RefreshCw size={14} />
+                RESET PROGRESS
+              </button>
+            </div>
+
+            <div className="lg:col-span-9">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {activeTab === 'codes' ? (
+                    <div className="relative group">
+                      <div className="relative p-10 rounded-[3.5rem] bg-black/40 border border-white/10 backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500/20 to-transparent"></div>
+                        
+                        <div className="flex items-center gap-6 mb-10">
+                          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.2)]">
+                            <Key size={28} />
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">CODES</h3>
+                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mt-2 italic">ACCESS OVERRIDE ACTIVE</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-8">
+                          <div className="p-8 rounded-3xl bg-white/[0.03] border border-white/5 space-y-6">
+                            <p className="text-sm text-white/40 font-medium leading-relaxed uppercase tracking-widest text-[10px]">Enter a secure code to unlock exclusive system modules, themes, and neural avatars.</p>
+                            
+                            <div className="relative">
+                              <input
+                                type="text"
+                                value={redeemInput}
+                                onChange={(e) => setRedeemInput(e.target.value)}
+                                placeholder="ENTER CODE..."
+                                className="w-full h-16 px-8 bg-black border border-white/10 rounded-2xl text-white placeholder:text-white/10 focus:outline-none focus:border-rose-500/50 transition-all font-black uppercase tracking-widest italic"
+                              />
+                              <button 
+                                onClick={() => {
+                                  const result = onRedeemCode(redeemInput);
+                                  if (result.success) setRedeemInput('');
+                                }}
+                                className="absolute right-2 top-2 bottom-2 px-6 bg-rose-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-rose-600 transition-all italic"
+                              >
+                                VALIDATE
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5">
+                              <p className="text-[9px] font-black text-white/20 uppercase tracking-widest mb-2 italic">Known Codes</p>
+                              <p className="text-2xl font-black text-white italic">{(user.redeemedCodes || []).length}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    sections.filter(s => s.id === activeTab).map(section => (
+                      <div key={section.id} className="relative group">
+                        <div className="relative p-10 rounded-[3.5rem] bg-black/40 border border-white/10 backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] overflow-hidden">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                          
+                          <div className="flex items-center gap-6 mb-10">
+                            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-white border border-white/10">
+                              <section.icon size={28} />
+                            </div>
+                            <div>
+                              <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">{section.title}</h3>
+                              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mt-2 italic">MODULE ACTIVE</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            {section.settings.map(setting => (
+                              <div key={setting.id} className="p-6 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/20 transition-all flex items-center justify-between gap-6 group/item">
+                                <div className="flex-1">
+                                  <p className="text-lg font-black text-white uppercase tracking-tight italic mb-1">{setting.label}</p>
+                                  <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest italic">{setting.description}</p>
+                                </div>
+                                
+                                {setting.type === 'toggle' || setting.type === 'beta-toggle' ? (
+                                  <button
+                                    onClick={() => {
+                                      if (setting.type === 'beta-toggle') {
+                                        onUpdateSettings({ 
+                                          ...user.settings, 
+                                          betaFeatures: { 
+                                            ...user.settings.betaFeatures, 
+                                            [setting.id]: !user.settings.betaFeatures[setting.id] 
+                                          } 
+                                        });
+                                      } else {
+                                        onUpdateSettings({ ...user.settings, [setting.id]: !user.settings[setting.id] });
+                                      }
+                                    }}
+                                    className={`w-14 h-8 rounded-full p-1 transition-all relative shrink-0 ${
+                                      (setting.type === 'beta-toggle' ? user.settings.betaFeatures[setting.id] : user.settings[setting.id]) 
+                                        ? 'bg-white shadow-[0_0_20px_white]' 
+                                        : 'bg-white/10'
+                                    }`}
+                                  >
+                                    <motion.div
+                                      animate={{ x: (setting.type === 'beta-toggle' ? user.settings.betaFeatures[setting.id] : user.settings[setting.id]) ? 24 : 0 }}
+                                      className={`w-6 h-6 rounded-full shadow-2xl ${
+                                        (setting.type === 'beta-toggle' ? user.settings.betaFeatures[setting.id] : user.settings[setting.id]) 
+                                          ? 'bg-black' 
+                                          : 'bg-white/20'
+                                      }`}
+                                    />
+                                  </button>
+                                ) : (
+                                  <div className="flex items-center gap-3">
+                                    <input 
+                                      type="text"
+                                      value={usernameInput}
+                                      onChange={(e) => setUsernameInput(e.target.value)}
+                                      className="bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-white font-black text-xs uppercase tracking-widest focus:border-white/40 outline-none transition-all"
+                                    />
+                                    <button 
+                                      onClick={() => onUpdateUsername(usernameInput)}
+                                      className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                                    >
+                                      <RefreshCw size={16} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

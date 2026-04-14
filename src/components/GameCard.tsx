@@ -1,80 +1,62 @@
 import React from 'react';
-import { Play, Heart, Star, Flame } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
+import { Star, Zap, Pin, Play, Users, Trophy } from 'lucide-react';
 
-export const GameCard = ({ game, isFavorite, onToggleFavorite, onPlay }) => {
+export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      whileHover={{ y: -15, scale: 1.02, rotate: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="group relative bg-slate-900/40 rounded-[2.5rem] overflow-hidden border border-white/5 hover:border-theme/30 transition-all duration-1000 hover:shadow-[0_40px_80px_rgba(0,0,0,0.7)] card-float hover-lift"
-      id={`game-card-${game.id}`}
+      whileHover={{ y: -12, scale: 1.02 }}
+      className="group relative bg-slate-950/40 border border-white/10 rounded-[2rem] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
     >
-      <div className="aspect-[4/3] relative overflow-hidden">
-        <motion.img 
-          whileHover={{ scale: 1.1, rotate: 2 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+      <div className="aspect-[3/4] relative overflow-hidden" onClick={() => onClick(game)}>
+        <img 
           src={game.thumbnail} 
-          alt={game.title}
-          className="w-full h-full object-cover"
+          alt={game.title} 
+          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
         
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite] pointer-events-none"></div>
-
-        {game.isFeatured && (
-          <div className="absolute top-5 left-5 z-10">
-            <motion.div 
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="px-4 py-1.5 bg-theme text-slate-950 text-[10px] font-black uppercase rounded-xl shadow-[0_0_20px_var(--primary-glow)] flex items-center gap-2"
-            >
-              <Flame size={12} className="animate-bounce" />
-              HOT
-            </motion.div>
+        {/* Badges */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <div className="px-3 py-1.5 bg-black/60 backdrop-blur-xl rounded-xl flex items-center gap-2 border border-white/10 shadow-2xl">
+            <Star size={12} className="text-white fill-white" />
+            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">{game.rating}</span>
           </div>
-        )}
+        </div>
 
-        <div className="absolute top-5 right-5 z-10 flex flex-col gap-2 translate-x-16 group-hover:translate-x-0 transition-transform duration-500">
-          <button 
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(game.id); }}
-            className={`p-3 rounded-2xl backdrop-blur-xl border transition-all active:scale-90 ${isFavorite ? 'bg-rose-500 text-white border-rose-400 shadow-[0_0_25px_rgba(244,63,94,0.6)] scale-110' : 'bg-slate-950/60 text-white border-white/10 hover:bg-slate-950 hover:border-theme/50 hover:scale-110'}`}
-          >
-            <Heart size={20} className={`${isFavorite ? 'fill-current animate-pulse' : ''} transition-all`} />
-          </button>
+        {/* Play Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-75 group-hover:scale-100">
+          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-black shadow-[0_0_40px_rgba(255,255,255,0.4)]">
+            <Play size={24} fill="currentColor" className="ml-1" />
+          </div>
         </div>
       </div>
 
-      <div className="p-8 space-y-4">
+      <div className="p-6 bg-black/40 border-t border-white/5" onClick={() => onClick(game)}>
+        <h3 className="font-black text-lg text-white uppercase tracking-tighter italic leading-none mb-2 truncate group-hover:text-white transition-colors">{game.title}</h3>
         <div className="flex items-center justify-between">
-          <div className="px-3 py-1 bg-white/5 border border-white/5 rounded-lg">
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{game.category}</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-theme">
-            <Star size={14} fill="currentColor" className="drop-shadow-[0_0_5px_var(--primary-glow)]" />
-            <span className="text-sm font-black font-orbitron">{game.rating}</span>
+          <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">{game.category || 'ACTION'}</span>
+          <div className="flex items-center gap-1.5">
+            <Users size={10} className="text-white/20" />
+            <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.1em] italic">1.2K</span>
           </div>
         </div>
-        <h3 className="font-orbitron font-black text-2xl text-white uppercase tracking-tighter group-hover:text-theme transition-colors line-clamp-1 leading-none">{game.title}</h3>
-        <p className="text-slate-400 text-xs line-clamp-2 leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity font-medium">{game.description}</p>
-        
-        <motion.button 
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onPlay(game)}
-          className="w-full py-4 bg-slate-800 hover:bg-theme text-slate-400 hover:text-slate-950 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group/btn shadow-lg btn-hover-effect"
-        >
-          <Play size={14} fill="currentColor" className="group-hover/btn:scale-110 transition-transform" />
-          Play Now
-        </motion.button>
       </div>
-      
-      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-theme to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-1000"></div>
-      <button onClick={() => onPlay(game)} className="absolute inset-0 z-0 w-full h-full text-left bg-transparent border-none appearance-none cursor-pointer"></button>
+
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          onTogglePin(game.id);
+        }}
+        className={`absolute top-4 right-4 p-3 rounded-xl border transition-all duration-500 z-20 ${
+          isPinned 
+            ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.4)]' 
+            : 'bg-black/60 text-white/40 border-white/10 hover:bg-white/10 hover:text-white opacity-0 group-hover:opacity-100 backdrop-blur-xl'
+        }`}
+      >
+        <Pin size={14} className={isPinned ? 'fill-current' : ''} />
+      </button>
     </motion.div>
   );
 };

@@ -1,367 +1,285 @@
-import React from 'react';
-import { 
-  Palette, PanelsTopLeft, Eye, Lock, Check, 
-  Crown, User, Zap, Ghost, Bot, ZapOff, Sparkles, Star, Shield, Layers
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Palette, Shield, Layers, Bot, User, ChevronRight, Check, Crown, Sparkles, Activity, Zap, Lock } from 'lucide-react';
 import { CHARACTERS } from '../constants';
 
-export const Customization = ({
-  user,
-  onSetTheme,
-  onSetFrame,
-  onSetBanner,
-  onSetCharacter,
-  onSetCustomTheme
-}) => {
+export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
+  const [activeTab, setActiveTab] = useState('identity');
+  const [tempUsername, setTempUsername] = useState(user.username);
+
   const themes = [
-    { id: 'cyan', color: '#22d3ee', name: 'Cyan', level: 1 },
-    { id: 'emerald', color: '#34d399', name: 'Emerald', level: 10 },
-    { id: 'violet', color: '#a78bfa', name: 'Violet', level: 15 },
-    { id: 'cobalt', color: '#3b82f6', name: 'Cobalt', level: 20 },
-    { id: 'gold', color: 'linear-gradient(135deg, #FFF7AD, #FFD700, #B8860B)', name: 'Gold', level: 75 },
-    { id: 'galaxy', color: 'linear-gradient(135deg, #c084fc, #818cf8, #ec4899)', name: 'Galaxy', level: 100 },
-    { id: 'hologram', color: '#00ffff', name: 'Hologram', special: true, isCode: true },
-    { id: 'rainbow', color: 'linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet)', name: 'Rainbow', special: true, isCode: true },
-    { id: 'ironman', color: '#ef4444', name: 'Ironman', isCode: true },
-    { id: 'spongebob', color: '#facc15', name: 'Spongebob', isCode: true },
-    { id: 'kanye', color: '#d8b4fe', name: 'Graduation', isCode: true },
-    { id: 'synthwave', color: '#ff00ff', name: 'Synthwave', isCode: true, special: true },
-    { id: 'usa', color: 'linear-gradient(to right, #ef4444, #ffffff, #3b82f6)', name: 'USA', isCode: true, special: true },
-    { id: 'retrofuture', color: '#f59e0b', name: 'Retro Future', isCode: true, special: true },
-    { id: 'tester', color: '#3b82f6', name: 'Tester', isCode: true, special: true },
-    { id: 'owner', color: 'linear-gradient(135deg, #facc15, #eab308)', name: 'Owner', isCode: true, special: true },
+    { id: 'void', name: 'VOID_PROTOCOL', primary: '#ffffff', bg: '#000000', desc: 'The original darkness.', level: 1 },
+    { id: 'black-white', name: 'MONOCHROME', primary: '#ffffff', bg: '#000000', desc: 'High contrast binary.', level: 1 },
+    { id: 'cyan', name: 'CYBERPUNK', primary: '#06b6d4', bg: '#083344', desc: 'Neon digital landscape.', level: 1 },
+    { id: 'emerald', name: 'MATRIX', primary: '#10b981', bg: '#064e3b', desc: 'Follow the white rabbit.', level: 10 },
+    { id: 'rose', name: 'VAPORWAVE', primary: '#f43f5e', bg: '#4c0519', desc: 'Aesthetic retro-future.', level: 25 },
+    { id: 'gold', name: 'ROYAL_GOLD', primary: '#fbbf24', bg: '#451a03', desc: 'Prestige and power.', isCode: true },
   ];
 
   const frames = [
-    { id: 'obsidian', name: 'Standard', level: 1 },
-    { id: 'default', name: 'Outline', level: 5 },
-    { id: 'neon', name: 'Neon Pulse', level: 10 },
-    { id: 'solar', name: 'Solar Flare', level: 60 },
-    { id: 'interstellar', name: 'Void Drifter', level: 100 },
-    { id: 'glitch', name: 'Glitch', isCode: true },
-    { id: 'hologram', name: 'Hologram', isCode: true },
-    { id: 'deep-sea', name: 'Deep Sea', isCode: true },
-    { id: 'diamond', name: 'Diamond', isCode: true },
-    { id: 'cyberpunk', name: 'Cyberpunk', isCode: true },
-    { id: 'matrix', name: 'Matrix', isCode: true },
-    { id: 'tester', name: 'Tester', isCode: true },
-    { id: 'owner', name: 'Owner', isCode: true },
-    { id: 'usa', name: 'USA', isCode: true, special: true },
+    { id: 'obsidian', name: 'OBSIDIAN', rarity: 'Common', level: 1 },
+    { id: 'neon', name: 'NEON_PULSE', rarity: 'Rare', level: 5 },
+    { id: 'emerald', name: 'EMERALD', rarity: 'Rare', level: 15 },
+    { id: 'gold', name: 'ROYAL_GOLD', rarity: 'Epic', level: 30 },
   ];
 
-  const characters = CHARACTERS;
+  const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
 
   return (
-    <div className="space-y-16 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-end justify-between gap-6"
-      >
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 bg-theme/10 rounded-[2rem] flex items-center justify-center text-theme border border-theme/20 shadow-[0_0_30px_var(--primary-glow)]">
-            <Sparkles size={32} />
+    <div className="min-h-screen pt-40 pb-40 relative overflow-hidden">
+      {/* Background Accents */}
+      <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full -z-10 animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full -z-10 animate-pulse delay-1000"></div>
+
+      <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-16">
+          {/* Navigation Sidebar */}
+          <div className="lg:w-80 shrink-0">
+            <div className="flex flex-col gap-12">
+              <div>
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex items-center gap-4 mb-6"
+                >
+                  <div className="w-3 h-3 bg-primary animate-pulse"></div>
+                  <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-primary">VISUAL_ENGINE // v2.1</span>
+                </motion.div>
+                <h1 className="text-8xl font-black text-white uppercase tracking-tighter italic leading-none">
+                  STYLE <br />
+                  <span className="text-white/20">LABS</span>
+                </h1>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {[
+                  { id: 'identity', label: 'Neural Identity', icon: User, desc: 'Avatar & Signature' },
+                  { id: 'visuals', label: 'Color Protocols', icon: Palette, desc: 'System Themes' },
+                  { id: 'frames', label: 'Neural Frames', icon: Layers, desc: 'Profile Borders' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-6 px-8 py-6 rounded-[2rem] transition-all relative overflow-hidden group ${
+                      activeTab === tab.id 
+                        ? 'bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)]' 
+                        : 'text-white/40 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <tab.icon size={24} className="relative z-10" />
+                    <div className="text-left relative z-10">
+                      <p className="text-[11px] font-black uppercase tracking-[0.2em] italic leading-none mb-1">{tab.label}</p>
+                      <p className={`text-[8px] font-bold uppercase tracking-widest ${activeTab === tab.id ? 'text-black/40' : 'text-white/20'}`}>{tab.desc}</p>
+                    </div>
+                    {activeTab === tab.id && (
+                      <motion.div 
+                        layoutId="active-style-pill"
+                        className="absolute inset-0 bg-white"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div>
-            <h2 className="font-orbitron font-black text-4xl uppercase italic tracking-tighter text-white leading-none">
-              Customize <span className="text-theme">Classroom 9x</span>
-            </h2>
-            <p className="text-slate-500 font-black text-[10px] uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-theme animate-pulse"></span>
-              Customize Classroom 9x however you'd like
-            </p>
+
+          {/* Content Area */}
+          <div className="flex-1">
+            <AnimatePresence mode="wait">
+              {activeTab === 'identity' && (
+                <motion.div
+                  key="identity"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="grid grid-cols-1 xl:grid-cols-12 gap-12"
+                >
+                  <div className="xl:col-span-7 space-y-10">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">NEURAL_AVATARS</h3>
+                      <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{CHARACTERS.length} MODULES_AVAILABLE</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                      {CHARACTERS.map((char) => {
+                        const isUnlocked = user?.unlockedCharacters?.includes(char.id) || false;
+                        const isSelected = user.currentCharacter === char.id;
+                        return (
+                          <button
+                            key={char.id}
+                            disabled={!isUnlocked}
+                            onClick={() => onUpdateUser({ ...user, currentCharacter: char.id })}
+                            className={`aspect-square rounded-3xl p-2 transition-all relative group overflow-hidden ${
+                              isSelected 
+                                ? 'bg-white ring-4 ring-white/20 shadow-[0_0_40px_rgba(255,255,255,0.2)]' 
+                                : isUnlocked 
+                                  ? 'bg-white/[0.03] border border-white/10 hover:border-white/30' 
+                                  : 'bg-black/40 opacity-20 grayscale cursor-not-allowed'
+                            }`}
+                          >
+                            {char.img ? (
+                              <img src={char.img} alt={char.name} className="w-full h-full object-cover rounded-2xl group-hover:scale-110 transition-transform duration-500" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-white/10">
+                                <char.icon size={32} />
+                              </div>
+                            )}
+                            {isSelected && (
+                              <div className="absolute top-3 right-3 w-8 h-8 bg-black rounded-xl flex items-center justify-center border border-white/20 shadow-2xl">
+                                <Check size={16} className="text-white" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="xl:col-span-5">
+                    <div className="bg-white/[0.02] border border-white/10 rounded-[4rem] p-12 flex flex-col items-center justify-center text-center space-y-10 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      
+                      <div className="relative">
+                        <div className="w-56 h-56 rounded-[3.5rem] bg-black border-2 border-white/20 p-4 relative z-10 overflow-hidden shadow-2xl">
+                          {character.img ? (
+                            <img src={character.img} alt="Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/10">
+                              <character.icon size={64} />
+                            </div>
+                          )}
+                        </div>
+                        <div className={`absolute -inset-6 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20`}></div>
+                        <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-black shadow-2xl z-30 border-4 border-black">
+                          <Crown size={24} />
+                        </div>
+                      </div>
+
+                      <div className="w-full space-y-10">
+                        <div className="relative group">
+                          <input 
+                            type="text"
+                            value={tempUsername}
+                            onChange={(e) => setTempUsername(e.target.value)}
+                            className="w-full bg-white/5 border-2 border-white/10 rounded-3xl px-8 py-6 text-center text-4xl font-black text-white uppercase tracking-tighter italic focus:outline-none focus:border-white/40 transition-all shadow-inner"
+                            placeholder="ENTER NEW IDENTITY..."
+                          />
+                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic">NEURAL_SIGNATURE_OVERRIDE</p>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-4 flex justify-center">
+                          <button 
+                            onClick={() => onUpdateUsername(tempUsername)}
+                            disabled={tempUsername.trim() === user.username || !tempUsername.trim()}
+                            className="px-16 py-6 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all disabled:opacity-10 disabled:scale-100 italic shadow-[0_0_50px_rgba(255,255,255,0.2)]"
+                          >
+                            UPDATE_IDENTITY
+                          </button>
+                        </div>
+
+                        <div className="flex items-center justify-center gap-6 pt-4">
+                          <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+                            <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Level</p>
+                            <p className="text-sm font-black text-white italic">{user.level}</p>
+                          </div>
+                          <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5">
+                            <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Title</p>
+                            <p className="text-sm font-black text-white italic">{user.currentTitle}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'visuals' && (
+                <motion.div
+                  key="visuals"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                >
+                  {themes.map((theme) => {
+                    const isUnlocked = user?.unlockedThemes?.includes(theme.id) || theme.id === 'void';
+                    const isSelected = user.currentTheme === theme.id;
+                    return (
+                      <button
+                        key={theme.id}
+                        disabled={!isUnlocked}
+                        onClick={() => onUpdateUser({ ...user, currentTheme: theme.id })}
+                        className={`group relative p-10 rounded-[3rem] text-left transition-all overflow-hidden ${
+                          isSelected 
+                            ? 'bg-white text-black shadow-[0_30px_60px_rgba(255,255,255,0.1)]' 
+                            : isUnlocked
+                              ? 'bg-white/[0.02] border border-white/10 hover:border-white/30 hover:bg-white/[0.04]'
+                              : 'bg-black/40 opacity-20 grayscale cursor-not-allowed'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-8">
+                          <div className="w-16 h-16 rounded-2xl border-4 border-black/10 shadow-2xl" style={{ backgroundColor: theme.primary }}></div>
+                          {isSelected && <Sparkles size={24} className="text-black/20" />}
+                          {!isUnlocked && <Lock size={20} className="text-white/20" />}
+                        </div>
+                        <h4 className="text-2xl font-black uppercase tracking-tighter italic mb-2">{theme.name}</h4>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest leading-relaxed ${isSelected ? 'text-black/40' : 'text-white/20'}`}>{theme.desc}</p>
+                        
+                        {isUnlocked && !isSelected && (
+                          <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
+                            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20">PROTOCOL_READY</span>
+                            <ChevronRight size={14} className="text-white/20 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+
+              {activeTab === 'frames' && (
+                <motion.div
+                  key="frames"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                >
+                  {frames.map((frame) => {
+                    const isUnlocked = user.unlockedFrames.includes(frame.id);
+                    const isSelected = user.currentFrame === frame.id;
+                    return (
+                      <button
+                        key={frame.id}
+                        disabled={!isUnlocked}
+                        onClick={() => onUpdateUser({ ...user, currentFrame: frame.id })}
+                        className={`group relative p-10 rounded-[3rem] text-left transition-all overflow-hidden ${
+                          isSelected 
+                            ? 'bg-white text-black shadow-[0_30px_60px_rgba(255,255,255,0.1)]' 
+                            : isUnlocked
+                              ? 'bg-white/[0.02] border border-white/10 hover:border-white/30 hover:bg-white/[0.04]'
+                              : 'bg-black/40 opacity-20 grayscale cursor-not-allowed'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-8">
+                          <div className={`w-16 h-16 rounded-2xl border-4 border-black/10 shadow-2xl frame-${frame.id}`}></div>
+                          {!isUnlocked && <Lock size={20} className="text-white/20" />}
+                        </div>
+                        <h4 className="text-2xl font-black uppercase tracking-tighter italic mb-2">{frame.name}</h4>
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${isSelected ? 'bg-black/10 text-black/60' : 'bg-white/5 text-white/40'}`}>{frame.rarity}</span>
+                          <span className={`text-[9px] font-bold uppercase tracking-widest ${isSelected ? 'text-black/40' : 'text-white/20'}`}>LVL {frame.level}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
-      </motion.div>
-
-      <div className="grid grid-cols-1 gap-16">
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-slate-900/40 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-theme/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-          <div className="flex items-center gap-6 mb-10">
-            <div className="p-3 bg-theme/10 rounded-2xl text-theme border border-theme/20 shadow-[0_0_20px_var(--primary-glow)]">
-              <User size={24} />
-            </div>
-            <div>
-              <h3 className="font-orbitron font-black text-2xl uppercase tracking-tight text-white italic">Profile <span className="text-theme">Avatars</span></h3>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Select your profile avatar</p>
-            </div>
-            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-6">
-            {(characters || []).filter(char => !char.isCode || (user.unlockedCharacters || []).includes(char.id)).map((char, index) => {
-              const isUnlocked = (user.unlockedCharacters || []).includes(char.id) || char.level <= user.level;
-              const isActive = user.currentCharacter === char.id;
-              return (
-                <motion.button 
-                  key={char.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => isUnlocked && onSetCharacter(char.id)}
-                  className={`group relative flex flex-col items-center gap-4 p-6 rounded-[2.5rem] border transition-all duration-500 ${isActive ? 'bg-slate-800/80 border-theme shadow-[0_0_40px_var(--primary-glow)]' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} ${!isUnlocked && 'opacity-50 grayscale cursor-not-allowed'} active:scale-95`}
-                >
-                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center relative overflow-hidden ${isActive ? 'bg-theme/10 shadow-[inset_0_0_20px_var(--primary-glow)]' : 'bg-slate-800/50'}`}>
-                    {char.img ? (
-                      <img src={char.img} alt={char.name} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${!isUnlocked ? 'opacity-30' : ''} ${user.currentTheme === 'spongebob' && isActive ? 'animate-float' : ''}`} referrerPolicy="no-referrer" />
-                    ) : (
-                      React.createElement(char.icon, { size: 32, className: isActive ? 'text-theme' : 'text-slate-400' })
-                    )}
-                    {char.id === 'patriot' && isUnlocked && (
-                      <div className="absolute top-1 right-1">
-                        <Star size={12} className="text-amber-500 animate-pulse" />
-                      </div>
-                    )}
-                    {!isUnlocked && (
-                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
-                        <Lock size={24} className="text-white" />
-                        <span className="text-[9px] font-black text-white uppercase">LVL {char.level}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <span className={`text-[10px] font-orbitron font-black tracking-tight block truncate w-full max-w-[100px] uppercase italic ${isActive ? 'text-theme' : 'text-slate-400'}`}>{char.name}</span>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.section>
-
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-slate-900/40 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-theme/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-          <div className="flex items-center gap-6 mb-10">
-            <div className="p-3 bg-theme/10 rounded-2xl text-theme border border-theme/20 shadow-[0_0_20px_var(--primary-glow)]">
-              <Shield size={24} />
-            </div>
-            <div>
-              <h3 className="font-orbitron font-black text-2xl uppercase tracking-tight text-white italic">Profile <span className="text-theme">Frames</span></h3>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Select your profile frame</p>
-            </div>
-            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-6">
-            {(frames || []).filter(frame => !frame.isCode || (user.unlockedFrames || []).includes(frame.id)).map((frame, index) => {
-              const isUnlocked = (user.unlockedFrames || []).includes(frame.id) || frame.level <= user.level;
-              const isActive = user.currentFrame === frame.id;
-              return (
-                <motion.button 
-                  key={frame.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => isUnlocked && onSetFrame(frame.id)}
-                  className={`group relative flex flex-col items-center gap-4 p-6 rounded-[2.5rem] border transition-all duration-500 ${isActive ? 'bg-slate-800/80 border-theme shadow-[0_0_40px_var(--primary-glow)]' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} ${!isUnlocked && 'opacity-50 grayscale cursor-not-allowed'} active:scale-95`}
-                >
-                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center relative ${isActive ? 'bg-theme/10' : 'bg-slate-800/50'}`}>
-                    {isUnlocked ? (
-                      <div className="relative w-12 h-12">
-                        <div className="absolute inset-0 bg-slate-700/50 rounded-full flex items-center justify-center text-slate-500">
-                          <User size={20} />
-                        </div>
-                        <div className={`absolute inset-0 frame-${frame.id} pointer-events-none opacity-100`}></div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2">
-                        <Lock size={24} className="text-slate-600" />
-                        <span className="text-[9px] font-black text-slate-500">LVL {frame.level}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <span className={`text-[10px] font-orbitron font-black tracking-tight block truncate w-full max-w-[100px] uppercase italic ${isActive ? 'text-theme' : 'text-slate-400'}`}>{frame.name}</span>
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.section>
-
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-slate-900/40 border border-white/5 rounded-[3rem] p-10 relative overflow-hidden group"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-theme/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-          <div className="flex items-center gap-6 mb-10">
-            <div className="p-3 bg-theme/10 rounded-2xl text-theme border border-theme/20 shadow-[0_0_20px_var(--primary-glow)]">
-              <Palette size={24} />
-            </div>
-            <div>
-              <h3 className="font-orbitron font-black text-2xl uppercase tracking-tight text-white italic">Visual <span className="text-theme">Themes</span></h3>
-              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Select your website theme</p>
-            </div>
-            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-6">
-            {(themes || []).filter(theme => !theme.isCode || (user.unlockedThemes || []).includes(theme.id)).map((theme, index) => {
-              const isUnlocked = (user.unlockedThemes || []).includes(theme.id) || theme.level <= user.level;
-              const isActive = user.currentTheme === theme.id;
-              return (
-                <motion.button 
-                  key={theme.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => isUnlocked && onSetTheme(theme.id)}
-                  className={`group relative flex flex-col items-center gap-4 p-6 rounded-[2.5rem] border transition-all duration-500 ${isActive ? 'bg-slate-800/80 border-theme shadow-[0_0_40px_var(--primary-glow)]' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} ${!isUnlocked && 'opacity-50 grayscale cursor-not-allowed'} active:scale-95`}
-                >
-                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center relative overflow-hidden ${isActive ? 'bg-theme/10 shadow-[inset_0_0_20px_var(--primary-glow)]' : 'bg-slate-800/50'}`}>
-                    {isUnlocked ? (
-                      <div className="w-12 h-12 rounded-xl shadow-2xl flex items-center justify-center text-white/50" style={{ background: theme.color }}>
-                        <Palette size={20} />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2">
-                        <Lock size={24} className="text-slate-600" />
-                        <span className="text-[9px] font-black text-slate-500">LVL {theme.level}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <span className={`text-[10px] font-orbitron font-black tracking-tight block truncate w-full max-w-[100px] uppercase italic ${isActive ? 'text-theme' : 'text-slate-400'}`}>{theme.name}</span>
-                  </div>
-                  {theme.special && isUnlocked && (
-                    <div className="absolute top-2 right-2">
-                      <Zap size={12} className="text-theme animate-pulse" />
-                    </div>
-                  )}
-                </motion.button>
-              );
-            })}
-
-            {user.level >= 100 && (
-              <motion.button 
-                onClick={() => onSetTheme('custom')}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                className={`group relative flex flex-col items-center gap-4 p-6 rounded-[2.5rem] border transition-all duration-500 ${user.currentTheme === 'custom' ? 'bg-slate-800/80 border-theme shadow-[0_0_40px_var(--primary-glow)]' : 'bg-slate-900/40 border-white/5 hover:border-white/20'} active:scale-95`}
-              >
-                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center relative overflow-hidden ${user.currentTheme === 'custom' ? 'bg-theme/10 shadow-[inset_0_0_20px_var(--primary-glow)]' : 'bg-slate-800/50'}`}>
-                  <div className="w-12 h-12 rounded-xl shadow-2xl flex items-center justify-center text-white/50 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
-                    <Star size={20} />
-                  </div>
-                </div>
-                <div className="text-center">
-                  <span className={`text-[10px] font-orbitron font-black tracking-tight block truncate w-full max-w-[100px] uppercase italic ${user.currentTheme === 'custom' ? 'text-theme' : 'text-slate-400'}`}>Custom</span>
-                  <div className="mt-2 flex items-center justify-center gap-1.5 min-h-[12px]">
-                    {user.currentTheme === 'custom' ? (
-                      <span className="text-[8px] font-black text-theme uppercase tracking-widest">Active</span>
-                    ) : (
-                      <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Level 100+</span>
-                    )}
-                  </div>
-                </div>
-                <div className="absolute top-2 right-2">
-                  <Sparkles size={12} className="text-theme animate-pulse" />
-                </div>
-              </motion.button>
-            )}
-          </div>
-
-          {user.currentTheme === 'custom' && user.level >= 100 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-10 bg-slate-950/80 rounded-[3rem] border border-theme/30 shadow-2xl space-y-10 backdrop-blur-3xl"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-theme/10 rounded-2xl text-theme border border-theme/20">
-                    <Palette size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-orbitron font-black text-2xl text-white uppercase italic tracking-tight">Theme <span className="text-theme">Architect</span></h4>
-                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mt-1">Design your unique visual interface</p>
-                  </div>
-                </div>
-                <div className="px-4 py-2 bg-theme/10 rounded-xl border border-theme/20">
-                   <span className="text-[10px] font-black text-theme uppercase tracking-widest">Master Control</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                <div className="space-y-6 p-6 bg-slate-900/40 rounded-3xl border border-white/5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Sparkles size={16} className="text-theme" />
-                    <label className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Primary Accent</label>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="relative group">
-                      <input 
-                        type="color" 
-                        value={user.customTheme?.primary || '#3b82f6'} 
-                        onChange={(e) => {
-                          onSetCustomTheme({
-                            ...user.customTheme,
-                            primary: e.target.value,
-                            glow: `${e.target.value}99`
-                          });
-                        }}
-                        className="w-16 h-16 rounded-2xl bg-slate-950 border-2 border-white/10 cursor-pointer overflow-hidden transition-transform group-hover:scale-110"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="font-mono text-sm text-white font-bold uppercase">{user.customTheme?.primary || '#3b82f6'}</span>
-                      <span className="text-[9px] font-bold text-slate-500 uppercase">Main UI Color</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-6 p-6 bg-slate-900/40 rounded-3xl border border-white/5">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Layers size={16} className="text-theme" />
-                    <label className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Background Base</label>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="relative group">
-                      <input 
-                        type="color" 
-                        value={user.customTheme?.bg || '#020617'} 
-                        onChange={(e) => {
-                          onSetCustomTheme({
-                            ...user.customTheme,
-                            bg: e.target.value
-                          });
-                        }}
-                        className="w-16 h-16 rounded-2xl bg-slate-950 border-2 border-white/10 cursor-pointer overflow-hidden transition-transform group-hover:scale-110"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="font-mono text-sm text-white font-bold uppercase">{user.customTheme?.bg || '#020617'}</span>
-                      <span className="text-[9px] font-bold text-slate-500 uppercase">System Background</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col justify-center gap-4">
-                  <button 
-                    onClick={() => onSetTheme('custom')}
-                    className="w-full py-6 bg-theme text-slate-950 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:brightness-110 transition-all shadow-2xl shadow-theme/20 active:scale-95"
-                  >
-                    Apply Architecture
-                  </button>
-                  <p className="text-[9px] font-bold text-slate-600 text-center uppercase tracking-widest leading-relaxed">Changes are applied globally to all neural interfaces</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </motion.section>
       </div>
     </div>
   );
