@@ -66,23 +66,26 @@ export const InteractiveBackground = ({ enabled = true }) => {
         />
       ))}
 
-      {/* Reactive Dust Particles */}
-      {[...Array(15)].map((_, i) => {
-        const initialX = Math.random() * 100;
-        const initialY = Math.random() * 100;
-        return (
-          <motion.div
-            key={`dust-${i}`}
-            className="absolute w-1 h-1 bg-white/10 rounded-full"
-            style={{
-              left: `${initialX}%`,
-              top: `${initialY}%`,
-              x: useSpring(mouseX, { damping: 50 + i * 2, stiffness: 20 + i }),
-              y: useSpring(mouseY, { damping: 50 + i * 2, stiffness: 20 + i }),
-            }}
-          />
-        );
-      })}
+  // Simplified dust particles without hook violation
+      {[...Array(10)].map((_, i) => (
+        <motion.div
+          key={`dust-${i}`}
+          className="absolute w-1 h-1 bg-white/5 rounded-full"
+          animate={{
+            y: [0, -20, 0],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            repeat: Infinity,
+            delay: Math.random() * 2
+          }}
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+          }}
+        />
+      ))}
     </div>
   );
 };

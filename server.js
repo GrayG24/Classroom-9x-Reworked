@@ -40,7 +40,7 @@ async function startServer() {
   const wss = new WebSocketServer({ server });
   const clients = new Set();
 
-  const isProd = process.env.NODE_ENV === 'production';
+  const isProd = process.env.NODE_ENV === 'production' && fs.existsSync(path.join(__dirname, 'dist'));
   console.log('Starting server. Mode:', isProd ? 'production' : 'development');
 
   app.use(cors());
@@ -431,37 +431,18 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  let vite;
   if (!isProd) {
     console.log('Initializing Vite in middleware mode...');
-    try {
-      vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'spa',
-        root: process.cwd(),
-      });
-      app.use(vite.middlewares);
-    } catch (err) {
-      console.error('Failed to initialize Vite:', err);
-    }
-  }
-
-  if (isProd) {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+      root: process.cwd(),
+    });
+    app.use(vite.middlewares);
+  } else {
     app.use(express.static(path.join(__dirname, 'dist')));
     app.get('*', (req, res) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-    });
-  } else {
-    app.use('*', async (req, res, next) => {
-      const url = req.originalUrl;
-      try {
-        let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
-        template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
-      } catch (e) {
-        vite?.ssrFixStacktrace(e);
-        next(e);
-      }
     });
   }
 
