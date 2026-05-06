@@ -43,22 +43,6 @@ async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
   console.log('Starting server. Mode:', isProd ? 'production' : 'development');
 
-  let vite;
-  if (!isProd) {
-    console.log('Initializing Vite in middleware mode (custom)...');
-    try {
-      vite = await createViteServer({
-        server: { middlewareMode: true },
-        appType: 'custom',
-        root: process.cwd(),
-      });
-      app.use(vite.middlewares);
-      console.log('Vite middleware attached at top of stack.');
-    } catch (err) {
-      console.error('Failed to initialize Vite:', err);
-    }
-  }
-
   app.use(cors());
   app.use(express.json());
 
@@ -89,6 +73,9 @@ async function startServer() {
   let totalGamesPlayed = 0;
 
   const apiRouter = express.Router();
+  
+  // Registering API router early
+  app.use('/api', apiRouter);
 
   apiRouter.get('/ping', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
@@ -398,13 +385,7 @@ async function startServer() {
     res.json({ success: true });
   });
 
-  app.use('/api', apiRouter);
-
-  app.all('/api/*', (req, res) => {
-    console.warn(`API route not found: ${req.method} ${req.url}`);
-    res.status(404).json({ error: 'API route not found', method: req.method, path: req.url });
-  });
-
+  // --- WEB SOCKETS ---
   wss.on('connection', (ws) => {
     clients.add(ws);
     console.log('New client connected');
@@ -448,6 +429,22 @@ async function startServer() {
       console.log('Client disconnected');
     });
   });
+
+  // Vite middleware for development
+  let vite;
+  if (!isProd) {
+    console.log('Initializing Vite in middleware mode...');
+    try {
+      vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+        root: process.cwd(),
+      });
+      app.use(vite.middlewares);
+    } catch (err) {
+      console.error('Failed to initialize Vite:', err);
+    }
+  }
 
   if (isProd) {
     app.use(express.static(path.join(__dirname, 'dist')));

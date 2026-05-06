@@ -25,8 +25,8 @@ export const InitialNameModal = ({ onSubmit, error }) => {
             <User size={32} fill="currentColor" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight italic">CREATE IDENTITY</h2>
-            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Enter your username to begin</p>
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight italic">CHOOSE USERNAME</h2>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Enter your name to begin</p>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ export const InitialNameModal = ({ onSubmit, error }) => {
             disabled={name.trim().length < 3}
             className="w-full py-4 bg-white text-black font-black rounded-xl hover:bg-zinc-200 active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(255,255,255,0.2)]"
           >
-            INITIALIZE <ChevronRight size={16} />
+            START <ChevronRight size={16} />
           </button>
         </form>
 

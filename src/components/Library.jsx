@@ -26,7 +26,7 @@ export const Library = ({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
         <div>
           <h1 className="text-5xl font-black text-white uppercase tracking-tighter italic mb-2">GAME LIBRARY</h1>
-          <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.5em] italic">ACCESSING ALL NODES</p>
+          <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.5em] italic">{games.length} TOTAL GAMES</p>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
@@ -53,7 +53,7 @@ export const Library = ({
               : 'bg-white/[0.02] text-white/30 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/[0.05]'
           }`}
         >
-          ALL NODES
+          ALL GAMES
         </button>
         {categories.map(cat => (
           <button
@@ -70,7 +70,7 @@ export const Library = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {filteredGames.map((game) => (
           <SimpleGameCard
             key={game.id}
@@ -96,33 +96,60 @@ export const Library = ({
 const SimpleGameCard = ({ game, isFavorite, isPinned, onToggleFavorite, onTogglePin, onPlay }) => {
   return (
     <motion.div
-      whileHover={{ y: -8 }}
-      className="group relative aspect-[3/4] rounded-3xl overflow-hidden bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all cursor-pointer"
+      whileHover={{ y: -12, scale: 1.02 }}
+      className="group relative aspect-[16/10] rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all cursor-pointer shadow-2xl"
       onClick={onPlay}
     >
       <img
         src={game.thumbnail || game.image}
         alt={game.title}
-        className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-500"
+        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
         referrerPolicy="no-referrer"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
       
-      <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+      {/* Dynamic Overlay */}
+      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-10">
+        <div className="transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 delay-100">
+          <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] mb-3 italic">
+            {game.category.replace('_', ' ')}
+          </p>
+          <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none truncate">
+            {game.title}
+          </h3>
+          
+          <div className="flex items-center gap-4 mt-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-300">
+            <div className="px-4 py-2 bg-white/5 rounded-full border border-white/10 flex items-center gap-2">
+              <Zap size={10} className="text-white/40" />
+              <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">START GAME</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute top-8 right-8 flex gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite(game.id);
           }}
-          className={`p-2 rounded-xl backdrop-blur-md border border-white/10 ${isFavorite ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-black/40 text-white/40 hover:text-white'}`}
+          className={`w-12 h-12 rounded-2xl backdrop-blur-xl border flex items-center justify-center transition-all ${
+            isFavorite 
+              ? 'bg-rose-500 border-rose-500 text-white shadow-[0_0_30px_rgba(244,63,94,0.4)]' 
+              : 'bg-black/40 border-white/10 text-white/40 hover:text-white hover:border-white/30'
+          }`}
         >
-          <Star size={16} fill={isFavorite ? "currentColor" : "none"} />
+          <Star size={20} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
-
-      <div className="absolute inset-x-0 bottom-0 p-6">
-        <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1 italic">{game.category.replace('_', ' ')}</p>
-        <h3 className="text-sm font-black text-white uppercase tracking-tight truncate italic">{game.title}</h3>
+      
+      {/* Status Bar */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-white/5 overflow-hidden">
+        <motion.div 
+          initial={{ x: '-100%' }}
+          whileHover={{ x: '100%' }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          className="w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        />
       </div>
     </motion.div>
   );

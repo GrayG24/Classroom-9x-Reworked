@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Hero } from './Hero';
 import { GameCard } from './GameCard';
 import { Tilt } from './Tilt';
-import { CHARACTERS } from '../constants';
+import { CHARACTERS, BADGES } from '../constants';
 
 const ProfileWidget = ({ user, onProfileClick }) => {
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || (CHARACTERS && CHARACTERS.length > 0 ? CHARACTERS[0] : { name: 'Unknown', icon: User, img: null });
   const nextLevelExp = user.level * 1000;
   const progress = (user.exp / nextLevelExp) * 100;
+  const unlockedBadges = BADGES.filter(b => (user.unlockedBadges || []).includes(b.id));
   
   return (
     <motion.div 
@@ -37,7 +38,15 @@ const ProfileWidget = ({ user, onProfileClick }) => {
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-3xl font-black text-white truncate uppercase tracking-tighter italic leading-none">{user.username}</h4>
+            <div className="flex items-center gap-3">
+              <h4 className="text-3xl font-black text-white truncate uppercase tracking-tighter italic leading-none">{user.username}</h4>
+              <div className="flex gap-1">
+                {unlockedBadges.slice(0, 3).map(badge => (
+                  <badge.icon key={badge.id} size={14} style={{ color: badge.color }} className={badge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} />
+                ))}
+                {unlockedBadges.length > 3 && <span className="text-[8px] font-black text-white/20">+{unlockedBadges.length - 3}</span>}
+              </div>
+            </div>
             <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic">{user.currentTitle}</span>
           </div>
           
@@ -51,7 +60,7 @@ const ProfileWidget = ({ user, onProfileClick }) => {
               />
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">EXP SYNC: {user.exp} / {nextLevelExp}</span>
+              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">EXPERIENCE: {user.exp} / {nextLevelExp}</span>
               <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">{Math.round(progress)}%</span>
             </div>
           </div>
@@ -323,7 +332,7 @@ export const Home = ({
                     className="hidden xl:flex flex-col items-end gap-12"
                   >
                     <div className="text-right p-10 bg-black/60 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl">
-                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">Rotation Reset In</p>
+                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">DAILY REFRESH IN</p>
                       <CountdownTimer />
                     </div>
                   </motion.div>
@@ -340,27 +349,26 @@ export const Home = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <ProfileWidget user={user} onProfileClick={onProfileClick} />
             
-            <motion.button 
+            <motion.div 
               whileHover={{ y: -8, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onLeaderboardClick}
-              className="p-8 bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] flex items-center justify-between group hover:border-white/40 transition-all shadow-[0_30px_60px_rgba(0,0,0,0.4)] relative overflow-hidden"
+              className="p-8 bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] flex items-center justify-between group grayscale opacity-60 transition-all shadow-2xl relative overflow-hidden cursor-not-allowed"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20 backdrop-blur-sm">
+                <div className="px-6 py-2 bg-white text-black font-black text-[10px] uppercase tracking-[0.5em] italic rounded-full shadow-[0_0_30px_rgba(255,255,255,0.5)]">
+                  COMING SOON
+                </div>
+              </div>
               <div className="flex items-center gap-8 relative z-10">
-                <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center text-white border border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)] group-hover:scale-110 group-hover:rotate-12 group-hover:bg-white/10 transition-all duration-700">
-                  <Trophy size={48} className="group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
+                <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center text-white border border-white/10">
+                  <Trophy size={48} />
                 </div>
                 <div className="text-left">
                   <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2 block italic">COMPETITIVE ARENA</span>
-                  <h4 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">GLOBAL <span className="text-white/40">HALL OF FAME</span></h4>
-                  <p className="text-[10px] font-bold text-white/10 mt-4 uppercase tracking-[0.2em] italic">View top ranking nodes across the void</p>
+                  <h4 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">GLOBAL <span className="text-white/40">LEADERBOARD</span></h4>
+                  <p className="text-[10px] font-bold text-white/10 mt-4 uppercase tracking-[0.2em] italic">See who is the best in the world</p>
                 </div>
               </div>
-              <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:text-white group-hover:bg-white/10 transition-all duration-500 border border-white/5">
-                <ChevronRight size={28} />
-              </div>
-            </motion.button>
+            </motion.div>
           </div>
         </div>
       </section>

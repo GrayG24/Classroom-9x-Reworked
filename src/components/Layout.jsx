@@ -49,14 +49,16 @@ export const Layout = ({
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-white overflow-x-hidden font-sans">
       {/* Global Background Effects */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.03),transparent_70%)]"></div>
-        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse delay-1000"></div>
-        
-        {/* Subtle Scanline Effect */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none opacity-20"></div>
-      </div>
+      {user?.settings?.backgroundEffects && (
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.03),transparent_70%)]"></div>
+          <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse delay-1000"></div>
+          
+          {/* Subtle Scanline Effect */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none opacity-20"></div>
+        </div>
+      )}
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed top-0 left-0 bottom-0 z-50">
@@ -102,7 +104,10 @@ export const Layout = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ 
+                duration: user?.settings?.betaFeatures?.experimentalAnimations ? 0.2 : 0.4, 
+                ease: [0.16, 1, 0.3, 1] 
+              }}
             >
               {user?.settings?.showFPS && (
                 <div key="fps-widget" className={`fixed bottom-6 z-[100] hidden md:block transition-all duration-500 ${user?.isAdmin ? 'right-28' : 'right-6'}`}>

@@ -11,52 +11,26 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
   const sections = [
     {
       id: 'interface',
-      title: 'INTERFACE SYSTEM',
+      title: 'APP SETTINGS',
       icon: Monitor,
       settings: [
-        { id: 'username', label: 'CHANGE USERNAME', description: 'Update your global identity across the void.', type: 'input' },
-        { id: 'showFPS', label: 'PERFORMANCE OVERLAY', description: 'Display real-time FPS and latency metrics.', type: 'toggle' },
-        { id: 'sidebarAutoHide', label: 'INTELLIGENT SIDEBAR', description: 'Automatically collapse sidebar when not in use.', type: 'toggle' },
-        { id: 'animatedBg', label: 'DYNAMIC BACKGROUND', description: 'Enable interactive particle effects and animations.', type: 'toggle' },
-        { id: 'backgroundEffects', label: 'VOID ATMOSPHERE', description: 'Enable advanced visual effects in the background.', type: 'toggle' },
-        { id: 'showChat', label: 'GLOBAL CHAT', description: 'Enable or disable the global communication channel.', type: 'toggle' },
-        { id: 'disableGlow', label: 'DISABLE GLOW', description: 'Turn off text and icon glow for a cleaner look.', type: 'toggle' },
-        { id: 'highContrast', label: 'HIGH CONTRAST', description: 'Increase visibility with sharper contrast.', type: 'toggle' },
-        { id: 'compactMode', label: 'COMPACT MODE', description: 'Reduce UI padding for a denser layout.', type: 'toggle' },
-        { id: 'showTooltips', label: 'SHOW TOOLTIPS', description: 'Display helpful hints when hovering over elements.', type: 'toggle' }
+        { id: 'showFPS', label: 'PERFORMANCE COUNTER', description: 'Show FPS in the corner of your screen.', type: 'toggle' },
+        { id: 'sidebarAutoHide', label: 'COLLAPSIBLE MENU', description: 'Hide the side menu when not in use.', type: 'toggle' },
+        { id: 'animatedBg', label: 'MOVING BACKGROUND', description: 'Animated effects on the home screen.', type: 'toggle' },
+        { id: 'disableGlow', label: 'FLAT UI', description: 'Remove glowing effects from icons and text.', type: 'toggle' }
       ]
     },
     {
       id: 'privacy',
-      title: 'SECURITY PROTOCOL',
-      icon: Shield,
+      title: 'NOTIFICATIONS',
+      icon: Bell,
       settings: [
-        { id: 'publicProfile', label: 'GLOBAL VISIBILITY', description: 'Allow your profile to be seen by other explorers.', type: 'toggle' },
-        { id: 'notifications', label: 'SYSTEM ALERTS', description: 'Receive notifications about updates and achievements.', type: 'toggle' }
-      ]
-    },
-    {
-      id: 'audio',
-      title: 'SONIC INTERFACE',
-      icon: Volume2,
-      settings: [
-        { id: 'soundEnabled', label: 'HAPTIC AUDIO', description: 'Enable auditory feedback for system interactions.', type: 'toggle' }
-      ]
-    },
-    {
-      id: 'beta',
-      title: 'BETA PROTOCOLS',
-      icon: Rocket,
-      settings: [
-        { id: 'experimentalAnimations', label: 'EXPERIMENTAL ANIMATIONS', description: 'Test new, high-performance UI transitions.', type: 'beta-toggle' },
-        { id: 'debugOverlay', label: 'DEBUG OVERLAY', description: 'Show detailed system performance and state data.', type: 'beta-toggle' },
-        { id: 'earlyAccessFeatures', label: 'EARLY ACCESS', description: 'Enable features currently in development.', type: 'beta-toggle' },
-        { id: 'aiChatAssistant', label: 'AI ASSISTANT', description: 'Enable the experimental neural chat assistant.', type: 'beta-toggle' }
+        { id: 'notifications', label: 'POPUP ALERTS', description: 'Show alerts for achievements and updates.', type: 'toggle' }
       ]
     },
     {
       id: 'codes',
-      title: 'CODES',
+      title: 'PROMO CODES',
       icon: Key,
       settings: []
     }
@@ -225,82 +199,91 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                       </div>
                     </div>
                   ) : (
-                    sections.filter(s => s.id === activeTab).map(section => (
-                      <div key={section.id} className="relative group">
-                        <div className="relative p-10 rounded-[3.5rem] bg-black/40 border border-white/10 backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] overflow-hidden">
-                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    <div className="space-y-8">
+                      {activeTab === 'interface' && (
+                        <div className="relative group overflow-hidden rounded-[3.5rem] bg-black/40 border border-white/10 backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] p-10">
+                          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
                           
-                          <div className="flex items-center gap-6 mb-10">
-                            <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-white border border-white/10">
-                              <section.icon size={28} />
+                          <div className="flex items-center gap-8 mb-10">
+                            <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center border border-cyan-500/20 shadow-[0_0_30px_rgba(34,211,238,0.2)]">
+                              <User size={32} />
                             </div>
                             <div>
-                              <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">{section.title}</h3>
-                              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mt-2 italic">MODULE ACTIVE</p>
+                              <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-none">CHANGE USERNAME</h3>
+                              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.5em] mt-3 italic">UPDATE PROFILE</p>
                             </div>
                           </div>
 
-                          <div className="space-y-4">
+                          <div className="flex flex-col gap-6">
+                            <div className="relative">
+                              <input 
+                                type="text"
+                                value={usernameInput}
+                                onChange={(e) => setUsernameInput(e.target.value)}
+                                placeholder="ENTER NEW IDENTITY..."
+                                className="w-full h-16 bg-white/[0.03] border border-white/10 rounded-2xl px-8 text-white font-black text-lg uppercase tracking-widest focus:border-white/40 focus:bg-white/[0.05] outline-none transition-all italic"
+                              />
+                            </div>
+                            <button 
+                              onClick={() => onUpdateUsername(usernameInput)}
+                              className="w-full py-6 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(255,255,255,0.1)] italic"
+                            >
+                              ENTER
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {sections.filter(s => s.id === activeTab).map(section => (
+                      <div key={section.id} className="relative group">
+                        <div className="relative p-10 rounded-[3.5rem] bg-black/40 border border-white/10 backdrop-blur-3xl shadow-[0_40px_80px_rgba(0,0,0,0.5)] overflow-hidden">
+                          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                          
+                          <div className="flex items-center gap-8 mb-12">
+                            <div className="w-20 h-20 rounded-3xl flex items-center justify-center border-2 bg-white/5 text-white border-white/10">
+                              <section.icon size={40} />
+                            </div>
+                            <div>
+                              <h3 className="font-black text-white uppercase tracking-tighter italic leading-none text-2xl">{section.title}</h3>
+                              <p className="font-black uppercase tracking-[0.6em] mt-3 italic text-white/20 text-[9px]">MODULE ACTIVE</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-6">
                             {section.settings.map(setting => (
-                              <div key={setting.id} className="p-6 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/20 transition-all flex items-center justify-between gap-6 group/item">
+                              <div key={setting.id} className="rounded-[2rem] bg-white/[0.03] border border-white/5 hover:border-white/20 transition-all flex items-center justify-between gap-8 group/item p-6">
                                 <div className="flex-1">
-                                  <p className="text-lg font-black text-white uppercase tracking-tight italic mb-1">{setting.label}</p>
-                                  <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest italic">{setting.description}</p>
+                                  <p className="font-black text-white uppercase tracking-tight italic mb-2 text-lg">{setting.label}</p>
+                                  <p className="text-white/20 font-bold uppercase tracking-widest italic text-[10px]">{setting.description}</p>
                                 </div>
                                 
-                                {setting.type === 'toggle' || setting.type === 'beta-toggle' ? (
+                                {setting.type === 'toggle' ? (
                                   <button
-                                    onClick={() => {
-                                      if (setting.type === 'beta-toggle') {
-                                        onUpdateSettings({ 
-                                          ...user.settings, 
-                                          betaFeatures: { 
-                                            ...user.settings.betaFeatures, 
-                                            [setting.id]: !user.settings.betaFeatures[setting.id] 
-                                          } 
-                                        });
-                                      } else {
-                                        onUpdateSettings({ ...user.settings, [setting.id]: !user.settings[setting.id] });
-                                      }
-                                    }}
-                                    className={`w-14 h-8 rounded-full p-1 transition-all relative shrink-0 ${
-                                      (setting.type === 'beta-toggle' ? user.settings.betaFeatures[setting.id] : user.settings[setting.id]) 
+                                    onClick={() => onUpdateSettings({ ...user.settings, [setting.id]: !user.settings[setting.id] })}
+                                    className={`rounded-full p-1 transition-all relative shrink-0 w-14 h-8 ${
+                                      user.settings[setting.id] 
                                         ? 'bg-white shadow-[0_0_20px_white]' 
                                         : 'bg-white/10'
                                     }`}
                                   >
                                     <motion.div
-                                      animate={{ x: (setting.type === 'beta-toggle' ? user.settings.betaFeatures[setting.id] : user.settings[setting.id]) ? 24 : 0 }}
-                                      className={`w-6 h-6 rounded-full shadow-2xl ${
-                                        (setting.type === 'beta-toggle' ? user.settings.betaFeatures[setting.id] : user.settings[setting.id]) 
+                                      animate={{ x: user.settings[setting.id] ? 24 : 0 }}
+                                      className={`rounded-full shadow-2xl w-6 h-6 ${
+                                        user.settings[setting.id] 
                                           ? 'bg-black' 
                                           : 'bg-white/20'
                                       }`}
                                     />
                                   </button>
-                                ) : (
-                                  <div className="flex items-center gap-3">
-                                    <input 
-                                      type="text"
-                                      value={usernameInput}
-                                      onChange={(e) => setUsernameInput(e.target.value)}
-                                      className="bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-white font-black text-xs uppercase tracking-widest focus:border-white/40 outline-none transition-all"
-                                    />
-                                    <button 
-                                      onClick={() => onUpdateUsername(usernameInput)}
-                                      className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                                    >
-                                      <RefreshCw size={16} />
-                                    </button>
-                                  </div>
-                                )}
+                                ) : null}
                               </div>
                             ))}
                           </div>
                         </div>
                       </div>
-                    ))
-                  )}
+                    ))}
+                  </div>
+                )}
                 </motion.div>
               </AnimatePresence>
             </div>

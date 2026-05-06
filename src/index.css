@@ -59,6 +59,160 @@ html, body {
   min-height: 100%;
 }
 
+/* --- UI OVERHAUL TEST --- */
+.ui-overhaul.ui-overhaul-liquid-glass {
+  --background: #0f172a;
+  --foreground: #ffffff;
+  --primary: #38bdf8;
+  --border: rgba(255, 255, 255, 0.1);
+  --card: rgba(255, 255, 255, 0.05);
+}
+
+.ui-overhaul-liquid-glass .proto-panel-surface {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.ui-overhaul-liquid-glass .proto-rail-panel {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(60px);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ui-overhaul-liquid-glass .proto-btn-main {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: white;
+}
+
+.ui-overhaul-liquid-glass .proto-btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.ui-overhaul-liquid-glass * {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.ui-overhaul-liquid-glass .bg-white\/\[0\.03\],
+.ui-overhaul-liquid-glass .bg-white\/5,
+.ui-overhaul-liquid-glass .bg-black\/40 {
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.ui-overhaul.ui-overhaul-sketch {
+  --background: #fdf6e3;
+  --foreground: #2d2d2d;
+  --primary: #2d2d2d;
+  --border: #2d2d2d;
+  --card: #ffffff;
+}
+
+.ui-overhaul-sketch .proto-panel-surface {
+  background: #ffffff;
+  border: 3px solid #2d2d2d;
+  border-radius: 12px;
+  box-shadow: 12px 12px 0 #2d2d2d;
+  transform: rotate(-0.5deg);
+}
+
+.ui-overhaul-sketch .proto-rail-panel {
+  background: #ffffff;
+  border: 3px solid #2d2d2d;
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 #2d2d2d;
+}
+
+.ui-overhaul-sketch .proto-btn-main {
+  background: #2d2d2d;
+  color: #ffffff;
+  border: 3px solid #2d2d2d;
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.ui-overhaul-sketch .proto-btn-secondary {
+  background: #ffffff;
+  color: #2d2d2d;
+  border: 3px solid #2d2d2d;
+  border-radius: 8px;
+}
+
+.ui-overhaul-sketch * {
+  border-color: #2d2d2d !important;
+  font-family: var(--font-sans) !important;
+}
+
+.ui-overhaul-sketch .bg-white\/\[0\.03\],
+.ui-overhaul-sketch .bg-white\/5,
+.ui-overhaul-sketch .bg-black\/40 {
+  background: #ffffff !important;
+  border: 2px solid #2d2d2d !important;
+  box-shadow: 4px 4px 0 #2d2d2d !important;
+}
+
+.ui-overhaul.ui-overhaul-modern {
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #ffffff;
+  --border: #333333;
+  --card: #111111;
+}
+
+.ui-overhaul-modern .proto-panel-surface {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 0;
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 1);
+}
+
+.ui-overhaul-modern .proto-rail-panel {
+  background: #050505;
+  border-radius: 0;
+  border-right: 1px solid #222;
+}
+
+.ui-overhaul-modern .proto-btn-main {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 0;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+.ui-overhaul-modern .proto-btn-secondary {
+  background: #111111;
+  color: #ffffff;
+  border: 1px solid #333;
+  border-radius: 0;
+}
+
+.ui-overhaul-modern * {
+  border-color: #222 !important;
+  border-radius: 0 !important;
+  font-family: var(--font-mono) !important;
+}
+
+.ui-overhaul-modern .bg-white\/\[0\.03\],
+.ui-overhaul-modern .bg-white\/5,
+.ui-overhaul-modern .bg-black\/40 {
+  background: #050505 !important;
+  border: 1px solid #222 !important;
+}
+
+.ui-overhaul .proto-backdrop,
+.ui-overhaul .proto-grid {
+  display: none;
+}
+
 /* --- PROTO UI SYSTEM --- */
 
 .proto-shell {

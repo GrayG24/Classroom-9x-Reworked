@@ -9,9 +9,13 @@ export const Sidebar = ({
   onViewChange,
   onProfileClick
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(!user.settings.sidebarAutoHide);
   const [time, setTime] = useState(new Date());
   const [onlineCount, setOnlineCount] = useState(1);
+
+  useEffect(() => {
+    setIsExpanded(!user.settings.sidebarAutoHide);
+  }, [user.settings.sidebarAutoHide]);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -36,7 +40,6 @@ export const Sidebar = ({
     { id: AppRoute.HOME, label: 'Home', icon: House },
     { id: AppRoute.LIBRARY, label: 'Games', icon: Library },
     { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid },
-    { id: AppRoute.FRIENDS, label: 'Social', icon: Users },
     { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Sparkles },
     { id: AppRoute.SETTINGS, label: 'Settings', icon: Settings },
   ];
@@ -47,17 +50,17 @@ export const Sidebar = ({
 
   return (
     <motion.div 
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
+      onMouseEnter={() => user.settings.sidebarAutoHide && setIsExpanded(true)}
+      onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
       initial={false}
       animate={{ 
         width: isExpanded ? 280 : 88,
+        height: isExpanded ? 'calc(100% - 60px)' : '70%',
         x: 20,
-        y: 20,
-        height: 'calc(100% - 40px)'
+        y: isExpanded ? 30 : '15vh',
       }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed left-0 top-0 bg-black/60 backdrop-blur-3xl border border-white/10 z-50 flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2rem] m-5"
+      className="fixed left-0 top-0 bg-black/60 backdrop-blur-3xl border border-white/10 z-50 flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-[2.5rem]"
     >
       {/* Logo Section */}
       <div className="p-6 pb-10">
@@ -205,7 +208,7 @@ export const Sidebar = ({
                   exit={{ opacity: 0, x: -10 }}
                   className="text-[9px] font-black text-white/40 tabular-nums uppercase tracking-widest whitespace-nowrap"
                 >
-                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'America/New_York' })}
                 </motion.span>
               ) : (
                 <motion.span 
@@ -215,7 +218,7 @@ export const Sidebar = ({
                   exit={{ opacity: 0 }}
                   className="text-[10px] font-black text-white/40 tabular-nums w-full text-center"
                 >
-                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}
+                  {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'America/New_York' }).replace(/\s?[AP]M/i, '')}
                 </motion.span>
               )}
             </AnimatePresence>

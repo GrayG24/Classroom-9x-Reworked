@@ -10,7 +10,6 @@ export const AppRoute = {
   PROXY: 'proxy',
   CATEGORY: 'category',
   ADMIN: 'admin',
-  FRIENDS: 'friends',
   CODES: 'codes'
 };
 
@@ -24,13 +23,13 @@ export const CATEGORIES = [
 ];
 
 export const CHARACTERS = [
-  { id: 'agent-x', name: 'Default', level: 1, desc: 'Standard operative. Reliable and versatile.', icon: User },
-  { id: 'viper', name: 'Viper', level: 15, desc: 'Speed specialist. Strikes before detection.', icon: Zap },
-  { id: 'ghost', name: 'Ghost', level: 30, desc: 'Stealth expert. Infiltrates restricted sectors.', icon: Ghost },
-  { id: 'phantom', name: 'Phantom', level: 50, desc: 'Ethereal presence. Moves between dimensions.', icon: ZapOff },
-  { id: 'titan', name: 'Titan', level: 75, desc: 'Heavy combat unit. Unstoppable force.', icon: ShieldCheck },
-  { id: 'nova', name: 'Nova', level: 90, desc: 'Stellar energy core. Radiant power.', icon: Star },
-  { id: 'overlord', name: 'Overlord', level: 100, desc: 'System administrator. Total control.', icon: Crown },
+  { id: 'agent-x', name: 'Default', level: 1, desc: 'Just your average player. Ready for games.', icon: User },
+  { id: 'viper', name: 'Viper', level: 15, desc: 'Super fast. You won\'t even see them coming.', icon: Zap },
+  { id: 'ghost', name: 'Ghost', level: 30, desc: 'Can sneak into any game quietly.', icon: Ghost },
+  { id: 'phantom', name: 'Phantom', level: 50, desc: 'Is here, then there, then everywhere.', icon: ZapOff },
+  { id: 'titan', name: 'Titan', level: 75, desc: 'Built like a tank. Unstoppable.', icon: ShieldCheck },
+  { id: 'nova', name: 'Nova', level: 90, desc: 'Shines brighter than any other player.', icon: Star },
+  { id: 'overlord', name: 'Overlord', level: 100, desc: 'The boss of the whole site.', icon: Crown },
   { id: 'spongebob', name: 'SpongeBob SquarePants', isCode: true, desc: 'Who lives in a pineapple under the sea? SPONGEBOB SQUAREPANTS!', img: 'https://i.pinimg.com/236x/2f/04/58/2f04582f337a1909f55340b30412f20d.jpg', icon: Star },
   { id: 'stark', name: 'Jarvis', isCode: true, desc: 'Advanced AI assistant. Integrated system intelligence.', img: 'https://i.pinimg.com/originals/60/98/2e/60982ea675870ee7b9703e29ab94ce55.jpg', icon: Bot },
   { id: 'kanye', name: 'Ye', isCode: true, desc: 'I am a genius. I am a god.', img: 'https://images.genius.com/cd83ad3baf919c5d988894bec3d6ea74.1000x1000x1.jpg', icon: Star },
@@ -40,20 +39,20 @@ export const CHARACTERS = [
 ];
 
 export const BADGES = [
-  { id: 'first-contact', name: 'First Contact', requirement: 'Launch 1 Game', icon: Zap, color: '#94a3b8', rarity: 'Common' },
-  { id: 'sentinel', name: 'Sentinel', requirement: 'Reach Level 10', icon: Award, color: '#22c55e', rarity: 'Uncommon' },
-  { id: 'elite-squad', name: 'Elite Squad', requirement: 'Reach Level 50', icon: Star, color: '#3b82f6', rarity: 'Rare' },
-  { id: 'overlord-badge', name: 'Overlord', requirement: 'Reach Level 100', icon: Crown, color: '#eab308', rarity: 'Legendary' },
-  { id: 'archivist', name: 'Archivist', requirement: '5 Favorites', icon: Heart, color: '#22c55e', rarity: 'Uncommon' },
-  { id: 'data-hoarder', name: 'Data Hoarder', requirement: '10 Favorites', icon: Layers, color: '#3b82f6', rarity: 'Rare' },
-  { id: 'warlord', name: 'Warlord', requirement: '50 Games Played', icon: Target, color: '#3b82f6', rarity: 'Rare' },
-  { id: 'chameleon', name: 'Chameleon', requirement: '8 Themes Unlocked', icon: Palette, color: '#ef4444', rarity: 'Epic' },
-  { id: 'aesthetician', name: 'Aesthetician', requirement: '4 Frames Unlocked', icon: PanelsTopLeft, color: '#ef4444', rarity: 'Epic' },
-  { id: 'recruiter', name: 'Recruiter', requirement: '4 Avatars Unlocked', icon: User, color: '#ef4444', rarity: 'Epic' },
-  { id: 'the-glitch', name: 'The Glitch', requirement: 'Secret Module Found', icon: Binary, color: 'rainbow', rarity: 'Mythic' },
-  { id: 'endurance', name: 'Endurance', requirement: '100 Games Played', icon: Activity, color: '#eab308', rarity: 'Legendary' },
-  { id: 'owner-badge', name: 'Owner', requirement: 'System Administrator Access', icon: Hammer, color: '#facc15', rarity: 'Mythic' },
-  { id: 'tester-badge', name: 'Early Access', requirement: 'be an early access tester', icon: Search, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'first-contact', name: 'First Contact', requirement: 'Launch 1 Game', icon: Zap, color: '#64748b', rarity: 'Common' },
+  { id: 'sentinel', name: 'Guardian', requirement: 'Reach Level 10', icon: Award, color: '#22c55e', rarity: 'Uncommon' },
+  { id: 'elite-squad', name: 'Elite Player', requirement: 'Reach Level 50', icon: Star, color: '#3b82f6', rarity: 'Rare' },
+  { id: 'overlord-badge', name: 'The Boss', requirement: 'Reach Level 100', icon: Crown, color: '#f59e0b', rarity: 'Legendary' },
+  { id: 'archivist', name: 'Collector', requirement: '5 Favorites', icon: Heart, color: '#22c55e', rarity: 'Uncommon' },
+  { id: 'data-hoarder', name: 'Big Collector', requirement: '10 Favorites', icon: Layers, color: '#3b82f6', rarity: 'Rare' },
+  { id: 'warlord', name: 'Gamer', requirement: '50 Games Played', icon: Target, color: '#3b82f6', rarity: 'Rare' },
+  { id: 'chameleon', name: 'Style King', requirement: '8 Themes Unlocked', icon: Palette, color: '#a855f7', rarity: 'Epic' },
+  { id: 'aesthetician', name: 'Frame Master', requirement: '4 Frames Unlocked', icon: PanelsTopLeft, color: '#a855f7', rarity: 'Epic' },
+  { id: 'recruiter', name: 'Character Fan', requirement: '4 Characters Unlocked', icon: User, color: '#a855f7', rarity: 'Epic' },
+  { id: 'the-glitch', name: 'The Secret', requirement: 'Found a secret!', icon: Binary, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'endurance', name: 'Pro Gamer', requirement: '100 Games Played', icon: Activity, color: '#f59e0b', rarity: 'Legendary' },
+  { id: 'owner-badge', name: 'Owner', requirement: 'Owner of the site', icon: Hammer, color: '#ef4444', rarity: 'Mythic' },
+  { id: 'tester-badge', name: 'Beta Tester', requirement: 'Tested the site early', icon: Search, color: 'rainbow', rarity: 'Mythic' },
 ];
 
 export const QUEST_POOL = [

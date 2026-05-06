@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Zap, Shield, Trophy, ChevronRight, Play, Star, Award, Rocket, Ghost, BrainCircuit, Bot } from 'lucide-react';
+import { TypewriterText } from './TypewriterText';
 
 export const Hero = ({ user, onBrowseLibrary }) => {
+  const messages = [
+    "The 9x era has returned",
+    "Bored in class? We got you.",
+    "King Arth has entered the lobby",
+    "IM A GENIUS - YE",
+    "Classroom 6x is shaking right now",
+    "No more boring lectures.",
+    "Did you bring the aux cord?",
+    "Does the FPS tracker even work?",
+    "Don't let the teacher see this.",
+    "Unblocked and ready to deploy.",
+    "Sorry for the wait, we're back.",
+    "Use code 9XISBACK for 10 levels",
+    "Everything I'm not made me everything I am",
+    "Should we add a movie section?",
+    "Strictly for the gamers.",
+    "Level up your boredom."
+  ];
+
+  const welcomeText = `WELCOME, ${user.username}`;
+
   return (
     <section className="relative pt-40 pb-32 overflow-hidden">
       {/* Background Elements */}
@@ -25,18 +47,20 @@ export const Hero = ({ user, onBrowseLibrary }) => {
                 transition={{ delay: 0.2 }}
                 className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/5 mb-10 backdrop-blur-xl"
               >
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_white]"></div>
-                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/50">VOID NETWORK // PROTOCOL 4.5.0</span>
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white/50 italic">
+                  <TypewriterText messages={messages} />
+                </span>
               </motion.div>
               
               <div className="flex justify-center lg:justify-start items-center gap-x-1 sm:gap-x-2 md:gap-x-3 lg:gap-x-4 mb-8 w-full overflow-visible whitespace-nowrap">
-                {"CLASSROOM 9X".split("").map((char, charIdx) => (
+                {welcomeText.split("").map((char, charIdx) => (
                   <motion.span
                     key={charIdx}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, delay: 0.3 + charIdx * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                    className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter leading-none italic drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] ${char === ' ' ? 'w-3 sm:w-6' : ''}`}
+                    className={`text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter leading-none italic drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] ${char === ' ' ? 'w-3 sm:w-6' : ''}`}
                     style={{
                       backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px), radial-gradient(circle, #fff 1.5px, transparent 1.5px)',
                       backgroundSize: '15px 15px, 25px 25px',
@@ -60,7 +84,7 @@ export const Hero = ({ user, onBrowseLibrary }) => {
             </motion.div>
             
             <p className="text-xl text-white/30 max-w-xl leading-relaxed mb-16 font-medium tracking-tight pl-2">
-              The premier unblocked gaming ecosystem. High-performance architecture, social integration, and a curated library of the finest titles.
+              The best place for fun and unblocked games. Fast, simple, and full of great titles for everyone.
             </p>
             
             <div className="flex flex-wrap gap-8 items-center pl-2">
@@ -185,11 +209,11 @@ export const Hero = ({ user, onBrowseLibrary }) => {
             >
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-white border border-white/10">
-                  <Shield size={20} />
+                  <Play size={20} />
                 </div>
-                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">SECURE ACCESS</span>
+                <span className="text-[9px] font-black text-white uppercase tracking-[0.2em]">UNLIMITED ACCESS</span>
               </div>
-              <p className="text-[10px] text-white/30 leading-relaxed font-medium uppercase tracking-wider">End-to-end encryption for all session data and user profiles.</p>
+              <p className="text-[10px] text-white/30 leading-relaxed font-black uppercase tracking-widest italic">A huge catalog of fun games to fulfill your boredom.</p>
             </motion.div>
           </motion.div>
         </div>

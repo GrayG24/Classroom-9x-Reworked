@@ -21,7 +21,7 @@ import { ProxyPage } from './components/ProxyPage';
 import { CodesPage } from './components/CodesPage';
 import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
-import { Friends } from './components/Friends';
+import { InteractiveBackground } from './components/InteractiveBackground';
 import { GameView } from './components/GameView';
 import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -42,12 +42,12 @@ const LockedPage = ({ title, onReturn }) => (
       <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic">Coming <span className="text-rose-500">Soon</span></h1>
       <div className="flex items-center justify-center gap-3">
         <div className="h-px w-12 bg-rose-500/30"></div>
-        <p className="text-xs font-black text-rose-500 uppercase tracking-[0.5em]">Unauthorized Access Detected</p>
+        <p className="text-xs font-black text-rose-500 uppercase tracking-[0.5em]">Page under construction</p>
         <div className="h-px w-12 bg-rose-500/30"></div>
       </div>
     </div>
     <p className="text-slate-400 font-medium max-w-md leading-relaxed uppercase text-[10px] tracking-widest">
-      This page is not complete. Admin access only.
+      This section is not finished yet. Check back soon.
     </p>
     <button 
       onClick={onReturn}
@@ -73,18 +73,15 @@ const DEFAULT_USER = {
   unlockedThemes: ['void', 'cyan', 'black-white'],
   currentFrame: 'obsidian',
   unlockedFrames: ['obsidian'],
-  currentCharacter: 'agent-x',
-  unlockedCharacters: ['agent-x'],
+  currentCharacter: 'pilot',
+  unlockedCharacters: ['pilot'],
   unlockedCursors: ['default'],
   unlockedBadges: [],
   redeemedCodes: [],
   favorites: [],
   pinnedGames: [],
-  friends: [],
-  friendRequests: [],
-  sentRequests: [],
-  titles: ['New Recruit'],
-  currentTitle: 'New Recruit',
+  titles: [],
+  currentTitle: 'Gamer',
   featuredBadgeId: null,
   score: 0,
   uid: 'user-' + Math.random().toString(36).substr(2, 9),
@@ -104,28 +101,14 @@ const DEFAULT_USER = {
     uiOpacity: 0.8,
     notifications: true,
     homeBanner: true,
-    lagNotifications: true,
     performanceMode: false,
-    showOnlinePlayers: true,
     showFPS: true,
     reducedMotion: false,
     lowQualityParticles: false,
-    publicProfile: true,
     sidebarAutoHide: true,
-    showChat: true,
     backgroundEffects: true,
-    soundEnabled: true,
-    liquidGlass: false,
     disableGlow: false,
     highContrast: false,
-    compactMode: false,
-    showTooltips: true,
-    betaFeatures: {
-      experimentalAnimations: false,
-      debugOverlay: false,
-      earlyAccessFeatures: false,
-      aiChatAssistant: false
-    }
   }
 };
 
@@ -228,149 +211,6 @@ const EpilepsyWarning = ({ onProceed, onSkip }) => {
   );
 };
 
-const InteractiveBackground = ({ performanceMode, lowQualityParticles, currentTheme }) => {
-  const canvasRef = useRef(null);
-  const mouse = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let particles = [];
-    let animationFrameId;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener('resize', resize);
-    resize();
-
-    const createParticles = () => {
-      particles = [];
-      const count = performanceMode ? 40 : (lowQualityParticles ? 80 : 150);
-      
-      for (let i = 0; i < count; i++) {
-        let color = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
-        let size = Math.random() * 1.5 + 0.5;
-        let speedX = (Math.random() - 0.5) * (performanceMode ? 0.2 : 0.4);
-        let speedY = (Math.random() - 0.5) * (performanceMode ? 0.2 : 0.4);
-
-        if (currentTheme === 'void') {
-          color = `rgba(255, 255, 255, ${Math.random() * 0.2})`;
-          size = Math.random() * 1.2 + 0.5;
-        } else if (currentTheme === 'fire') {
-          color = `rgba(255, ${Math.random() * 100 + 50}, 0, ${Math.random() * 0.5})`;
-          speedY = -Math.random() * 1.5 - 0.5;
-        } else if (currentTheme === 'galaxy') {
-          const colors = ['#60a5fa', '#f472b6', '#c084fc', '#ffffff'];
-          color = colors[Math.floor(Math.random() * colors.length)] + '33';
-          size = Math.random() * 2 + 1;
-        } else if (currentTheme === 'supernova') {
-          const colors = ['#ff8c00', '#ff4500', '#00ffff', '#ffffff'];
-          color = colors[Math.floor(Math.random() * colors.length)] + '55';
-          size = Math.random() * 3 + 1;
-          speedX *= 1.5;
-          speedY *= 1.5;
-        } else if (currentTheme === 'gold') {
-          color = `rgba(251, 191, 36, ${Math.random() * 0.4})`;
-        }
-
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: size,
-          speedX: speedX,
-          speedY: speedY,
-          color: color,
-          originalSize: size,
-          density: (Math.random() * 20) + 1,
-          glow: Math.random() > 0.9
-        });
-      }
-    };
-
-    createParticles();
-
-    const handleMouseMove = (e) => {
-      mouse.current = { x: e.clientX, y: e.clientY };
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw Mouse Glow
-      const gradient = ctx.createRadialGradient(
-        mouse.current.x, mouse.current.y, 0,
-        mouse.current.x, mouse.current.y, 300
-      );
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach(p => {
-        // Movement
-        p.x += p.speedX;
-        p.y += p.speedY;
-
-        // Boundary check
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-
-        // Mouse Interaction - Reactive
-        const dx = mouse.current.x - p.x;
-        const dy = mouse.current.y - p.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = 200;
-
-        if (distance < maxDistance) {
-          const force = (maxDistance - distance) / maxDistance;
-          const directionX = (dx / distance) * force * p.density * 0.5;
-          const directionY = (dy / distance) * force * p.density * 0.5;
-          
-          p.x -= directionX;
-          p.y -= directionY;
-          p.size = p.originalSize * (1 + force * 3);
-        } else {
-          p.size = p.originalSize;
-        }
-
-        ctx.fillStyle = p.color;
-        
-        if (p.glow) {
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = p.color;
-        }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
-
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [currentTheme, performanceMode, lowQualityParticles]);
-
-  return <canvas ref={canvasRef} className="interactive-bg-canvas" />;
-};
-
 const BossEvent = ({ onDefeat }) => {
   const [health, setHealth] = useState(100);
   const [position, setPosition] = useState({ x: 50, y: 50 });
@@ -439,7 +279,7 @@ const BossEvent = ({ onDefeat }) => {
             className="h-full shadow-[0_0_20px_rgba(239,68,68,0.5)]"
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] drop-shadow-md">VOID ENTITY CORE: {health}%</span>
+            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] drop-shadow-md">BOSS HEALTH: {health}%</span>
           </div>
         </div>
         
@@ -458,7 +298,7 @@ const BossEvent = ({ onDefeat }) => {
             transition={{ repeat: Infinity, duration: 1 }}
             className="px-6 py-2 bg-rose-500 text-slate-950 font-black text-xs uppercase tracking-[0.3em] rounded-full shadow-[0_0_30px_rgba(239,68,68,0.5)] border-2 border-white/20"
           >
-            TERMINATE ENTITY
+            DEFEAT BOSS
           </motion.div>
         </div>
 
@@ -763,12 +603,18 @@ const App = () => {
     return () => window.removeEventListener('play-game', handlePlayGame);
   }, []);
   const [chatMessages, setChatMessages] = useState([
-    { username: 'SYSTEM', text: 'VOID NETWORK INITIALIZED. WELCOME EXPLORER.', timestamp: new Date().toISOString() },
-    { username: 'ADMIN', text: 'REWORKED EDITION IS NOW LIVE. ENJOY THE EXPERIENCE.', timestamp: new Date().toISOString() }
+    { username: 'SYSTEM', text: 'WELCOME TO CLASSROOM 9X.', timestamp: new Date().toISOString() },
+    { username: 'ADMIN', text: 'NEW UPDATE IS NOW LIVE. ENJOY THE GAMES.', timestamp: new Date().toISOString() }
   ]);
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  useEffect(() => {
+    if (user.settings.showChat !== undefined) {
+      setIsChatOpen(user.settings.showChat);
+    }
+  }, [user.settings.showChat]);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
@@ -1263,7 +1109,14 @@ const App = () => {
         const mergedUser = { 
           ...DEFAULT_USER, 
           ...parsed, 
-          settings: { ...DEFAULT_USER.settings, ...(parsed.settings || {}) },
+          settings: { 
+            ...DEFAULT_USER.settings, 
+            ...(parsed.settings || {}),
+            betaFeatures: { 
+              ...DEFAULT_USER.settings.betaFeatures, 
+              ...(parsed.settings?.betaFeatures || {}) 
+            }
+          },
           streak: newStreak, 
           lastLoginDate: today 
         };
@@ -1526,8 +1379,14 @@ const App = () => {
     }));
   };
 
-  const updateSettings = (settings) => {
-    setUser(prev => ({ ...prev, settings: { ...prev.settings, ...settings } }));
+  const updateSettings = (newSettings) => {
+    setUser(prev => {
+      const updatedSettings = { ...prev.settings, ...newSettings };
+      if (newSettings.betaFeatures) {
+        updatedSettings.betaFeatures = { ...prev.settings.betaFeatures, ...newSettings.betaFeatures };
+      }
+      return { ...prev, settings: updatedSettings };
+    });
   };
 
   const redeemCode = (code) => {
@@ -1542,10 +1401,15 @@ const App = () => {
       setUser(prev => ({
         ...prev,
         isAdmin: true,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'admin6']))
+        score: Math.max(prev.score, 1000000),
+        level: Math.max(prev.level || 1, 100),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'admin6'])),
+        unlockedThemes: ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'fire', 'rainbow', 'spongebob', 'kanye', 'galaxy', 'hologram', 'ironman', 'synthwave', 'usa', 'retrofuture'],
+        unlockedFrames: ['default', 'neon', 'gold', 'diamond', 'cyberpunk', 'matrix', 'glitch'],
+        unlockedCharacters: CHARACTERS.map(c => c.id)
       }));
-      addNotification('Security Override', 'ADMINISTRATIVE PRIVILEGES GRANTED', 'system', <Shield className="text-rose-500" />);
-      return { success: true, message: 'ACCESS GRANTED: ADMIN CONSOLE UNLOCKED' };
+      addNotification('Security Override', 'ADMINISTRATIVE PRIVILEGES GRANTED // ALL MODULES UNLOCKED', 'system', <Shield className="text-rose-500" />);
+      return { success: true, message: 'ACCESS GRANTED: TOTAL SYSTEM UNLOCK' };
     }
 
     if (cleanCode === 'codes211') {
@@ -1838,9 +1702,6 @@ const App = () => {
       case AppRoute.LEADERBOARD: 
         if (!user.isAdmin) return <LockedPage title="Leaderboard" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return <Leaderboard user={user} onPlayerClick={setSelectedPlayer} leaderboardData={leaderboardData} />;
-      case AppRoute.FRIENDS: 
-        if (!user.isAdmin) return <LockedPage title="Social" onReturn={() => setCurrentView(AppRoute.HOME)} />;
-        return <Friends user={user} onUpdateUser={setUser} />;
       case AppRoute.ADMIN: return <AdminPanel user={user} onClose={() => setCurrentView(AppRoute.HOME)} />;
       default: return (
         <Home 
@@ -1870,10 +1731,13 @@ const App = () => {
     }));
   };
 
+  const [cloakSequence, setCloakSequence] = useState('');
+
   const handleToggleCloak = () => {
     if (isCloaked) {
       setIsExitingCloak(true);
       setIsCloaked(false);
+      setCloakSequence('');
     } else {
       setIsCloaked(true);
     }
@@ -1881,20 +1745,56 @@ const App = () => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Shift + G to toggle cloak
-      if (e.shiftKey && e.key === 'G') {
-        e.preventDefault();
-        handleToggleCloak();
+      if (e.shiftKey) {
+        if (e.key === '0') {
+          const nextSeq = (cloakSequence + '0').slice(-4);
+          setCloakSequence(nextSeq);
+          if (nextSeq === '0000') {
+            e.preventDefault();
+            handleToggleCloak();
+          }
+        } else if (e.key !== 'Shift') {
+          setCloakSequence('');
+        }
+      } else {
+        setCloakSequence('');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isCloaked]);
+  }, [isCloaked, cloakSequence]);
 
   const handleLoadingComplete = React.useCallback(() => {
     setIsInitialLoading(false);
     setIsExitingCloak(false);
   }, []);
+
+  if (isMaintenanceMode && !user.isAdmin) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md space-y-8"
+        >
+          <div className="w-24 h-24 bg-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto shadow-[0_0_50px_rgba(245,158,11,0.3)]">
+            <SettingsIcon size={48} className="animate-spin-slow" />
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">System <span className="text-amber-500">Maintenance</span></h1>
+            <div className="text-slate-400 font-medium leading-relaxed space-y-4">
+              <p>Uh oh! Classroom 9x is currently undergoing maintenance to improve performance and add new features.</p>
+              <p>Some games or features may be temporarily unavailable while we work behind the scenes.</p>
+              <p>Thanks for your patience — we’ll be back up and running soon.</p>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-white/5">
+            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (isInitialLoading || isExitingCloak) {
     return <LoadingScreen onComplete={handleLoadingComplete} />;
@@ -1905,15 +1805,15 @@ const App = () => {
   }
 
   return (
-    <div className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''} ${user.settings.disableGlow ? 'disable-glow' : ''} ${user.settings.highContrast ? 'high-contrast' : ''} ${user.settings.compactMode ? 'compact-mode' : ''}`}>
+    <div className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}>
       <div className="proto-backdrop" />
       <div className="proto-grid" />
       
       {user.settings.animatedBg && <InteractiveBackground performanceMode={user.settings.performanceMode} lowQualityParticles={user.settings.lowQualityParticles} currentTheme={user.currentTheme} />}
       {user.settings.customCursor && <CustomCursor />}
       
-      <div className="proto-content-shell">
-        <div className={`min-h-screen bg-background/40 text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden ${isGlitched ? 'glitch-active' : ''} ${isPartyMode ? 'party-mode-active' : ''}`}>
+        <div className="proto-content-shell">
+        <div className={`min-h-screen bg-background/40 text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
           {/* Background Effects */}
           {isMatrixRain && <MatrixRain performanceMode={user.settings.performanceMode} />}
           {isRainbowChaos && <div className="rainbow-chaos-overlay" />}
@@ -1961,32 +1861,11 @@ const App = () => {
                         <Shield size={48} />
                       </div>
                       <div className="space-y-4">
-                        <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">Sector <span className="text-rose-500">Lockout</span></h1>
-                        <p className="text-slate-400 font-medium leading-relaxed">Your access to this sector has been terminated by the system administrator. Protocol breach detected.</p>
+                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">Account <span className="text-rose-500">Restricted</span></h1>
+                        <p className="text-slate-400 font-medium leading-relaxed uppercase text-[10px] tracking-widest text-center">Your access has been restricted by an administrator. Please contact support if you think this is a mistake.</p>
                       </div>
                       <div className="pt-8 border-t border-white/5">
-                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Permanent Suspension</p>
-                      </div>
-                    </motion.div>
-                  </div>
-                )}
-
-                {isMaintenanceMode && !user.isAdmin && (
-                  <div key="maintenance-overlay" className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="max-w-md space-y-8"
-                    >
-                      <div className="w-24 h-24 bg-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto shadow-[0_0_50px_rgba(245,158,11,0.3)]">
-                        <SettingsIcon size={48} className="animate-spin-slow" />
-                      </div>
-                      <div className="space-y-4">
-                        <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">System <span className="text-amber-500">Maintenance</span></h1>
-                        <p className="text-slate-400 font-medium leading-relaxed">The sector is currently undergoing scheduled maintenance. Please stand by for system restoration.</p>
-                      </div>
-                      <div className="pt-8 border-t border-white/5">
-                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
+                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Suspended</p>
                       </div>
                     </motion.div>
                   </div>
@@ -2006,44 +1885,39 @@ const App = () => {
 
                 <Footer key="footer" />
                 
-                <div key="notifications-container" className="fixed bottom-8 right-8 z-[200] flex flex-col gap-4 pointer-events-none">
+                <div key="notifications-container" className="fixed top-8 right-8 z-[200] flex flex-col gap-3 pointer-events-none w-80">
                   <AnimatePresence mode="popLayout">
                     {notifications.map(n => (
                       <motion.div 
                         key={n.id} 
                         layout
-                        initial={{ opacity: 0, x: 100, scale: 0.8, filter: 'blur(10px)' }}
-                        animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, x: 50, scale: 0.9, filter: 'blur(5px)' }}
-                        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-                        className="group relative flex items-center gap-5 p-5 bg-slate-950/80 backdrop-blur-3xl border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto min-w-[340px] overflow-hidden"
+                        initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }}
+                        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, x: 20, scale: 0.95, filter: 'blur(5px)' }}
+                        className="group relative flex flex-col p-5 bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/5 to-transparent rotate-45 group-hover:animate-[shimmer_2s_infinite] pointer-events-none"></div>
-                        
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-[0_10px_30px_rgba(0,0,0,0.5)] relative overflow-hidden ${
-                          n.type === 'level' ? 'bg-primary/20 text-primary border border-primary/30' : 
-                          n.type === 'badge' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 
-                          'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'
-                        }`}>
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-                          {n.type === 'level' ? <Zap size={28} className="animate-pulse relative z-10" /> : n.type === 'badge' ? <Award size={28} className="relative z-10" /> : <Star size={28} className="relative z-10" />}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent"></div>
+                        <div className="flex items-center gap-4 relative z-10 mb-2">
+                          <div className={`shrink-0 ${
+                            n.type === 'error' ? 'text-rose-500' : 
+                            n.type === 'success' ? 'text-emerald-500' : 
+                            'text-white'
+                          }`}>
+                            {n.icon || <Zap size={16} />}
+                          </div>
+                          <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] truncate italic">{n.title || 'SYSTEM'}</p>
                         </div>
+                        <p className="text-xs font-bold text-white tracking-tight uppercase italic relative z-10">{n.message}</p>
                         
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] font-black uppercase tracking-[0.5em] text-white/40 mb-1">{n.type === 'level' ? 'System Upgrade' : n.type === 'badge' ? 'Achievement' : 'Notification'}</p>
-                          <p className="text-sm font-black text-white truncate tracking-tight uppercase italic">{n.message}</p>
-                        </div>
-
                         <button 
                           onClick={(e) => {
                             e.stopPropagation();
                             removeNotification(n.id);
                           }}
                           onPointerDown={(e) => e.stopPropagation()}
-                          className="p-2 text-white/20 hover:text-white hover:bg-white/5 rounded-xl transition-all relative z-20 pointer-events-auto"
+                          className="absolute top-4 right-4 p-1 text-white/10 hover:text-white transition-all opacity-0 group-hover:opacity-100 relative z-30"
                         >
-                          <X size={16} />
+                          <X size={12} />
                         </button>
 
                         <div className="absolute bottom-0 left-0 h-1 bg-white/5 w-full">
@@ -2052,9 +1926,9 @@ const App = () => {
                             animate={{ width: "0%" }}
                             transition={{ duration: 5, ease: "linear" }}
                             className={`h-full ${
-                              n.type === 'level' ? 'bg-primary' : 
-                              n.type === 'badge' ? 'bg-amber-500' : 
-                              'bg-emerald-500'
+                              n.type === 'error' ? 'bg-rose-500' : 
+                              n.type === 'success' ? 'bg-emerald-500' : 
+                              'bg-white'
                             } shadow-[0_0_10px_currentColor]`}
                           />
                         </div>

@@ -26,8 +26,8 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
             <div className="absolute -inset-2 bg-emerald-500/20 blur-md rounded-full animate-pulse"></div>
           </div>
           <div>
-            <h3 className="font-black text-white uppercase tracking-[0.2em] text-xs italic leading-none">GLOBAL VOID CHAT</h3>
-            <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mt-1.5 italic">SYSTEM NODE ACTIVE</p>
+            <h3 className="font-black text-white uppercase tracking-[0.2em] text-xs italic leading-none">GLOBAL CHAT</h3>
+            <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mt-1.5 italic">USERS ONLINE</p>
           </div>
         </div>
         <button 
@@ -46,7 +46,7 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center space-y-6 opacity-20">
             <MessageSquare size={48} strokeWidth={1} />
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] italic">Waiting for transmission...</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] italic">Waiting for messages...</p>
           </div>
         )}
         {messages.map((msg, i) => {
@@ -83,7 +83,7 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
         <div className="relative group">
           <input 
             type="text" 
-            placeholder="TRANSMIT DATA PACKET..." 
+            placeholder="TYPE A MESSAGE..." 
             className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-16 py-5 text-[11px] font-black text-white outline-none focus:border-white/30 focus:bg-white/10 transition-all placeholder:text-white/10 uppercase tracking-widest italic"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.currentTarget.value.trim()) {
@@ -100,15 +100,10 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
         <div className="flex items-center justify-between mt-6 px-2">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Shield size={10} className="text-emerald-500" />
-              <span className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">SECURE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap size={10} className="text-cyan-400" />
-              <span className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">ENCRYPTED</span>
+              <MessageSquare size={10} className="text-white/40" />
+              <span className="text-[8px] font-black text-white/20 uppercase tracking-widest italic">CHATTING</span>
             </div>
           </div>
-          <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em] italic">PROTOCOL v3</span>
         </div>
       </div>
     </motion.div>
