@@ -40,7 +40,7 @@ async function startServer() {
   const wss = new WebSocketServer({ server });
   const clients = new Set();
 
-  const isProd = process.env.NODE_ENV === 'production' && fs.existsSync(path.join(__dirname, 'dist'));
+  const isProd = process.env.NODE_ENV === 'production';
   console.log('Starting server. Mode:', isProd ? 'production' : 'development');
 
   app.use(cors());
@@ -429,8 +429,8 @@ async function startServer() {
       console.log('Client disconnected');
     });
   });
-
-  // Vite middleware for development
+  
+  // Vite middleware or Production static files
   if (!isProd) {
     console.log('Initializing Vite in middleware mode...');
     const vite = await createViteServer({
@@ -443,6 +443,12 @@ async function startServer() {
 
     app.get('*', async (req, res, next) => {
       const url = req.originalUrl;
+
+      // Skip non-HTML requests that fall through
+      if (url.includes('.') && !url.endsWith('.html')) {
+        return next();
+      }
+
       try {
         let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
         template = await vite.transformIndexHtml(url, template);
@@ -454,10 +460,15 @@ async function startServer() {
     });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.get('*', (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    } else {
+      console.warn('Production mode but dist/ folder missing. Falling back to basic error.');
+      app.get('*', (req, res) => res.send('Application is building... please refresh in a minute.'));
+    }
   }
 
   server.listen(PORT, '0.0.0.0', () => {
