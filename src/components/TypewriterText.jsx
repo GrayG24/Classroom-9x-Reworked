@@ -13,26 +13,32 @@ export const TypewriterText = ({ messages, delay = 0 }) => {
     
     if (isDeleting) {
       if (currentText === "") {
-        // Message fully deleted, wait a bit then move to next
+        // Message fully deleted, wait a bit then pick a RANDOM next one
         timeout = setTimeout(() => {
           setIsDeleting(false);
-          setMessageIndex((prev) => (prev + 1) % messages.length);
-        }, 500);
+          setMessageIndex((prev) => {
+            let nextIndex = Math.floor(Math.random() * messages.length);
+            if (nextIndex === prev && messages.length > 1) {
+              nextIndex = (nextIndex + 1) % messages.length;
+            }
+            return nextIndex;
+          });
+        }, 400); // Shorter pause between messages
       } else {
         // Backspacing
         timeout = setTimeout(() => {
           setCurrentText(prev => prev.slice(0, -1));
-        }, 30);
+        }, 20); // Faster deleting
       }
     } else {
       if (currentText === currentFullText) {
         // Message fully typed, wait then start deleting
         timeout = setTimeout(() => {
           setIsDeleting(true);
-        }, 2000);
+        }, 1500); // Pause on full text
       } else {
         // Typing
-        const typingSpeed = currentText === "" ? delay : 60;
+        const typingSpeed = currentText === "" ? (delay || 500) : 50; 
         timeout = setTimeout(() => {
           setCurrentText(currentFullText.slice(0, currentText.length + 1));
         }, typingSpeed);

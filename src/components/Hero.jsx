@@ -4,24 +4,20 @@ import { Zap, Shield, Trophy, ChevronRight, Play, Star, Award, Rocket, Ghost, Br
 import { TypewriterText } from './TypewriterText';
 
 export const Hero = ({ user, onBrowseLibrary }) => {
-  const messages = [
-    "The 9x era has returned",
+  const messages = React.useMemo(() => [
+    "Unblocked and ready for class",
     "Bored in class? We got you.",
-    "King Arth has entered the lobby",
-    "IM A GENIUS - YE",
-    "Classroom 6x is shaking right now",
+    "Fast, simple, and clean.",
     "No more boring lectures.",
-    "Did you bring the aux cord?",
-    "Does the FPS tracker even work?",
-    "Don't let the teacher see this.",
-    "Unblocked and ready to deploy.",
-    "Sorry for the wait, we're back.",
-    "Use code 9XISBACK for 10 levels",
-    "Everything I'm not made me everything I am",
-    "Should we add a movie section?",
-    "Strictly for the gamers.",
-    "Level up your boredom."
-  ];
+    "Defeat the boredom.",
+    "Your secret study break.",
+    "Ready to play?",
+    "King arth likes to sleep",
+    "I used AI on my essay - griffin K",
+    "bean",
+    "sorry for the wait",
+    "want your own quote up here? send me your qoutes and ill add them"
+  ], []);
 
   const welcomeText = `WELCOME, ${user.username}`;
 
@@ -84,7 +80,7 @@ export const Hero = ({ user, onBrowseLibrary }) => {
             </motion.div>
             
             <p className="text-xl text-white/30 max-w-xl leading-relaxed mb-16 font-medium tracking-tight pl-2">
-              The best place for fun and unblocked games. Fast, simple, and full of great titles for everyone.
+              The best place for fun and unblocked games. Fast, simple, and full of great games and activities for everyone.
             </p>
             
             <div className="flex flex-wrap gap-8 items-center pl-2">
@@ -111,79 +107,74 @@ export const Hero = ({ user, onBrowseLibrary }) => {
             className="relative hidden lg:block lg:pl-12 min-h-[600px] flex items-center justify-center"
           >
             {/* Pulsing Magical Vine Line */}
-            <div className="absolute inset-0 flex items-center justify-center z-0">
-              <svg width="100%" height="100%" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+            <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
+              <svg width="100%" height="100%" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full opacity-30">
+                <defs>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                
+                {/* Connection Line */}
                 <motion.path
-                  d="M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeDasharray="10 10"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ 
-                    pathLength: 1, 
-                    opacity: [0.1, 0.4, 0.1],
-                    strokeWidth: [2, 6, 2],
-                    d: [
-                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500",
-                      "M350 120C320 170 270 70 220 320C170 570 120 470 70 520",
-                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
-                    ]
-                  }}
-                  transition={{ 
-                    pathLength: { duration: 3, ease: "easeInOut" },
-                    opacity: { duration: 4, repeat: Infinity, ease: "easeInOut" },
-                    strokeWidth: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                    d: { duration: 8, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                  className="blur-[3px]"
-                />
-                <motion.path
-                  d="M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
+                  d="M310 130 C 260 250, 140 100, 110 470"
                   stroke="white"
                   strokeWidth="1.5"
                   strokeLinecap="round"
-                  initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ 
-                    pathLength: 1, 
-                    opacity: [0.3, 0.8, 0.3],
-                    d: [
-                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500",
-                      "M350 120C320 170 270 70 220 320C170 570 120 470 70 520",
-                      "M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
-                    ]
+                    opacity: [0.05, 0.2, 0.05],
+                    strokeWidth: [1, 2, 1]
                   }}
                   transition={{ 
-                    pathLength: { duration: 3, ease: "easeInOut", delay: 0.5 },
-                    opacity: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                    d: { duration: 8, repeat: Infinity, ease: "easeInOut" }
+                    duration: 5, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
                   }}
+                  filter="url(#glow)"
                 />
-                {/* Magical Glow Points */}
-                {[0.1, 0.3, 0.5, 0.7, 0.9].map((pos, i) => (
+
+                {/* Flowing Energy Pulse */}
+                <motion.path
+                  d="M310 130 C 260 250, 140 100, 110 470"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray="80 1200"
+                  animate={{ 
+                    strokeDashoffset: [1280, -1280],
+                    opacity: [0.1, 0.8, 0.1]
+                  }}
+                  transition={{ 
+                    strokeDashoffset: { duration: 4, repeat: Infinity, ease: "linear" },
+                    opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+                  }}
+                  filter="url(#glow)"
+                />
+
+                {/* Particles */}
+                {[...Array(5)].map((_, i) => (
                   <motion.circle
                     key={i}
-                    r="5"
+                    r="1.5"
                     fill="white"
-                    initial={{ opacity: 0 }}
                     animate={{ 
                       opacity: [0, 1, 0],
-                      scale: [0.5, 2, 0.5],
-                      filter: ["blur(0px)", "blur(4px)", "blur(0px)"]
+                      scale: [0.5, 1.5, 0.5]
                     }}
                     transition={{ 
-                      duration: 2.5, 
+                      duration: 3 + i, 
                       repeat: Infinity, 
-                      delay: i * 0.5,
-                      ease: "easeInOut" 
+                      delay: i * 0.8 
                     }}
                   >
                     <animateMotion
-                      path="M350 100C300 150 250 50 200 300C150 550 100 450 50 500"
-                      dur="12s"
+                      path="M310 130 C 260 250, 140 100, 110 470"
+                      dur={`${6 + i * 2}s`}
                       repeatCount="indefinite"
-                      rotate="auto"
-                      begin={`${i * 2.4}s`}
                     />
                   </motion.circle>
                 ))}
