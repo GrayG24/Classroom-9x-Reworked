@@ -101,7 +101,7 @@ export const AdminPanel = ({ user, onClose }) => {
     }
   };
 
-  const handleUserAction = async (action, username) => {
+  const handleUserAction = async (action, uid) => {
     const endpoint = action === 'ban' ? '/api/admin/ban-player' : 
                      action === 'reset' ? '/api/admin/reset-stats' : 
                      '/api/admin/remove-player';
@@ -110,7 +110,7 @@ export const AdminPanel = ({ user, onClose }) => {
       await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ uid })
       });
       fetchLeaderboard();
     } catch (err) {
@@ -281,7 +281,7 @@ export const AdminPanel = ({ user, onClose }) => {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {leaderboard.map((node) => (
-                        <tr key={node.username} className="group hover:bg-white/[0.01] transition-all">
+                        <tr key={node.uid} className="group hover:bg-white/[0.01] transition-all">
                           <td className="p-6">
                             <span className="text-xs font-black text-white uppercase italic">{node.username}</span>
                           </td>
@@ -293,9 +293,9 @@ export const AdminPanel = ({ user, onClose }) => {
                           </td>
                           <td className="p-6">
                             <div className="flex items-center gap-2">
-                              <button onClick={() => handleUserAction('reset', node.username)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-amber-500 hover:bg-amber-500/10 transition-all"><RefreshCw size={14} /></button>
-                              <button onClick={() => handleUserAction('ban', node.username)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all"><ShieldAlert size={14} /></button>
-                              <button onClick={() => handleUserAction('remove', node.username)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all"><Trash2 size={14} /></button>
+                              <button onClick={() => handleUserAction('reset', node.uid)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-amber-500 hover:bg-amber-500/10 transition-all"><RefreshCw size={14} /></button>
+                              <button onClick={() => handleUserAction('ban', node.uid)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all"><ShieldAlert size={14} /></button>
+                              <button onClick={() => handleUserAction('remove', node.uid)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all"><Trash2 size={14} /></button>
                             </div>
                           </td>
                         </tr>

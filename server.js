@@ -16,21 +16,64 @@ const __dirname = path.dirname(__filename);
 console.log('Server __dirname:', __dirname);
 console.log('Current working directory:', process.cwd());
 
-const db_sqlite = new Database('leaderboard.db');
-db_sqlite.exec(`
-  CREATE TABLE IF NOT EXISTS leaderboard (
-    username TEXT PRIMARY KEY,
-    level INTEGER,
-    score INTEGER,
-    characterId TEXT,
-    featuredBadgeId TEXT,
-    gamesPlayed INTEGER,
-    frameId TEXT,
-    unlockedBadges TEXT,
-    currentTheme TEXT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+let db_sqlite;
+try {
+  db_sqlite = new Database('leaderboard.db');
+  
+  // Migration logic for transitioning from username PK to uid PK
+  const tableInfo = db_sqlite.prepare("PRAGMA table_info(leaderboard)").all();
+  if (tableInfo.length > 0) {
+    const hasUid = tableInfo.some(col => col.name === 'uid');
+    if (!hasUid) {
+      console.log('Migrating leaderboard table to include uid...');
+      db_sqlite.transaction(() => {
+        db_sqlite.exec('ALTER TABLE leaderboard RENAME TO leaderboard_old');
+        db_sqlite.exec(`
+          CREATE TABLE leaderboard (
+            uid TEXT PRIMARY KEY,
+            username TEXT,
+            level INTEGER,
+            score INTEGER,
+            characterId TEXT,
+            featuredBadgeId TEXT,
+            gamesPlayed INTEGER,
+            frameId TEXT,
+            unlockedBadges TEXT,
+            currentTheme TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+        // Use username as fallback uid for migration
+        db_sqlite.exec(`
+          INSERT INTO leaderboard (uid, username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme, updated_at)
+          SELECT username, username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme, updated_at
+          FROM leaderboard_old
+        `);
+        db_sqlite.exec('DROP TABLE leaderboard_old');
+      })();
+    }
+  }
+
+  db_sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS leaderboard (
+      uid TEXT PRIMARY KEY,
+      username TEXT,
+      level INTEGER,
+      score INTEGER,
+      characterId TEXT,
+      featuredBadgeId TEXT,
+      gamesPlayed INTEGER,
+      frameId TEXT,
+      unlockedBadges TEXT,
+      currentTheme TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('Successfully connected to SQLite database');
+} catch (err) {
+  console.error('Failed to initialize SQLite database. Falling back to in-memory storage.', err);
+  db_sqlite = null;
+}
 
 const PORT = 3000;
 
@@ -57,15 +100,19 @@ async function startServer() {
   // --- API ROUTES ---
   // Global Leaderboard (In-memory storage for now)
   let leaderboardData = [];
-  try {
-    const rows = db_sqlite.prepare('SELECT * FROM leaderboard ORDER BY score DESC').all();
-    leaderboardData = rows.map((row) => ({
-      ...row,
-      unlockedBadges: row.unlockedBadges ? JSON.parse(row.unlockedBadges) : []
-    }));
-    console.log(`Loaded ${leaderboardData.length} entries from SQLite`);
-  } catch (err) {
-    console.error('Failed to load leaderboard from SQLite:', err);
+  if (db_sqlite) {
+    try {
+      const rows = db_sqlite.prepare('SELECT * FROM leaderboard ORDER BY score DESC').all();
+      leaderboardData = rows.map((row) => ({
+        ...row,
+        unlockedBadges: row.unlockedBadges ? JSON.parse(row.unlockedBadges) : []
+      }));
+      console.log(`Loaded ${leaderboardData.length} entries from SQLite`);
+    } catch (err) {
+      console.error('Failed to load leaderboard from SQLite:', err);
+    }
+  } else {
+    console.log('Using in-memory leaderboard only (no persistent storage)');
   }
 
   let isMaintenanceMode = false;
@@ -82,10 +129,7 @@ async function startServer() {
   });
 
   apiRouter.get('/check-username', (req, res) => {
-    const { username } = req.query;
-    if (!username) return res.status(400).json({ error: 'Username required' });
-    const exists = leaderboardData.some(e => e.username.toLowerCase() === username.toLowerCase());
-    res.json({ exists });
+    res.json({ exists: false }); // Always allow
   });
 
   apiRouter.get('/leaderboard', (req, res) => {
@@ -156,12 +200,13 @@ async function startServer() {
   });
 
   apiRouter.post('/leaderboard/update', (req, res) => {
-    const { username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme } = req.body;
-    if (!username) return res.status(400).json({ error: 'Valid username required' });
+    const { uid, username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme } = req.body;
+    if (!uid) return res.status(400).json({ error: 'Valid UID required' });
 
-    const index = leaderboardData.findIndex(e => e.username === username);
+    const index = leaderboardData.findIndex(e => e.uid === uid);
     const entry = { 
-      username, 
+      uid,
+      username: username || (index !== -1 ? leaderboardData[index].username : 'Unknown'), 
       level, 
       score: index !== -1 ? Math.max(leaderboardData[index].score, score) : score,
       characterId: characterId || (index !== -1 ? leaderboardData[index].characterId : 'agent-x'),
@@ -179,34 +224,38 @@ async function startServer() {
     }
 
     // Persist to SQLite
-    try {
-      const stmt = db_sqlite.prepare(`
-        INSERT INTO leaderboard (username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(username) DO UPDATE SET
-          level = excluded.level,
-          score = MAX(leaderboard.score, excluded.score),
-          characterId = excluded.characterId,
-          featuredBadgeId = excluded.featuredBadgeId,
-          gamesPlayed = excluded.gamesPlayed,
-          frameId = excluded.frameId,
-          unlockedBadges = excluded.unlockedBadges,
-          currentTheme = excluded.currentTheme,
-          updated_at = CURRENT_TIMESTAMP
-      `);
-      stmt.run(
-        entry.username, 
-        entry.level, 
-        entry.score, 
-        entry.characterId, 
-        entry.featuredBadgeId, 
-        entry.gamesPlayed, 
-        entry.frameId, 
-        JSON.stringify(entry.unlockedBadges), 
-        entry.currentTheme
-      );
-    } catch (err) {
-      console.error('Failed to persist to SQLite:', err);
+    if (db_sqlite) {
+      try {
+        const stmt = db_sqlite.prepare(`
+          INSERT INTO leaderboard (uid, username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(uid) DO UPDATE SET
+            username = excluded.username,
+            level = excluded.level,
+            score = MAX(leaderboard.score, excluded.score),
+            characterId = excluded.characterId,
+            featuredBadgeId = excluded.featuredBadgeId,
+            gamesPlayed = excluded.gamesPlayed,
+            frameId = excluded.frameId,
+            unlockedBadges = excluded.unlockedBadges,
+            currentTheme = excluded.currentTheme,
+            updated_at = CURRENT_TIMESTAMP
+        `);
+        stmt.run(
+          entry.uid,
+          entry.username, 
+          entry.level, 
+          entry.score, 
+          entry.characterId, 
+          entry.featuredBadgeId, 
+          entry.gamesPlayed, 
+          entry.frameId, 
+          JSON.stringify(entry.unlockedBadges), 
+          entry.currentTheme
+        );
+      } catch (err) {
+        console.error('Failed to persist to SQLite:', err);
+      }
     }
 
     res.json({ success: true });
@@ -217,7 +266,9 @@ async function startServer() {
     totalMessages = 0;
     totalGamesPlayed = 0;
     try {
-      db_sqlite.prepare('DELETE FROM leaderboard').run();
+      if (db_sqlite) {
+        db_sqlite.prepare('DELETE FROM leaderboard').run();
+      }
     } catch (err) {
       console.error('Failed to clear SQLite leaderboard:', err);
     }
@@ -237,48 +288,54 @@ async function startServer() {
   });
 
   apiRouter.post('/admin/remove-player', (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Username required' });
-    leaderboardData = leaderboardData.filter(e => e.username !== username);
-    try {
-      db_sqlite.prepare('DELETE FROM leaderboard WHERE username = ?').run(username);
-    } catch (err) {
-      console.error('Failed to remove player from SQLite:', err);
+    const { uid } = req.body;
+    if (!uid) return res.status(400).json({ error: 'UID required' });
+    leaderboardData = leaderboardData.filter(e => e.uid !== uid);
+    if (db_sqlite) {
+      try {
+        db_sqlite.prepare('DELETE FROM leaderboard WHERE uid = ?').run(uid);
+      } catch (err) {
+        console.error('Failed to remove player from SQLite:', err);
+      }
     }
     res.json({ success: true });
   });
 
   apiRouter.post('/admin/reset-stats', (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Username required' });
-    const index = leaderboardData.findIndex(e => e.username === username);
+    const { uid } = req.body;
+    if (!uid) return res.status(400).json({ error: 'UID required' });
+    const index = leaderboardData.findIndex(e => e.uid === uid);
     if (index !== -1) {
       leaderboardData[index].score = 0;
       leaderboardData[index].level = 1;
       leaderboardData[index].gamesPlayed = 0;
-      try {
-        db_sqlite.prepare('UPDATE leaderboard SET score = 0, level = 1, gamesPlayed = 0 WHERE username = ?').run(username);
-      } catch (err) {
-        console.error('Failed to reset stats in SQLite:', err);
+      if (db_sqlite) {
+        try {
+          db_sqlite.prepare('UPDATE leaderboard SET score = 0, level = 1, gamesPlayed = 0 WHERE uid = ?').run(uid);
+        } catch (err) {
+          console.error('Failed to reset stats in SQLite:', err);
+        }
       }
     }
     res.json({ success: true });
   });
 
   apiRouter.post('/admin/ban-player', (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Username required' });
+    const { uid } = req.body;
+    if (!uid) return res.status(400).json({ error: 'UID required' });
     
-    leaderboardData = leaderboardData.filter(e => e.username !== username);
-    try {
-      db_sqlite.prepare('DELETE FROM leaderboard WHERE username = ?').run(username);
-    } catch (err) {
-      console.error('Failed to ban player in SQLite:', err);
+    leaderboardData = leaderboardData.filter(e => e.uid !== uid);
+    if (db_sqlite) {
+      try {
+        db_sqlite.prepare('DELETE FROM leaderboard WHERE uid = ?').run(uid);
+      } catch (err) {
+        console.error('Failed to ban player in SQLite:', err);
+      }
     }
 
     const payload = JSON.stringify({
       type: 'PLAYER_BANNED',
-      username,
+      uid,
       timestamp: new Date().toISOString()
     });
 

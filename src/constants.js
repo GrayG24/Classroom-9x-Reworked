@@ -172,7 +172,7 @@ export const GAMES_DATA = [
   {
     id: 'geometry-dash-fr',
     title: 'Geometry Dash',
-    description: 'Jump and fly your way through danger in this rhythm-based action platformer! Test your reflexes in this ultra-challenging original version.',
+    description: 'Rhythm-based action platformer where you jump, fly, and flip your way through high-speed obstacles. Master the levels with precise timing and reflexes.',
     thumbnail: 'https://geometrydash-game.ru/wp-content/uploads/2021/07/95-954583_geometry-dash.jpg',
     iframeUrl: 'https://geometrydash.fr/wp-content/uploads/games/html5/G/geometry-dash/index.html',
     category: 'action',
@@ -183,7 +183,7 @@ export const GAMES_DATA = [
   {
     id: 'ovo-classic',
     title: 'OvO',
-    description: 'Fast-paced parkour platformer! Master the art of wall jumping, sliding, and diving to overcome increasingly complex obstacles and reach the flag.',
+    description: 'Minimalist parkour platformer that demands precision. Run, jump, slide, and dive through increasingly difficult levels while mastering stickman physics.',
     thumbnail: 'https://www.numuki.com/game/card/ovo-game-5037.webp',
     iframeUrl: 'https://db.duck.tinyexams.com/html/ovo/index.html',
     category: 'action',
@@ -194,7 +194,7 @@ export const GAMES_DATA = [
   {
     id: 'basket-random',
     title: 'Basket Random',
-    description: 'Experience chaotic basketball fun with pixel physics! Control your team with one button and try to score in ever-changing environments.',
+    description: 'Two-player physics chaos on the court. Control your players with a single button to jump and shoot in ever-changing environments and random conditions.',
     thumbnail: 'https://www.fnfgo.com/wp-content/uploads/2024/01/Basket-Random.jpeg',
     iframeUrl: 'https://db.duck.tinyexams.com/html/basket_random/index.html',
     category: 'sports',
@@ -205,7 +205,7 @@ export const GAMES_DATA = [
   {
     id: 'boxing-random',
     title: 'Boxing Random',
-    description: 'Boxing like you have never seen it before! Two-player physics-based fun where one button is all you need to jump, punch, and knockout your opponent.',
+    description: 'Experimental physics-based boxing where one key controls everything. Jump and punch to knock out your opponent in this unpredictable sports simulator.',
     thumbnail: 'https://play-lh.googleusercontent.com/jku-om6R4p5KuvMRlOFjH6blrRjw1EnDb5S7h7WXm1J0bFrY18LXKbmjQnv7SDUWYn8=w526-h296',
     iframeUrl: 'https://labgstore311.github.io/g20/class-825',
     category: 'sports',
@@ -216,7 +216,7 @@ export const GAMES_DATA = [
   {
     id: 'minecraft-classic-edition',
     title: 'Minecraft',
-    description: 'Explore infinite worlds and build everything from the simplest of homes to the grandest of castles. Play the legendary sandbox classic unblocked in your browser.',
+    description: 'Legendary creative sandbox where you can build anything imaginable from blocks. Explore procedural worlds and mine resources to survive and create.',
     thumbnail: 'https://wallpapercave.com/wp/wp6548068.jpg',
     iframeUrl: 'https://db.duck.tinyexams.com/html/minecraft/index.html',
     category: 'classic',
@@ -227,7 +227,7 @@ export const GAMES_DATA = [
   {
     id: 'moto-x3m-classic',
     title: 'Moto X3M',
-    description: 'The ultimate bike racing game with awesome stunts and tricky obstacles. Can you finish all levels with 3 stars?',
+    description: 'High-octane bike racing game with dozens of challenging levels. Pull off insane flips and master the physics to set record times across dangerous obstacles.',
     thumbnail: 'https://motox3mgame.org/data/image/game/moto-x3m-bike-race-game1.png',
     iframeUrl: 'https://db.duck.tinyexams.com/html/motox3m/index.html',
     category: 'driving',
@@ -238,7 +238,7 @@ export const GAMES_DATA = [
   {
     id: 'cookie-clicker-new',
     title: 'Cookie Clicker',
-    description: 'The original idle game where you bake an absurd amount of cookies. Click the giant cookie and build an empire of bakers and upgrades!',
+    description: 'The defining incremental game of baking cookies. Start from a single click and scale your production to multi-billion cookie empires with insane upgrades.',
     thumbnail: 'https://assets.nintendo.com/image/upload/ar_16:9,b_auto:border,c_lpad/b_white/f_auto/q_auto/dpr_1.5/ncom/software/switch/70010000066299/432bf350e866b2544f9a5cd80de83e0c24f4efddfd7811016c4aa33e48c5df7c',
     iframeUrl: 'https://db.duck.tinyexams.com/html/cookie_clicker/index.html',
     category: 'casual',

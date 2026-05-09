@@ -82,7 +82,7 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, del
       transition={{ delay }}
       className={`relative ${rank === 1 ? 'md:order-2' : rank === 2 ? 'md:order-1' : 'md:order-3'}`}
     >
-      <Tilt>
+      <Tilt options={{ max: 25, scale: 1.05, speed: 1000, glare: true, "max-glare": 0.2, transition: true, easing: "cubic-bezier(.03,.98,.52,.99)" }}>
         <button 
           className={`proto-tilt-card group relative block h-[398px] w-[252px] sm:h-[424px] sm:w-[268px] overflow-hidden rounded-3xl border bg-card/78 text-left ${colorClass} ${shadowClass}`}
           onClick={onClick}
@@ -112,23 +112,21 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, del
 };
 
 const CountdownTimer = () => {
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
-      // Midnight EST is UTC-5 (or UTC-4 during DST)
-      // For simplicity, let's just target the next midnight in the current timezone
-      // or a fixed offset if we want to be precise about EST.
-      // The user asked for midnight EST.
-      
+      // Target next Monday 00:00:00
       const target = new Date();
-      target.setHours(24, 0, 0, 0); // Next midnight
+      target.setDate(target.getDate() + (1 + 7 - target.getDay()) % 7 || 7); 
+      target.setHours(0, 0, 0, 0);
       
       const diff = target.getTime() - now.getTime();
       
       if (diff > 0) {
         setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
           hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((diff / 1000 / 60) % 60),
           seconds: Math.floor((diff / 1000) % 60)
@@ -144,6 +142,7 @@ const CountdownTimer = () => {
   return (
     <div className="flex gap-4">
       {[
+        { label: 'DAYS', value: timeLeft.days },
         { label: 'HRS', value: timeLeft.hours },
         { label: 'MIN', value: timeLeft.minutes },
         { label: 'SEC', value: timeLeft.seconds }
@@ -187,29 +186,35 @@ export const Home = ({
     return (pinnedGames || []).map(id => games.find(g => g.id === id)).filter(Boolean);
   }, [pinnedGames, games]);
 
-  const popularGames = [
-    { 
-      game: games.find(g => g.id === 'balatro') || (games && games.length > 1 ? games[1] : (games && games.length > 0 ? games[0] : { title: 'Unknown', thumbnail: '', description: '' })), 
-      rank: 1, 
-      label: "Most replayed run this week.",
-      color: "border-white/50",
-      shadow: "shadow-[0_26px_56px_rgba(255,255,255,0.1)]"
-    },
-    { 
-      game: games.find(g => g.id === 'drive-mad') || (games && games.length > 2 ? games[2] : (games && games.length > 0 ? games[0] : { title: 'Unknown', thumbnail: '', description: '' })), 
-      rank: 2, 
-      label: "Fastest growth in repeat sessions.",
-      color: "border-white/30",
-      shadow: "shadow-[0_20px_38px_rgba(255,255,255,0.05)]"
-    },
-    { 
-      game: games.find(g => g.id === 'minecraft-classic-edition') || (games && games.length > 3 ? games[3] : (games && games.length > 0 ? games[0] : { title: 'Unknown', thumbnail: '', description: '' })), 
-      rank: 3, 
-      label: "Most consistent long-session game.",
-      color: "border-white/10",
-      shadow: "shadow-[0_18px_34px_rgba(255,255,255,0.02)]"
-    }
-  ];
+  const popularGames = useMemo(() => {
+    // Sort games by rating to get "actually" most popular
+    const sorted = [...games].sort((a, b) => b.rating - a.rating);
+    const top3 = sorted.slice(0, 3);
+    
+    return [
+      { 
+        game: top3[0] || { title: 'Unknown', thumbnail: '', description: '', id: 'unknown-1' }, 
+        rank: 1, 
+        label: "",
+        color: "border-white/50",
+        shadow: "shadow-[0_26px_56px_rgba(255,255,255,0.1)]"
+      },
+      { 
+        game: top3[1] || { title: 'Unknown', thumbnail: '', description: '', id: 'unknown-2' }, 
+        rank: 2, 
+        label: "",
+        color: "border-white/30",
+        shadow: "shadow-[0_20px_38px_rgba(255,255,255,0.05)]"
+      },
+      { 
+        game: top3[2] || { title: 'Unknown', thumbnail: '', description: '', id: 'unknown-3' }, 
+        rank: 3, 
+        label: "",
+        color: "border-white/10",
+        shadow: "shadow-[0_18px_34px_rgba(255,255,255,0.02)]"
+      }
+    ];
+  }, [games]);
 
   return (
     <div className="pb-40 animate-in fade-in duration-1000">
@@ -332,7 +337,7 @@ export const Home = ({
                     className="hidden xl:flex flex-col items-end gap-12"
                   >
                     <div className="text-right p-10 bg-black/60 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl">
-                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">DAILY REFRESH IN</p>
+                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">WEEKLY REFRESH IN</p>
                       <CountdownTimer />
                     </div>
                   </motion.div>
@@ -402,7 +407,8 @@ export const Home = ({
           </div>
         </div>
       </section>
-
     </div>
   );
 };
+
+

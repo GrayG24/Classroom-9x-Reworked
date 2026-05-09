@@ -82,6 +82,7 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
       <div className="p-8 border-t border-white/5 bg-white/[0.02]">
         <div className="relative group">
           <input 
+            id="chat-input"
             type="text" 
             placeholder="TYPE A MESSAGE..." 
             className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-16 py-5 text-[11px] font-black text-white outline-none focus:border-white/30 focus:bg-white/10 transition-all placeholder:text-white/10 uppercase tracking-widest italic"
@@ -94,7 +95,18 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
           />
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <div className="w-px h-6 bg-white/10 mr-2"></div>
-            <Send size={16} className="text-white/20 group-focus-within:text-white transition-colors" />
+            <button 
+              onClick={() => {
+                const input = document.getElementById('chat-input');
+                if (input && input.value.trim()) {
+                  onSendMessage(input.value);
+                  input.value = '';
+                }
+              }}
+              className="p-2 hover:bg-white/10 rounded-xl transition-all group/btn"
+            >
+              <Send size={16} className="text-white/20 group-focus-within:text-white group-hover/btn:text-white transition-colors" />
+            </button>
           </div>
         </div>
         <div className="flex items-center justify-between mt-6 px-2">

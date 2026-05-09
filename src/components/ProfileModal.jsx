@@ -56,7 +56,7 @@ export const ProfileModal = ({ user, onClose }) => {
               <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: `${(user.exp / (user.level * 1000)) * 100}%` }}
+                  animate={{ width: `${Math.min(100, (user.exp / (user.level * 200)) * 100)}%` }}
                   transition={{ duration: 1 }}
                   className="h-full bg-white shadow-[0_0_10px_white]"
                 />

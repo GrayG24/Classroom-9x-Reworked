@@ -101,11 +101,13 @@ const DEFAULT_USER = {
     notifications: true,
     homeBanner: true,
     performanceMode: false,
-    showFPS: true,
+    showFPS: false,
     reducedMotion: false,
     lowQualityParticles: false,
     sidebarAutoHide: true,
     backgroundEffects: true,
+    interactiveBg: true,
+    hideUnreleased: false,
     disableGlow: false,
     highContrast: false,
   }
@@ -494,6 +496,18 @@ const ExpRain = ({ onCollect }) => {
 
 
 const App = () => {
+  const gameOfTheWeek = useMemo(() => {
+    if (!GAMES_DATA || GAMES_DATA.length === 0) return { id: 'ovo-classic', name: 'OvO' };
+    const date = new Date();
+    // Deterministic selection based on week of year
+    const startOfYear = new Date(date.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
+    const index = weekNumber % GAMES_DATA.length;
+    const game = GAMES_DATA[index];
+    return { id: game.id, name: game.title };
+  }, []);
+
   const [currentView, setCurrentView] = useState(AppRoute.HOME);
   
   useEffect(() => {
@@ -618,7 +632,6 @@ const App = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [adminAnnouncement, setAdminAnnouncement] = useState(null);
-  const [gameOfTheWeek, setGameOfTheWeek] = useState({ id: 'classroom-9x', name: 'Classroom 9x' });
   const ws = useRef(null);
   const [showInitialModal, setShowInitialModal] = useState(false);
   const [initialModalError, setInitialModalError] = useState(null);
@@ -661,24 +674,31 @@ const App = () => {
   useEffect(() => {
     const fetchLeaderboard = () => {
       const url = '/api/leaderboard';
-      fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
-      })
+      console.log('App: Fetching leaderboard from:', url);
+      fetch(url)
         .then(async res => {
-          const contentType = res.headers.get('content-type');
-          if (!res.ok || !contentType || !contentType.includes('application/json')) {
+          if (!res.ok) {
             const text = await res.text();
             throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
           }
+          const contentType = res.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Response is not JSON');
+          }
           return res.json();
         })
-        .then(setLeaderboardData)
+        .then(data => {
+          console.log('App: Leaderboard data received:', data.length, 'entries');
+          setLeaderboardData(data);
+        })
         .catch(err => {
-          console.error('Leaderboard fetch error:', err);
-          if (err instanceof Error && err.message === 'Failed to fetch') {
+          console.error('Leaderboard fetch error details:', {
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            url
+          });
+          if (err instanceof Error && (err.message === 'Failed to fetch' || err.name === 'TypeError')) {
             console.warn('Network error or server unreachable. Retrying in 5s...');
             setTimeout(fetchLeaderboard, 5000);
           }
@@ -945,10 +965,11 @@ const App = () => {
     }
   }, [user.unlockedCharacters]);
 
-  const lastCompletedQuestsCount = useRef((Array.isArray(quests) ? quests : []).filter(q => q.isCompleted).length);
+  const lastCompletedQuestsCount = useRef(0);
 
   useEffect(() => {
-    const completedQuests = (Array.isArray(quests) ? quests : []).filter(q => q.isCompleted);
+    const qArray = Array.isArray(quests) ? quests : [];
+    const completedQuests = qArray.filter(q => q.isCompleted);
     if (completedQuests.length > lastCompletedQuestsCount.current) {
       const latestQuest = completedQuests[completedQuests.length - 1];
       addNotification('Quest Completed!', latestQuest.title, 'system', <Trophy className="text-theme" />);
@@ -991,6 +1012,7 @@ const App = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          uid: user.uid,
           username: user.username,
           level: user.level,
           score: user.score,
@@ -1166,6 +1188,12 @@ const App = () => {
 
       const styles = ['default', 'amongus', 'star', 'crosshair', 'sword', 'neon', 'ring'];
       styles.forEach(s => body.classList.remove(`cursor-${s}`));
+
+      if (user.settings.disableGlow) {
+        body.classList.add('reduce-glow');
+      } else {
+        body.classList.remove('reduce-glow');
+      }
 
       if (user.settings.customCursor && !activeGame && user.currentTheme !== 'spongebob' && !isCloaked) {
         body.classList.add('custom-cursor-enabled');
@@ -1396,19 +1424,28 @@ const App = () => {
       return { success: false, message: 'DECRYPTION KEY ALREADY USED' };
     }
 
-    if (cleanCode === 'admin6') {
+    if (cleanCode === 'admin6' || cleanCode === 'owner') {
+      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa'];
+      const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
+      const allChars = CHARACTERS.map(c => c.id);
+      const allBadges = BADGES.map(b => b.id);
+      const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'codes211', 'merica', 'classroom9x'];
+      
       setUser(prev => ({
         ...prev,
+        level: 999,
         isAdmin: true,
-        score: Math.max(prev.score, 1000000),
-        level: Math.max(prev.level || 1, 100),
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'admin6'])),
-        unlockedThemes: ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'fire', 'rainbow', 'spongebob', 'kanye', 'galaxy', 'hologram', 'ironman', 'synthwave', 'usa', 'retrofuture'],
-        unlockedFrames: ['default', 'neon', 'gold', 'diamond', 'cyberpunk', 'matrix', 'glitch'],
-        unlockedCharacters: CHARACTERS.map(c => c.id)
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), ...allCodes])),
+        unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
+        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
+        unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...allChars])),
+        unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), ...allBadges])),
+        currentTheme: 'owner',
+        currentFrame: 'owner',
+        score: Math.max(prev.score, 999999)
       }));
-      addNotification('Security Override', 'ADMINISTRATIVE PRIVILEGES GRANTED // ALL MODULES UNLOCKED', 'system', <Shield className="text-rose-500" />);
-      return { success: true, message: 'ACCESS GRANTED: TOTAL SYSTEM UNLOCK' };
+      addNotification('ADMIN ACCESS GRANTED', 'WELCOME BACK, OWNER', 'system', <Crown className="text-theme" />);
+      return { success: true, message: 'ADMIN PROTOCOL ACTIVATED: EVERYTHING UNLOCKED' };
     }
 
     if (cleanCode === 'codes211') {
@@ -1504,30 +1541,6 @@ const App = () => {
       return { success: true, message: '9X PROTOCOL: +100,000 EXP & +5 LEVELS' };
     }
 
-    if (cleanCode === 'admin6') {
-      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa'];
-      const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
-      const allChars = ['agent-x', 'viper', 'ghost', 'phantom', 'titan', 'nova', 'overlord', 'spongebob', 'stark', 'glitch', 'doge-king', 'cyber-samurai', 'royal-knight', 'neon-cat', 'space-ranger', 'kanye', 'ye-mask', 'patriot'];
-      const allBadges = BADGES.map(b => b.id);
-      const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'CODES211', 'merica'];
-      
-      setUser(prev => ({
-        ...prev,
-        level: 999,
-        isAdmin: true,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), ...allCodes])),
-        unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
-        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
-        unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...allChars])),
-        unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), ...allBadges])),
-        currentTheme: 'owner',
-        currentFrame: 'owner',
-        score: 999999
-      }));
-      addNotification('ADMIN ACCESS GRANTED', 'WELCOME BACK, OWNER', 'system', <Crown className="text-theme" />);
-      return { success: true, message: 'ADMIN PROTOCOL ACTIVATED: EVERYTHING UNLOCKED' };
-    }
-
     if (cleanCode === 'imagenius') {
       const kanyeThemes = ['kanye'];
       const kanyeChars = ['kanye', 'ye-mask'];
@@ -1608,12 +1621,7 @@ const App = () => {
       addNotification('System Error', 'INAPPROPRIATE USERNAME DETECTED', 'error', <ShieldAlert className="text-rose-500" />);
       return;
     }
-    // Check if username is already taken in the leaderboard
-    const isTaken = leaderboardData.some(entry => entry.username.toLowerCase() === cleanName && entry.uid !== user.uid);
-    if (isTaken) {
-      addNotification('System Error', 'USERNAME ALREADY TAKEN', 'error', <ShieldAlert className="text-rose-500" />);
-      return;
-    }
+    
     setUser(prev => ({ ...prev, username: newName }));
     addNotification('Identity Updated', `New username: ${newName}`, 'system', <Star className="text-theme" />);
   };
@@ -1640,12 +1648,7 @@ const App = () => {
       setInitialModalError('INAPPROPRIATE USERNAME DETECTED');
       return;
     }
-    // Check if username is already taken in the leaderboard
-    const isTaken = leaderboardData.some(entry => entry.username.toLowerCase() === cleanName);
-    if (isTaken) {
-      setInitialModalError('USERNAME ALREADY TAKEN');
-      return;
-    }
+    
     setInitialModalError(null);
     setUser(prev => ({ ...prev, username: name, hasSetProfile: true }));
     setShowInitialModal(false);
@@ -1768,6 +1771,20 @@ const App = () => {
     setIsExitingCloak(false);
   }, []);
 
+  const selectPlayerModal = useMemo(() => {
+    if (!selectedPlayer) return null;
+    return (
+      <MiniProfile 
+        player={selectedPlayer} 
+        currentUser={user}
+        isFriend={(user.friends || []).includes(selectedPlayer.username)}
+        isSent={(user.sentRequests || []).includes(selectedPlayer.username)}
+        onToggleFriend={() => toggleFriend(selectedPlayer.username)}
+        onClose={() => setSelectedPlayer(null)} 
+      />
+    );
+  }, [selectedPlayer, user, toggleFriend]);
+
   if (isMaintenanceMode && !user.isAdmin) {
     return (
       <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
@@ -1804,11 +1821,15 @@ const App = () => {
   }
 
   return (
-    <div className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}
+    >
       <div className="proto-backdrop" />
       <div className="proto-grid" />
       
-      {user.settings.animatedBg && <InteractiveBackground performanceMode={user.settings.performanceMode} lowQualityParticles={user.settings.lowQualityParticles} currentTheme={user.currentTheme} />}
+      {user.settings.interactiveBg && <InteractiveBackground enabled={user.settings.interactiveBg} />}
       {user.settings.customCursor && <CustomCursor />}
       
         <div className="proto-content-shell">
@@ -2200,18 +2221,22 @@ const App = () => {
         </div>
       )}
 
-      {selectedPlayer && (
-        <MiniProfile 
-          player={selectedPlayer} 
-          currentUser={user}
-          isFriend={(user.friends || []).includes(selectedPlayer.username)}
-          isSent={(user.sentRequests || []).includes(selectedPlayer.username)}
-          onToggleFriend={() => toggleFriend(selectedPlayer.username)}
-          onClose={() => setSelectedPlayer(null)} 
-        />
-      )}
-      {showInitialModal && <InitialNameModal onSubmit={handleInitialNameSubmit} error={initialModalError} />}
-    </div>
+      {selectPlayerModal}
+      
+      <AnimatePresence>
+        {showInitialModal && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 1.05, filter: 'blur(15px)' }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          >
+            <InitialNameModal onSubmit={handleInitialNameSubmit} error={initialModalError} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
 
