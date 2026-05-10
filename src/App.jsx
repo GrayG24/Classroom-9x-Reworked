@@ -102,6 +102,7 @@ const DEFAULT_USER = {
     notifications: true,
     homeBanner: true,
     performanceMode: false,
+    hideUnreleased: false,
     showFPS: false,
     reducedMotion: false,
     lowQualityParticles: false,
@@ -1836,7 +1837,7 @@ const App = () => {
           />
         );
       case AppRoute.SETTINGS: return <Settings user={user} onUpdateSettings={updateSettings} onSetTheme={setTheme} onRedeemCode={redeemCode} onResetProgress={handleResetProgress} onUpdateUsername={handleUpdateUsername} />;
-      case AppRoute.SUMMER: return <SummerCountdown />;
+      case AppRoute.SUMMER: return <SummerCountdown user={user} />;
       case AppRoute.LEADERBOARD: 
         if (!user.isAdmin) return <LockedPage title="Leaderboard" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return <Leaderboard user={user} onPlayerClick={setSelectedPlayer} leaderboardData={leaderboardData} />;
@@ -1965,13 +1966,13 @@ const App = () => {
       <div className={`proto-backdrop transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
       <div className={`proto-grid transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
       
-      {user.settings.interactiveBg && <InteractiveBackground enabled={user.settings.interactiveBg && currentView !== AppRoute.SUMMER} />}
+      {<InteractiveBackground user={user} enabled={!user.settings.performanceMode && currentView !== AppRoute.SUMMER} />}
       {user.settings.customCursor && <CustomCursor />}
       
         <div className="proto-content-shell">
         <div className={`min-h-screen transition-colors duration-1000 ${currentView === AppRoute.SUMMER ? 'bg-[#fdf5e6]' : 'bg-background/40'} text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
           {/* Background Effects */}
-          {isMatrixRain && <MatrixRain performanceMode={user.settings.performanceMode} />}
+          {isMatrixRain && !user.settings.performanceMode && <MatrixRain performanceMode={user.settings.performanceMode} />}
           {isRainbowChaos && <div className="rainbow-chaos-overlay" />}
           
           <div className={`relative z-10 ${isGravityChaos ? 'gravity-chaos-active' : ''}`}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, useSpring, useMotionValue, AnimatePresence } from 'motion/react';
 
-export const InteractiveBackground = ({ enabled = true }) => {
+export const InteractiveBackground = ({ enabled = true, user }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -19,60 +19,68 @@ export const InteractiveBackground = ({ enabled = true }) => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
 
-  return (
-    <div className="fixed inset-0 z-[-3] overflow-hidden pointer-events-none bg-[#02040a]">
-      <AnimatePresence>
-        {enabled && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
-            className="absolute inset-0"
-          >
-            {/* Base Atmosphere */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050810] to-[#02040a]"></div>
-            
-            {/* Reactive Light Bloom */}
-            <motion.div
-              style={{
-                left: smoothX,
-                top: smoothY,
-                x: '-50%',
-                y: '-50%',
-              }}
-              className="absolute w-[100vw] h-[100vw] bg-white/[0.04] blur-[180px] rounded-full mix-blend-screen"
-            />
-            
-            <motion.div
-              style={{
-                left: smoothX,
-                top: smoothY,
-                x: '-50%',
-                y: '-50%',
-              }}
-              className="absolute w-[40vw] h-[40vw] bg-white/[0.06] blur-[120px] rounded-full mix-blend-overlay"
-            />
+    const isPotatoMode = user?.settings?.performanceMode;
 
-            {/* Slow Drifting Distortion Layers */}
+    return (
+      <div className="fixed inset-0 z-[-3] overflow-hidden pointer-events-none bg-[#02040a]">
+        <AnimatePresence>
+          {enabled && (
             <motion.div
-              animate={{
-                x: [-100, 100],
-                y: [-50, 50],
-                scale: [1, 1.1, 1],
-              }}
-              transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-1/4 -left-1/4 w-[150vw] h-[150vh] bg-gradient-radial from-white/[0.03] to-transparent blur-[200px] opacity-40"
-            />
-
-            {/* Static Texture Overlay */}
-            <div 
-              className="absolute inset-0 opacity-[0.08] mix-blend-overlay pointer-events-none"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }}
-            />
-            
-            {/* Cosmic Floating Dust */}
-            {[...Array(40)].map((_, i) => (
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5 }}
+              className="absolute inset-0"
+            >
+              {/* Base Atmosphere */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050810] to-[#02040a]"></div>
+              
+              {/* Reactive Light Bloom - Simplified in Potato Mode */}
+              {!isPotatoMode && (
+                <>
+                  <motion.div
+                    style={{
+                      left: smoothX,
+                      top: smoothY,
+                      x: '-50%',
+                      y: '-50%',
+                    }}
+                    className="absolute w-[100vw] h-[100vw] bg-white/[0.04] blur-[180px] rounded-full mix-blend-screen"
+                  />
+                  
+                  <motion.div
+                    style={{
+                      left: smoothX,
+                      top: smoothY,
+                      x: '-50%',
+                      y: '-50%',
+                    }}
+                    className="absolute w-[40vw] h-[40vw] bg-white/[0.06] blur-[120px] rounded-full mix-blend-overlay"
+                  />
+                </>
+              )}
+  
+              {/* Slow Drifting Distortion Layers - Disabled in Potato Mode */}
+              {!isPotatoMode && (
+                <motion.div
+                  animate={{
+                    x: [-100, 100],
+                    y: [-50, 50],
+                    scale: [1, 1.1, 1],
+                  }}
+                  transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -top-1/4 -left-1/4 w-[150vw] h-[150vh] bg-gradient-radial from-white/[0.03] to-transparent blur-[200px] opacity-40"
+                />
+              )}
+  
+              {/* Static Texture Overlay - Simplified/Lighter opacity */}
+              <div 
+                className={`absolute inset-0 mix-blend-overlay pointer-events-none ${isPotatoMode ? 'opacity-[0.03]' : 'opacity-[0.08]'}`}
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }}
+              />
+              
+              {/* Cosmic Floating Dust - Greatly reduced or disabled in Potato Mode */}
+              {!isPotatoMode && [...Array(40)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ 

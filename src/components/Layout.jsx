@@ -46,17 +46,26 @@ export const Layout = ({
     navItems.push({ id: AppRoute.ADMIN, icon: Shield, label: 'Admin' });
   }
 
+  const isPotatoMode = user?.settings?.performanceMode;
+
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-white overflow-x-hidden font-sans">
       {/* Global Background Effects */}
       {user?.settings?.backgroundEffects && (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.03),transparent_70%)]"></div>
-          <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse delay-1000"></div>
           
-          {/* Subtle Scanline Effect */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none opacity-20"></div>
+          {!isPotatoMode && (
+            <>
+              <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse"></div>
+              <div className="absolute -bottom-[20%] -right-[10%] w-[60%] h-[60%] bg-white/[0.02] rounded-full blur-[120px] animate-pulse delay-1000"></div>
+            </>
+          )}
+          
+          {/* Subtle Scanline Effect - Disabled in Potato Mode */}
+          {!isPotatoMode && (
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none opacity-20"></div>
+          )}
         </div>
       )}
 
@@ -96,18 +105,19 @@ export const Layout = ({
       </div>
 
       {/* Main Content Shell */}
-      <main className="relative z-10 min-h-screen transition-all duration-500 ease-in-out pb-24 lg:pb-0 lg:pl-32">
-        <div className="max-w-[120rem] mx-auto px-6 md:px-12 lg:px-16">
+      <main className="relative z-10 min-h-screen transition-all duration-700 ease-[0.22,1,0.36,1] pb-24 lg:pb-0 lg:pl-[88px]">
+        <div className="max-w-[140rem] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: 10, scale: 0.99, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: -10, scale: 0.99, filter: 'blur(10px)' }}
               transition={{ 
-                duration: user?.settings?.betaFeatures?.experimentalAnimations ? 0.15 : 0.25, 
-                ease: "easeOut"
+                duration: isPotatoMode ? 0.3 : 0.7, 
+                ease: [0.22, 1, 0.36, 1] 
               }}
+              className="w-full"
             >
               {user?.settings?.showFPS && (
                 <div key="fps-widget" className={`fixed bottom-6 z-[100] hidden md:block transition-all duration-500 ${user?.isAdmin ? 'right-28' : 'right-6'}`}>

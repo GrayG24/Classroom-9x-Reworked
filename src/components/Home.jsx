@@ -12,14 +12,16 @@ const ProfileWidget = ({ user, onProfileClick }) => {
   const progress = (user.exp / nextLevelExp) * 100;
   const unlockedBadges = BADGES.filter(b => (user.unlockedBadges || []).includes(b.id));
   
+  const isPotatoMode = user?.settings?.performanceMode === true;
+  
   return (
     <motion.div 
-      whileHover={{ y: -8, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={isPotatoMode ? {} : { y: -8, scale: 1.02 }}
+      whileTap={isPotatoMode ? {} : { scale: 0.98 }}
       onClick={onProfileClick}
-      className="rounded-[40px] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-3xl cursor-pointer group relative overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.4)]"
+      className={`rounded-[40px] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-3xl cursor-pointer group relative overflow-hidden ${isPotatoMode ? '' : 'shadow-[0_30px_60px_rgba(0,0,0,0.4)]'}`}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+      {!isPotatoMode && <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>}
       
       <div className="flex items-center gap-8 relative z-10">
         <div className="relative shrink-0">
@@ -222,21 +224,53 @@ export const Home = ({
     ];
   }, [games]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      filter: 'blur(0px)',
+      transition: { 
+        duration: 0.8, 
+        ease: [0.22, 1, 0.36, 1] 
+      } 
+    },
+  };
+
   return (
-    <div className="pb-40 animate-in fade-in duration-1000">
-      <Hero user={user} onBrowseLibrary={onSwitchToLibrary} />
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="pb-40"
+    >
+      <motion.div variants={itemVariants}>
+        <Hero user={user} onBrowseLibrary={onSwitchToLibrary} />
+      </motion.div>
 
       {/* Pinned Games Section - Top Right Floating */}
       {pinnedGamesList.length > 0 && (
         <div className="fixed top-8 right-8 z-[60] flex flex-col items-end gap-4 pointer-events-none">
-          <div 
+          <motion.div 
+            variants={itemVariants}
             onClick={() => setIsPinnedMinimized(!isPinnedMinimized)}
             className="flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl pointer-events-auto cursor-pointer hover:bg-white/10 transition-all"
           >
             <Star size={14} className="text-white fill-white" />
             <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] italic">PINNED ACCESS</span>
             {isPinnedMinimized ? <ChevronDown size={14} className="text-white/40" /> : <X size={14} className="text-white/40" />}
-          </div>
+          </motion.div>
           <AnimatePresence>
             {!isPinnedMinimized && (
               <motion.div 
@@ -266,12 +300,12 @@ export const Home = ({
       )}
 
       {/* Featured Game Banner - REWORKED */}
-      <section className="pb-20 relative z-10">
+      <motion.section variants={itemVariants} className="pb-20 relative z-10">
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="relative group">
             <div className="absolute -inset-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-1000"></div>
             <div 
-              className="relative h-[600px] rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group cursor-pointer"
+              className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group cursor-pointer"
               onClick={() => onPlayGame(featuredGame)}
             >
               <img 
@@ -333,10 +367,10 @@ export const Home = ({
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Community Section */}
-      <section className="pb-32 relative z-10">
+      <motion.section variants={itemVariants} className="pb-32 relative z-10">
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <ProfileWidget user={user} onProfileClick={onProfileClick} />
@@ -363,19 +397,17 @@ export const Home = ({
             </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Popular Games Section */}
-      <section className="pb-32 relative z-10">
+      <motion.section variants={itemVariants} className="pb-32 relative z-10">
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex flex-col items-center text-center mb-16 relative z-10">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+            <h2 
               className="text-6xl font-black text-white uppercase tracking-tighter italic leading-none"
             >
               POPULAR <span className="text-white/40">GAMES</span>
-            </motion.h2>
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 items-end justify-items-center gap-12 md:grid-cols-3 relative z-10">
@@ -393,8 +425,8 @@ export const Home = ({
             ))}
           </div>
         </div>
-      </section>
-    </div>
+      </motion.section>
+    </motion.div>
   );
 };
 

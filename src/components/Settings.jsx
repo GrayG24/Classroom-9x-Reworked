@@ -25,7 +25,7 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
       title: 'Visuals',
       icon: Palette,
       settings: [
-        { id: 'interactiveBg', label: 'Interactive Background', description: 'Enable a reactive, moving background.', type: 'toggle' },
+        { id: 'performanceMode', label: 'Potato Mode', description: 'Disable heavy animations and background effects for low-end devices.', type: 'toggle' },
         { id: 'backgroundEffects', label: 'Ambient Particles', description: 'Subtle floating effects in the background.', type: 'toggle' },
         { id: 'disableGlow', label: 'Reduce Glow', description: 'Decrease intense neon and blooming effects.', type: 'toggle' },
         { id: 'showFPS', label: 'Show FPS Tracker', description: 'Toggle the real-time performance counter.', type: 'toggle' }
@@ -271,7 +271,10 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                           </div>
                           
                           <button
-                            onClick={() => onUpdateSettings({ ...user.settings, [setting.id]: !user.settings[setting.id] })}
+                            onClick={() => {
+                              const newValue = !user.settings[setting.id];
+                              onUpdateSettings({ ...user.settings, [setting.id]: newValue });
+                            }}
                             className={`w-14 h-8 rounded-full p-1 transition-all relative ${
                               user.settings[setting.id] ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.3)]' : 'bg-white/10'
                             }`}

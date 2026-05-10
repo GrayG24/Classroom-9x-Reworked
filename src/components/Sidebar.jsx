@@ -36,17 +36,24 @@ export const Sidebar = ({
 
   const currentChar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
 
+  const isPotatoMode = user?.settings?.performanceMode;
+
   const rawMenuItems = [
     { id: AppRoute.HOME, label: 'Home', icon: House, isReleased: true },
     { id: AppRoute.LIBRARY, label: 'Games', icon: Gamepad2, isReleased: true },
     { id: AppRoute.SUMMER, label: 'Summer Countdown', icon: Sun, isReleased: true, accentColor: 'text-orange-400', beachBonus: true },
-    { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid, isReleased: true },
-    { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: true },
+    { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid, isReleased: false },
+    { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: false },
     { id: AppRoute.SETTINGS, label: 'Settings', icon: Settings, isReleased: true },
   ];
 
   const menuItems = rawMenuItems.filter(item => {
-    if (user.settings.hideUnreleased && !item.isReleased) return false;
+    // If Admin, show everything regardless
+    if (user.isAdmin) return true;
+    
+    // If Hide Unreleased is enabled, strictly hide items where isReleased is false
+    if (user.settings.hideUnreleased && item.isReleased === false) return false;
+    
     return true;
   });
 
@@ -122,6 +129,7 @@ export const Sidebar = ({
         {menuItems.map((item) => {
           const isActive = currentView === item.id;
           const isRed = 'color' in item && item.color === 'text-rose-500';
+          const isComingSoon = item.isReleased === false;
           
           return (
             <motion.button
@@ -131,20 +139,23 @@ export const Sidebar = ({
               animate={{
                 width: isExpanded ? "100%" : "3.5rem",
                 borderRadius: isExpanded ? "1.5rem" : "1.2rem",
+                opacity: isComingSoon && !isActive ? 0.6 : 1
               }}
               whileHover={{ 
-                scale: 1.05,
+                scale: isComingSoon && !isActive ? 1.02 : 1.05,
                 x: isExpanded ? 4 : 0
               }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                onViewChange(item.id);
+                if (!isComingSoon || user.isAdmin) {
+                  onViewChange(item.id);
+                }
               }}
               className={`h-14 flex items-center relative overflow-hidden transition-all duration-500 ${
                 isActive 
                   ? `${isRed ? 'bg-rose-500 text-white' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-300 shadow-[0_10px_30px_rgba(34,211,238,0.5)] border-b-2 border-yellow-300' : 'bg-white text-black shadow-[0_0_40px_rgba(255,255,255,0.15)]'} font-black italic` 
                   : `${isRed ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-100 shadow-lg border border-white/20' : 'text-white/40 hover:text-white hover:bg-white/5'}`
-              } ${isExpanded ? 'px-4' : 'justify-center mx-auto'}`}
+              } ${isExpanded ? 'px-4' : 'justify-center mx-auto'} ${isComingSoon && !isActive ? 'cursor-not-allowed grayscale' : ''}`}
             >
               {item.beachBonus && (
                  <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
@@ -165,16 +176,21 @@ export const Sidebar = ({
               </motion.div>
               <AnimatePresence mode="popLayout" initial={false}>
                   {isExpanded && (
-                    <motion.span 
+                    <motion.div 
                       key={`${item.id}-label`}
                       initial={{ opacity: 0, x: -15, filter: 'blur(4px)' }}
                       animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, x: -15, filter: 'blur(4px)' }}
                       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                      className={`ml-4 text-[10px] font-black uppercase tracking-[0.2em] italic relative z-10 whitespace-nowrap pointer-events-none ${isActive ? (isRed || item.beachBonus ? 'text-inherit' : 'text-inherit') : ''}`}
+                      className="ml-4 flex flex-col items-start relative z-10 whitespace-nowrap pointer-events-none"
                     >
-                      {item.label}
-                    </motion.span>
+                      <span className={`text-[10px] font-black uppercase tracking-[0.2em] italic ${isActive ? (isRed || item.beachBonus ? 'text-inherit' : 'text-inherit') : ''}`}>
+                        {item.label}
+                      </span>
+                      {isComingSoon && !isActive && (
+                        <span className="text-[6px] font-black tracking-widest text-white/40 -mt-0.5">COMING SOON</span>
+                      )}
+                    </motion.div>
                   )}
               </AnimatePresence>
             </motion.button>
