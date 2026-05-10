@@ -4,16 +4,21 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 
-const ShootingStar = ({ onWitnessed, onImpact, forceTrigger = false }) => {
+const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false }) => {
   const meshRef = useRef();
   const [active, setActive] = useState(false);
   const impactTriggered = useRef(false);
 
+  const hasFired = useRef(false);
+
   useEffect(() => {
+    if (hasFired.current) return;
+
     const roll = Math.floor(Math.random() * 10000);
     
     if (roll === 777 || forceTrigger) {
-      const delay = forceTrigger ? 500 : 2000;
+      hasFired.current = true;
+      const delay = forceTrigger ? 500 : 25000; // Even rarer and slower arrival
       setTimeout(() => {
         setActive(true);
         onWitnessed?.();
@@ -23,12 +28,30 @@ const ShootingStar = ({ onWitnessed, onImpact, forceTrigger = false }) => {
 
   useFrame((state) => {
     if (!active || !meshRef.current) return;
-    meshRef.current.position.x += 3.0; // Faster
-    meshRef.current.position.y -= 1.0;
+    
+    // Slower and much bigger presence
+    const speed = 0.55;
+    meshRef.current.position.x += speed; 
+    meshRef.current.position.y -= speed * 0.2;
 
     // Pulse the light aggressively
     if (meshRef.current.children[1]) {
-      meshRef.current.children[1].intensity = 150 + Math.sin(state.clock.elapsedTime * 40) * 50;
+      meshRef.current.children[1].intensity = 400 + Math.sin(state.clock.elapsedTime * 20) * 150;
+    }
+
+    // Proximity logic
+    if (meshRef.current.position.x < 0) {
+      const distance = Math.abs(meshRef.current.position.x);
+      if (distance < 50) {
+         const intensity = 1 - (distance / 50);
+         onProximity?.(intensity);
+      } else {
+         onProximity?.(0);
+      }
+    } else if (meshRef.current.position.x < 15) {
+       onProximity?.(1.2); 
+    } else {
+       onProximity?.(0);
     }
 
     // Impact detection
@@ -39,6 +62,7 @@ const ShootingStar = ({ onWitnessed, onImpact, forceTrigger = false }) => {
 
     if (meshRef.current.position.x > 80) {
       setActive(false);
+      onProximity?.(0);
     }
   });
 
@@ -46,21 +70,21 @@ const ShootingStar = ({ onWitnessed, onImpact, forceTrigger = false }) => {
 
   return (
     <group>
-      <mesh ref={meshRef} position={[-80, 45, -5]}>
-        <sphereGeometry args={[3.5, 32, 32]} />
+      <mesh ref={meshRef} position={[-120, 60, -5]}>
+        <sphereGeometry args={[12, 32, 32]} />
         <meshBasicMaterial color="#ffffff" />
-        <pointLight intensity={300} distance={500} color="#f0f9ff" />
+        <pointLight intensity={1200} distance={1500} color="#f0f9ff" />
         
         {/* Massive Glowing aura */}
         <mesh>
-          <sphereGeometry args={[10, 32, 32]} />
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.2} />
+          <sphereGeometry args={[45, 32, 32]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
         </mesh>
         
         {/* Kinetic trail */}
-        <mesh rotation={[0, 0, Math.PI / 4]} position={[-20, 8, 0]}>
-          <cylinderGeometry args={[0.5, 8, 50, 32]} />
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
+        <mesh rotation={[0, 0, Math.PI / 4]} position={[-60, 25, 0]}>
+          <cylinderGeometry args={[4, 45, 200, 32]} />
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.1} />
         </mesh>
       </mesh>
     </group>
@@ -140,6 +164,7 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
   const [stage, setStage] = useState('initializing');
   const [stargazerTriggered, setStargazerTriggered] = useState(false);
   const [isDestroyed, setIsDestroyed] = useState(false);
+  const [proximityShake, setProximityShake] = useState(0);
 
   useEffect(() => {
     const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
@@ -185,8 +210,13 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
 
   const handleImpact = () => {
     setIsDestroyed(true);
-    // Burst apart, then return to normal after a long duration
-    setTimeout(() => setIsDestroyed(false), 800); 
+    setTimeout(() => setIsDestroyed(false), 3000); 
+  };
+
+  const getShake = (base) => {
+    if (isDestroyed) return base * 4;
+    if (proximityShake > 0) return base * 2 * proximityShake;
+    return 0;
   };
 
   return (
@@ -196,8 +226,24 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
         opacity: stage === 'entering' ? 0 : 1,
         scale: stage === 'entering' ? 1.1 : 1,
         filter: stage === 'entering' ? 'blur(20px)' : 'none',
+        x: isDestroyed || proximityShake > 0 ? [
+          0, 
+          getShake(-6), getShake(6), 
+          getShake(-10), getShake(10), 
+          getShake(-6), 0
+        ] : 0,
+        y: isDestroyed || proximityShake > 0 ? [
+          0, 
+          getShake(10), getShake(-10), 
+          getShake(6), getShake(-6), 
+          getShake(10), 0
+        ] : 0,
       }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ 
+        duration: isDestroyed ? 0.6 : 0.1, 
+        repeat: proximityShake > 0 && !isDestroyed ? Infinity : 0,
+        ease: "linear"
+      }}
       className={`fixed inset-0 z-[99999] bg-[#020305] flex flex-col items-center justify-center overflow-hidden ${stage === 'entering' ? 'pointer-events-none' : ''}`}
     >
       <div className="absolute inset-0 z-0 text-white pointer-events-none">
@@ -210,7 +256,12 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
             <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
             <Particles count={3000} />
             <Singularity />
-            <ShootingStar onWitnessed={onCosmicEvent} onImpact={handleImpact} forceTrigger={stargazerTriggered} />
+            <ShootingStar 
+              onWitnessed={onCosmicEvent} 
+              onImpact={handleImpact} 
+              onProximity={setProximityShake}
+              forceTrigger={stargazerTriggered} 
+            />
           </Suspense>
 
           <ambientLight intensity={0.5} />
@@ -240,7 +291,7 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
                     rotate: (Math.random() - 0.5) * 1440,
                     scale: 1 + Math.random() * 4,
                     opacity: [1, 0.2, 0.8],
-                    filter: `blur(${5 + Math.random() * 15}px)`
+                    filter: `blur(${5 + Math.random() * 25}px)`
                   } : {
                     x: 0,
                     y: 0,
@@ -250,24 +301,20 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
                     filter: 'blur(0px)'
                   }}
                   transition={{ 
-                    duration: isDestroyed ? 0.3 : 25, // Fly out fast, float back very slowly
-                    ease: isDestroyed ? "circOut" : "easeInOut",
+                    duration: isDestroyed ? 1.2 : 4, // Smoother return speed
+                    ease: isDestroyed ? [0.16, 1, 0.3, 1] : [0.4, 0, 0.2, 1],
                     delay: isDestroyed ? 0 : i * 0.05
                   }}
                   className={`text-6xl font-black italic uppercase transition-colors ${
                     char === ' ' ? 'w-8' : ''
-                  } ${
-                    (char === '9' || char === 'X') 
-                      ? 'text-rose-500' 
-                      : 'text-white'
-                  }`}
+                  } text-white`}
                 >
                   {char}
                 </motion.span>
               ))}
             </div>
 
-            <div className={`h-px transition-all duration-[30s] ease-out mt-12 w-64 bg-gradient-to-r from-transparent via-white/40 to-transparent ${
+            <div className={`h-px transition-all duration-[60s] ease-out mt-12 w-64 bg-gradient-to-r from-transparent via-white/40 to-transparent ${
               isDestroyed ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'
             }`} />
           </motion.div>

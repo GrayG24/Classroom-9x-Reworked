@@ -23,7 +23,7 @@ import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { InteractiveBackground } from './components/InteractiveBackground';
 import { GameView } from './components/GameView';
-import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play } from 'lucide-react';
+import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play, Waves } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const EXP_PER_PLAY = 25;
@@ -496,6 +496,101 @@ const ExpRain = ({ onCollect }) => {
 };
 
 
+const WaveTransition = ({ isVisible, onComplete }) => {
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          id="summer-wave-transition"
+          initial={{ y: '100%' }}
+          animate={{ y: '-120%' }}
+          exit={{ opacity: 0 }}
+          transition={{ 
+            duration: 4, 
+            ease: [0.65, 0, 0.35, 1],
+            opacity: { duration: 0.5, delay: 3.5 }
+          }}
+          onAnimationComplete={onComplete}
+          className="fixed inset-0 z-[10000] pointer-events-none will-change-transform"
+        >
+          {/* Detailed Multi-layer Wave Body */}
+          <div className="absolute inset-x-0 bottom-0 top-[-30%]">
+             {/* Deep Ocean Layer */}
+             <div className="absolute inset-0 bg-blue-900/80" />
+             <div className="absolute inset-0 bg-gradient-to-t from-blue-600 via-sky-600 to-sky-500 opacity-90" />
+             
+             {/* Dynamic Wave Layers */}
+             <div className="absolute inset-0 overflow-visible">
+                {/* Back Layer Foam (White) */}
+                <svg viewBox="0 0 1440 320" className="absolute top-[-8%] left-0 w-full rotate-180 opacity-30 fill-sky-200 blur-[2px]">
+                  <path d="M0,192L60,170.7C120,149,240,107,360,112C480,117,600,171,720,181.3C840,192,960,160,1080,149.3C1200,139,1320,149,1380,154.7L1440,160L1440,320L0,320Z" />
+                </svg>
+
+                {/* Secondary Blue Wave */}
+                <svg viewBox="0 0 1440 320" className="absolute top-[-4%] left-0 w-full rotate-180 opacity-60 fill-sky-400">
+                  <path d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,122.7C960,117,1056,171,1152,197.3C1248,224,1344,224,1392,224L1440,224L1440,320L0,320Z" />
+                </svg>
+
+                {/* Main Crest Wave */}
+                <svg viewBox="0 0 1440 320" className="absolute top-0 left-0 w-full rotate-180 -translate-y-[99%] fill-sky-500 shadow-[0_-20px_50px_rgba(255,255,255,0.2)]">
+                  <path d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,202.7C960,224,1056,224,1152,202.7C1248,181,1344,139,1392,117.3L1440,96L1440,320L0,320Z" />
+                </svg>
+
+                {/* Sparkling Highlights (Foam particles) */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                   {[...Array(35)].map((_, i) => (
+                     <motion.div
+                       key={i}
+                       initial={{ opacity: 0, scale: 0 }}
+                       animate={{ 
+                         opacity: [0, 0.6, 0],
+                         scale: [0.4, 1.2, 0.6],
+                         y: ['110%', '-80%'],
+                         x: Math.sin(i) * 50
+                       }}
+                       transition={{ 
+                         duration: 1.5 + Math.random() * 2.5,
+                         repeat: Infinity,
+                         delay: Math.random() * 3,
+                         ease: "easeOut"
+                       }}
+                       className="absolute w-2 h-2 md:w-3 md:h-3 bg-white/40 rounded-full blur-[1px]"
+                       style={{ 
+                         left: `${Math.random() * 100}%`,
+                         bottom: `${Math.random() * 60}%` 
+                       }}
+                     />
+                   ))}
+                </div>
+             </div>
+
+             <div className="flex flex-col items-center justify-center h-full gap-8 relative z-10">
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.15, 1], 
+                    rotate: [0, 8, -8, 0],
+                    y: [0, -10, 0]
+                  }}
+                  transition={{ duration: 0.8, repeat: Infinity }}
+                >
+                  <Waves size={180} className="text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.5)]" />
+                </motion.div>
+                <h2 className="text-6xl md:text-9xl font-black text-white italic tracking-tighter uppercase drop-shadow-[0_15px_60px_rgba(0,0,0,0.4)] px-10 text-center leading-[0.8]">
+                  Dropping into Summer
+                </h2>
+             </div>
+
+             {/* Bottom Exit Foam */}
+             <svg viewBox="0 0 1440 320" className="absolute bottom-0 left-0 w-full translate-y-[99%] fill-sky-500 opacity-80">
+                <path d="M0,224L60,202.7C120,181,240,139,360,149.3C480,160,600,224,720,234.7C840,245,960,203,1080,186.7C1200,171,1320,181,1380,186.7L1440,192L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z" />
+             </svg>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const App = () => {
   const gameOfTheWeek = useMemo(() => {
     if (!GAMES_DATA || GAMES_DATA.length === 0) return { id: 'ovo-classic', name: 'OvO' };
@@ -510,6 +605,27 @@ const App = () => {
   }, []);
 
   const [currentView, setCurrentView] = useState(AppRoute.HOME);
+  const [showWaveTransition, setShowWaveTransition] = useState(false);
+
+  const handleViewChange = (newView, param = null) => {
+    if (newView === AppRoute.ADMIN) {
+      setIsAdminPanelOpen(prev => !prev);
+      return;
+    }
+
+    setSearchQuery('');
+    setSelectedCategoryId(param || null);
+
+    if (newView === AppRoute.SUMMER && currentView !== AppRoute.SUMMER) {
+      if (showWaveTransition) return;
+      setShowWaveTransition(true);
+      // Wait for the wave to cover the screen (middle of 4s transition)
+      setTimeout(() => setCurrentView(newView), 1800);
+    } else {
+      setCurrentView(newView);
+      if (isAdminPanelOpen) setIsAdminPanelOpen(false);
+    }
+  };
   
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1846,14 +1962,14 @@ const App = () => {
       animate={{ opacity: 1 }}
       className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}
     >
-      <div className="proto-backdrop" />
-      <div className="proto-grid" />
+      <div className={`proto-backdrop transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
+      <div className={`proto-grid transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
       
-      {user.settings.interactiveBg && <InteractiveBackground enabled={user.settings.interactiveBg} />}
+      {user.settings.interactiveBg && <InteractiveBackground enabled={user.settings.interactiveBg && currentView !== AppRoute.SUMMER} />}
       {user.settings.customCursor && <CustomCursor />}
       
         <div className="proto-content-shell">
-        <div className={`min-h-screen bg-background/40 text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
+        <div className={`min-h-screen transition-colors duration-1000 ${currentView === AppRoute.SUMMER ? 'bg-[#fdf5e6]' : 'bg-background/40'} text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
           {/* Background Effects */}
           {isMatrixRain && <MatrixRain performanceMode={user.settings.performanceMode} />}
           {isRainbowChaos && <div className="rainbow-chaos-overlay" />}
@@ -1862,18 +1978,10 @@ const App = () => {
             <Layout 
               user={user}
               onSearch={setSearchQuery} 
-              onSetTheme={setTheme}
+              onSetTheme={(theme) => setUser(prev => ({ ...prev, currentTheme: theme }))}
               currentView={currentView}
               selectedCategoryId={selectedCategoryId}
-              onViewChange={(view, param) => {
-                if (view === AppRoute.ADMIN) {
-                  setIsAdminPanelOpen(prev => !prev);
-                  return;
-                }
-                setCurrentView(view);
-                setSelectedCategoryId(param || null);
-                setSearchQuery('');
-              }}
+              onViewChange={handleViewChange}
               onProfileClick={() => setIsProfileModalOpen(true)}
             >
               <>
@@ -1970,6 +2078,8 @@ const App = () => {
           </div>
         </div>
       </div>
+
+      <WaveTransition isVisible={showWaveTransition} onComplete={() => setShowWaveTransition(false)} />
 
       {/* Modals outside effect containers */}
       {activeGame && <GameModal game={activeGame} isFavorite={user.favorites.includes(activeGame.id)} onToggleFavorite={toggleFavorite} onClose={() => setActiveGame(null)} />}
