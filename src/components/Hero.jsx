@@ -20,7 +20,7 @@ export const Hero = ({ user, onBrowseLibrary }) => {
     "want your own quote up here? send me your qoutes and ill add them"
   ], []);
 
-  const welcomeText = `WELCOME, ${user.username}`;
+  const welcomeText = "WELCOME";
 
   return (
     <section className="relative pt-20 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32 overflow-hidden min-h-[60vh] flex items-center">
