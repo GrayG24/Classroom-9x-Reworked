@@ -95,7 +95,7 @@ const Singularity = () => {
   const meshRef = useRef();
   
   useFrame((state) => {
-    const time = state.clock.getElapsedTime();
+    const time = state.clock.elapsedTime;
     if (meshRef.current) {
       meshRef.current.rotation.z = time * 0.2;
       meshRef.current.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
@@ -128,7 +128,7 @@ const Particles = ({ count = 5000 }) => {
   });
 
   useFrame((state) => {
-    const time = state.clock.getElapsedTime();
+    const time = state.clock.elapsedTime;
     if (points.current) {
         points.current.rotation.y = time * 0.05;
         points.current.rotation.z = time * 0.02;

@@ -324,7 +324,7 @@ html, body {
 }
 
 .proto-rail-link-active svg {
-  color: #000000 !important;
+  color: inherit !important;
 }
 
 /* Mobile Dock */

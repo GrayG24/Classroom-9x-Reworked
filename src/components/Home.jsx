@@ -76,15 +76,18 @@ const ProfileWidget = ({ user, onProfileClick }) => {
   );
 };
 
-const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, delay = 0 }) => {
+const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isPotatoMode, delay = 0 }) => {
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+      initial={isPotatoMode ? { opacity: 0 } : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
       className={`relative ${rank === 1 ? 'md:order-2' : rank === 2 ? 'md:order-1' : 'md:order-3'}`}
     >
-      <Tilt options={{ max: 25, scale: 1.05, speed: 1000, glare: true, "max-glare": 0.2, transition: true, easing: "cubic-bezier(.03,.98,.52,.99)" }}>
+      <Tilt 
+        disabled={isPotatoMode}
+        options={{ max: 25, scale: 1.05, speed: 1000, glare: true, "max-glare": 0.2, transition: true, easing: "cubic-bezier(.03,.98,.52,.99)" }}
+      >
         <button 
           className={`proto-tilt-card group relative block h-[398px] w-[252px] sm:h-[424px] sm:w-[268px] overflow-hidden rounded-3xl border bg-card/78 text-left ${colorClass} ${shadowClass}`}
           onClick={onClick}
@@ -106,8 +109,8 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, del
           </div>
         </button>
       </Tilt>
-      {rank === 1 && (
-        <div className="pointer-events-none absolute inset-0 -z-10 rounded-[28px] bg-[radial-gradient(circle_at_50%_18%,color-mix(in_oklab,var(--accent)_28%,transparent),transparent_58%)] blur-[1px]"></div>
+      {rank === 1 && !isPotatoMode && (
+        <div className="pointer-events-none absolute inset-0 -z-10 rounded-[28px] bg-[radial-gradient(circle_at_50%_18%,color-mix(in_srgb,var(--accent)_28%,transparent),transparent_58%)] blur-[1px]"></div>
       )}
     </motion.div>
   );
@@ -224,25 +227,30 @@ export const Home = ({
     ];
   }, [games]);
 
+  const isPotatoMode = user?.settings?.performanceMode;
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: isPotatoMode ? 0.05 : 0.12,
         delayChildren: 0.2,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
+    hidden: isPotatoMode 
+      ? { opacity: 0, y: 10 } 
+      : { opacity: 0, y: 30, filter: 'blur(15px)', scale: 0.98 },
     visible: { 
       opacity: 1, 
       y: 0, 
       filter: 'blur(0px)',
+      scale: 1,
       transition: { 
-        duration: 0.8, 
+        duration: isPotatoMode ? 0.35 : 1.1, 
         ease: [0.22, 1, 0.36, 1] 
       } 
     },
@@ -304,8 +312,7 @@ export const Home = ({
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="relative group">
             <div className="absolute -inset-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-1000"></div>
-            <div 
-              className="relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group cursor-pointer"
+            <div className={`relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group cursor-pointer ${isPotatoMode ? '' : 'hover:shadow-[0_0_80px_rgba(255,255,255,0.1)]'}`}
               onClick={() => onPlayGame(featuredGame)}
             >
               <img 
@@ -420,6 +427,7 @@ export const Home = ({
                 colorClass={pg.color}
                 shadowClass={pg.shadow}
                 onClick={() => onPlayGame(pg.game)}
+                isPotatoMode={isPotatoMode}
                 delay={i * 0.15}
               />
             ))}

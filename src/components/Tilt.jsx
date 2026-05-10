@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-export const Tilt = ({ children, options = {}, className = '' }) => {
+export const Tilt = ({ children, options = {}, className = '', disabled = false }) => {
   const tilt = useRef(null);
 
   const defaultOptions = {
@@ -17,7 +17,7 @@ export const Tilt = ({ children, options = {}, className = '' }) => {
 
   useEffect(() => {
     const el = tilt.current;
-    if (!el) return;
+    if (!el || disabled) return;
 
     let transitionTimeout;
 

@@ -48,11 +48,12 @@ export const Sidebar = ({
   ];
 
   const menuItems = rawMenuItems.filter(item => {
-    // If Admin, show everything regardless
-    if (user.isAdmin) return true;
-    
     // If Hide Unreleased is enabled, strictly hide items where isReleased is false
+    // Only exception: Admin might want to see them if they haven't explicitly asked to hide them, 
+    // but the user says it's not working, so let's honor the setting even for admins if it's on.
     if (user.settings.hideUnreleased && item.isReleased === false) return false;
+    
+    if (user.isAdmin) return true;
     
     return true;
   });
@@ -67,7 +68,7 @@ export const Sidebar = ({
       onMouseEnter={() => user.settings.sidebarAutoHide && setIsExpanded(true)}
       onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
       initial={false}
-      animate={{ 
+      animate={isPotatoMode ? {} : { 
         width: isExpanded ? 280 : 88,
         height: isExpanded ? 'calc(100% - 40px)' : 'calc(100% - 130px)',
         x: 20,
@@ -75,13 +76,23 @@ export const Sidebar = ({
         borderRadius: isExpanded ? "2rem" : "2.8rem",
         opacity: 1
       }}
-      transition={{ 
+      transition={isPotatoMode ? { duration: 0 } : { 
         type: "spring", 
         damping: 30, 
         stiffness: 150, 
         mass: 1,
         layout: { duration: 0.4 }
       }}
+      style={isPotatoMode ? {
+        width: isExpanded ? 280 : 88,
+        height: isExpanded ? 'calc(100% - 40px)' : 'calc(100% - 130px)',
+        left: 20,
+        top: isExpanded ? 20 : 65,
+        borderRadius: isExpanded ? "2rem" : "2.8rem",
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'fixed'
+      } : {}}
       className="fixed left-0 top-0 z-50 flex flex-col shadow-[20px_0_100px_rgba(0,0,0,0.2)] bg-black/40 backdrop-blur-[40px] border border-white/5"
     >
       {/* Logo Section */}
@@ -141,9 +152,13 @@ export const Sidebar = ({
                 borderRadius: isExpanded ? "1.5rem" : "1.2rem",
                 opacity: isComingSoon && !isActive ? 0.6 : 1
               }}
+              transition={{
+                duration: 0.5,
+                ease: [0.22, 1, 0.36, 1]
+              }}
               whileHover={{ 
-                scale: isComingSoon && !isActive ? 1.02 : 1.05,
-                x: isExpanded ? 4 : 0
+                scale: isComingSoon && !isActive ? 1.01 : 1.04,
+                x: isExpanded ? 6 : 0
               }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
@@ -153,7 +168,7 @@ export const Sidebar = ({
               }}
               className={`h-14 flex items-center relative overflow-hidden transition-all duration-500 ${
                 isActive 
-                  ? `${isRed ? 'bg-rose-500 text-white' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-300 shadow-[0_10px_30px_rgba(34,211,238,0.5)] border-b-2 border-yellow-300' : 'bg-white text-black shadow-[0_0_40px_rgba(255,255,255,0.15)]'} font-black italic` 
+                  ? `${isRed ? 'bg-rose-500 text-white shadow-[0_0_30px_rgba(244,63,94,0.3)]' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-300 shadow-[0_10px_30px_rgba(34,211,238,0.4)] border-b-2 border-yellow-300' : 'bg-white/20 text-white shadow-[0_0_40px_rgba(255,255,255,0.1)] border border-white/20'} font-black italic` 
                   : `${isRed ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-100 shadow-lg border border-white/20' : 'text-white/40 hover:text-white hover:bg-white/5'}`
               } ${isExpanded ? 'px-4' : 'justify-center mx-auto'} ${isComingSoon && !isActive ? 'cursor-not-allowed grayscale' : ''}`}
             >

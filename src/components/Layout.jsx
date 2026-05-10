@@ -110,14 +110,14 @@ export const Layout = ({
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
-              initial={{ opacity: 0, y: 10, scale: 0.99, filter: 'blur(10px)' }}
+              initial={{ opacity: 0, y: 15, scale: 0.98, filter: 'blur(20px)' }}
               animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -10, scale: 0.99, filter: 'blur(10px)' }}
+              exit={{ opacity: 0, y: -15, scale: 0.98, filter: 'blur(20px)' }}
               transition={{ 
-                duration: isPotatoMode ? 0.3 : 0.7, 
+                duration: isPotatoMode ? 0.35 : 0.85, 
                 ease: [0.22, 1, 0.36, 1] 
               }}
-              className="w-full"
+              className="w-full h-full"
             >
               {user?.settings?.showFPS && (
                 <div key="fps-widget" className={`fixed bottom-6 z-[100] hidden md:block transition-all duration-500 ${user?.isAdmin ? 'right-28' : 'right-6'}`}>
