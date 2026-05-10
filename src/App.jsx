@@ -830,9 +830,22 @@ const App = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     ws.current = new WebSocket(`${protocol}//${window.location.host}`);
 
+    ws.current.onopen = () => {
+      console.log('WS Connection Established');
+    };
+
+    ws.current.onerror = (error) => {
+      console.log('WS Connection Error (expected in dev):', error);
+    };
+
+    ws.current.onclose = () => {
+      console.log('WS Connection Closed');
+    };
+
     ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('WS Message Received:', data.type, data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('WS Message Received:', data.type, data);
       if (data.type === 'CHAT_MESSAGE') {
         setChatMessages((prev) => [...prev, data].slice(-50));
       } else if (data.type === 'DELETE_MESSAGE') {
@@ -984,14 +997,17 @@ const App = () => {
             addNotification('2x EXP Boost!', 'An administrator granted you a temporary 2x Experience Boost!', 'system', <Zap className="text-amber-500" />);
           }
         }
-      }
-    };
+      } 
+    } catch (err) {
+      console.error('Error parsing WS message:', err);
+    }
+  };
 
     return () => ws.current?.close();
   }, []);
 
   const sendChatMessage = (text) => {
-    if (!text.trim() || !ws.current) return;
+    if (!text.trim() || !ws.current || ws.current.readyState !== WebSocket.OPEN) return;
     ws.current.send(JSON.stringify({
       type: 'CHAT_MESSAGE',
       id: Math.random().toString(36).substr(2, 9),
@@ -1003,7 +1019,7 @@ const App = () => {
   };
 
   const deleteChatMessage = (messageId) => {
-    if (!ws.current || !user.isAdmin) return;
+    if (!ws.current || ws.current.readyState !== WebSocket.OPEN || !user.isAdmin) return;
     ws.current.send(JSON.stringify({
       type: 'DELETE_MESSAGE',
       messageId
@@ -1397,7 +1413,7 @@ const App = () => {
 
   const addExpAndTrackPlay = (game) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ type: 'GAME_START', gameId: game.id, gameName: game.name }));
+      ws.current.send(JSON.stringify({ type: 'GAME_START', gameId: game.id, gameName: game.title }));
     }
     setUser(prev => {
       const multiplier = boosts.reduce((acc, b) => acc + (b.multiplier - 1), 1);
