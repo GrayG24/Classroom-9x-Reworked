@@ -10,7 +10,8 @@ export const AppRoute = {
   PROXY: 'proxy',
   CATEGORY: 'category',
   ADMIN: 'admin',
-  CODES: 'codes'
+  CODES: 'codes',
+  SUMMER: 'summer'
 };
 
 export const CATEGORIES = [
@@ -53,6 +54,7 @@ export const BADGES = [
   { id: 'endurance', name: 'Pro Gamer', requirement: '100 Games Played', icon: Activity, color: '#f59e0b', rarity: 'Legendary' },
   { id: 'owner-badge', name: 'Owner', requirement: 'Owner of the site', icon: Hammer, color: '#ef4444', rarity: 'Mythic' },
   { id: 'tester-badge', name: 'Beta Tester', requirement: 'Tested the site early', icon: Search, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'stargazer', name: 'Stargazer', requirement: 'Witnessed a cosmic event', icon: Star, color: '#f0f9ff', rarity: 'Mythic' },
 ];
 
 export const QUEST_POOL = [

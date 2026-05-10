@@ -18,6 +18,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { AppsPage } from './components/AppsPage';
 import { ProxyPage } from './components/ProxyPage';
 import { CodesPage } from './components/CodesPage';
+import SummerCountdown from './components/SummerCountdown';
 import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { InteractiveBackground } from './components/InteractiveBackground';
@@ -1362,6 +1363,24 @@ const App = () => {
     addNotification('Title Updated', `Current title: ${title}`, 'system', <Star size={14} />);
   };
 
+  const handleCosmicEvent = () => {
+    if (user.unlockedBadges.includes('stargazer')) return;
+    
+    setUser(prev => {
+      const newBadges = [...prev.unlockedBadges, 'stargazer'];
+      const newThemes = [...prev.unlockedThemes];
+      if (!newThemes.includes('interstellar')) newThemes.push('interstellar');
+      
+      return {
+        ...prev,
+        unlockedBadges: newBadges,
+        unlockedThemes: newThemes
+      };
+    });
+    
+    addNotification('COSMIC EVENT WITNESSED', 'You saw a shooting star! STARGAZER badge and INTERSTELLAR theme unlocked.', 'badge', <Star size={14} className="mythic-rainbow-text" />, 'rainbow');
+  };
+
   const toggleFriend = (username) => {
     setUser(prev => {
       const isFriend = (prev.friends || []).includes(username);
@@ -1425,10 +1444,10 @@ const App = () => {
     }
 
     if (cleanCode === 'admin6' || cleanCode === 'owner') {
-      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa'];
+      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa', 'interstellar'];
       const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
       const allChars = CHARACTERS.map(c => c.id);
-      const allBadges = BADGES.map(b => b.id);
+      const allBadges = Array.from(new Set([...BADGES.map(b => b.id), 'stargazer']));
       const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'codes211', 'merica', 'classroom9x'];
       
       setUser(prev => ({
@@ -1701,6 +1720,7 @@ const App = () => {
           />
         );
       case AppRoute.SETTINGS: return <Settings user={user} onUpdateSettings={updateSettings} onSetTheme={setTheme} onRedeemCode={redeemCode} onResetProgress={handleResetProgress} onUpdateUsername={handleUpdateUsername} />;
+      case AppRoute.SUMMER: return <SummerCountdown />;
       case AppRoute.LEADERBOARD: 
         if (!user.isAdmin) return <LockedPage title="Leaderboard" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return <Leaderboard user={user} onPlayerClick={setSelectedPlayer} leaderboardData={leaderboardData} />;
@@ -1813,7 +1833,7 @@ const App = () => {
   }
 
   if (isInitialLoading || isExitingCloak) {
-    return <LoadingScreen onComplete={handleLoadingComplete} />;
+    return <LoadingScreen onComplete={handleLoadingComplete} onCosmicEvent={handleCosmicEvent} />;
   }
 
   if (isCloaked) {
@@ -1891,56 +1911,45 @@ const App = () => {
                   </div>
                 )}
 
-                <AnimatePresence key="view-presence" mode="wait">
-                  <motion.div
-                    key={currentView + (selectedCategoryId || '') + searchQuery}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                  >
-                    {renderContent()}
-                  </motion.div>
-                </AnimatePresence>
+                {renderContent()}
 
                 <Footer key="footer" />
-                
-                <div key="notifications-container" className="fixed top-8 right-8 z-[200] flex flex-col gap-3 pointer-events-none w-80">
+                             <div key="notifications-container" className="fixed bottom-8 right-8 z-[200] flex flex-col-reverse gap-3 pointer-events-none w-80">
                   <AnimatePresence mode="popLayout">
                     {notifications.map(n => (
                       <motion.div 
                         key={n.id} 
                         layout
-                        initial={{ opacity: 0, x: 50, filter: 'blur(10px)' }}
-                        animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, x: 20, scale: 0.95, filter: 'blur(5px)' }}
-                        className="group relative flex flex-col p-5 bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl pointer-events-auto overflow-hidden"
+                        initial={{ opacity: 0, y: 50, scale: 0.9, filter: 'blur(10px)' }}
+                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                        className="group relative flex flex-col p-5 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden transition-all hover:bg-black/80 hover:border-white/20"
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.02] to-transparent"></div>
-                        <div className="flex items-center gap-4 relative z-10 mb-2">
-                          <div className={`shrink-0 ${
-                            n.type === 'error' ? 'text-rose-500' : 
-                            n.type === 'success' ? 'text-emerald-500' : 
-                            'text-white'
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent"></div>
+                        <div className="flex items-start gap-4 relative z-10">
+                          <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 shrink-0 ${
+                            n.type === 'error' ? 'text-rose-500 bg-rose-500/10' : 
+                            n.type === 'success' ? 'text-emerald-500 bg-emerald-500/10' : 
+                            'text-cyan-500 bg-cyan-500/10'
                           }`}>
-                            {n.icon || <Zap size={16} />}
+                            {n.icon || <Zap size={18} />}
                           </div>
-                          <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] truncate italic">{n.title || 'SYSTEM'}</p>
+                          <div className="flex-1 min-w-0 flex flex-col gap-1">
+                            <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] truncate italic">{n.title || 'SYSTEM'}</p>
+                            <p className="text-xs font-black text-white tracking-tight uppercase italic leading-tight">{n.message}</p>
+                          </div>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNotification(n.id);
+                            }}
+                            className="p-1 text-white/20 hover:text-white transition-all"
+                          >
+                            <X size={14} />
+                          </button>
                         </div>
-                        <p className="text-xs font-bold text-white tracking-tight uppercase italic relative z-10">{n.message}</p>
                         
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeNotification(n.id);
-                          }}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          className="absolute top-4 right-4 p-1 text-white/10 hover:text-white transition-all opacity-0 group-hover:opacity-100 relative z-30"
-                        >
-                          <X size={12} />
-                        </button>
-
-                        <div className="absolute bottom-0 left-0 h-1 bg-white/5 w-full">
+                        <div className="absolute bottom-0 left-0 h-1 bg-white/[0.02] w-full">
                           <motion.div 
                             initial={{ width: "100%" }}
                             animate={{ width: "0%" }}
@@ -1948,8 +1957,8 @@ const App = () => {
                             className={`h-full ${
                               n.type === 'error' ? 'bg-rose-500' : 
                               n.type === 'success' ? 'bg-emerald-500' : 
-                              'bg-white'
-                            } shadow-[0_0_10px_currentColor]`}
+                              'bg-cyan-500'
+                            } shadow-[0_0_15px_currentColor]`}
                           />
                         </div>
                       </motion.div>

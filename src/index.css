@@ -298,7 +298,6 @@ html, body {
   height: 52px;
   border-radius: 16px;
   color: var(--muted-foreground);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   margin: 6px 14px;
   overflow: visible;
   width: calc(100% - 28px);

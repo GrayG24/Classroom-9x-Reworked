@@ -14,6 +14,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
     { id: 'emerald', name: 'MATRIX', primary: '#10b981', bg: '#064e3b', desc: 'Follow the white rabbit.', level: 10 },
     { id: 'rose', name: 'VAPORWAVE', primary: '#f43f5e', bg: '#4c0519', desc: 'Aesthetic retro-future.', level: 25 },
     { id: 'gold', name: 'ROYAL_GOLD', primary: '#fbbf24', bg: '#451a03', desc: 'Prestige and power.', isCode: true },
+    { id: 'interstellar', name: 'INTERSTELLAR', primary: '#f0f9ff', bg: '#020617', desc: 'The farthest reaches of the galaxy.', rarity: 'Transcendant' },
   ];
 
   const frames = [

@@ -116,13 +116,19 @@ const CountdownTimer = () => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
+      // Get current date in NY time (EST/EDT)
       const now = new Date();
-      // Target next Monday 00:00:00
-      const target = new Date();
-      target.setDate(target.getDate() + (1 + 7 - target.getDay()) % 7 || 7); 
-      target.setHours(0, 0, 0, 0);
+      const nyDate = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
       
-      const diff = target.getTime() - now.getTime();
+      // Target next Monday 00:00:00 EST
+      const targetStr = nyDate.toLocaleString("en-US", {timeZone: "America/New_York"});
+      const targetDate = new Date(targetStr);
+      targetDate.setDate(targetDate.getDate() + (1 + 7 - targetDate.getDay()) % 7 || 7); 
+      targetDate.setHours(0, 0, 0, 0);
+
+      // We need the absolute time difference. 
+      // The most reliable way is to find when that specific "Next Monday 12AM EST" happens in UTC.
+      const diff = targetDate.getTime() - nyDate.getTime();
       
       if (diff > 0) {
         setTimeLeft({
@@ -274,52 +280,44 @@ export const Home = ({
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                 referrerPolicy="no-referrer"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent flex flex-col justify-center p-16 sm:p-24">
+              {/* Persistent Weekly Badge & Timer */}
+              <div className="absolute inset-0 pointer-events-none p-16 sm:p-24 flex flex-col justify-between z-20">
+                <div className="flex justify-between items-start w-full">
+                  <div className="px-6 py-3 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center gap-3 pointer-events-auto">
+                    <Trophy size={20} className="text-white animate-bounce" />
+                    <span className="text-xs font-black text-white uppercase tracking-[0.4em] italic">WEEKLY GAME</span>
+                  </div>
+
+                  <div className="hidden xl:flex flex-col items-end gap-12 pointer-events-auto">
+                    <div className="text-right p-10 bg-black/60 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl relative">
+                      <div className="absolute -top-3 -left-3 w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/40 animate-ping" />
+                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">WEEKLY REFRESH IN</p>
+                      <CountdownTimer />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hover Interactions */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent flex flex-col justify-center p-16 sm:p-24 transition-all duration-700 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] z-10">
                 <div className="flex items-center justify-between w-full">
                   <div className="max-w-3xl">
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/10 border border-white/20 mb-8"
-                    >
-                      <Trophy size={16} className="text-white animate-bounce" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-white italic">Game of the Week</span>
-                    </motion.div>
-                    
-                    <motion.h2 
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="text-7xl sm:text-8xl md:text-9xl font-black text-white uppercase tracking-tighter mb-8 italic leading-none"
-                    >
-                      {featuredGame.title}
-                    </motion.h2>
-                    
-                    <motion.p 
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="max-w-xl text-white/40 text-xl leading-relaxed mb-12 font-medium italic"
+                    <p 
+                      className="max-w-xl text-white/60 text-xl leading-relaxed mb-12 font-medium italic translate-y-4 group-hover:translate-y-0 transition-all duration-700 delay-100"
                     >
                       {featuredGame.description}
-                    </motion.p>
+                    </p>
 
-                    <div className="flex flex-wrap items-center gap-8">
-                      <motion.button 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
+                    <div className="flex flex-wrap items-center gap-8 translate-y-4 group-hover:translate-y-0 transition-all duration-700 delay-200">
+                      <button 
                         onClick={() => onPlayGame(featuredGame)}
-                        className="inline-flex items-center justify-center gap-4 whitespace-nowrap text-xs font-black transition-all h-20 rounded-[1.5rem] px-16 bg-white text-black hover:bg-white/90 hover:scale-105 uppercase tracking-[0.3em] shadow-[0_20px_60px_rgba(255,255,255,0.1)] italic group/btn"
+                        className="inline-flex items-center justify-center gap-4 whitespace-nowrap text-xs font-black transition-all h-20 rounded-[1.5rem] px-16 bg-white text-black hover:bg-white/90 hover:scale-105 uppercase tracking-[0.3em] shadow-[0_20px_60px_rgba(255,255,255,0.2)] italic group/btn"
                       >
-                        Play
+                        PLAY NOW
                         <Rocket size={20} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                      </motion.button>
+                      </button>
 
-                      <motion.button
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           onToggleFavorite(featuredGame.id);
@@ -327,20 +325,9 @@ export const Home = ({
                         className="w-20 h-20 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
                       >
                         <Star size={28} className={favorites.includes(featuredGame.id) ? 'fill-white text-white' : ''} />
-                      </motion.button>
+                      </button>
                     </div>
                   </div>
-                  
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    className="hidden xl:flex flex-col items-end gap-12"
-                  >
-                    <div className="text-right p-10 bg-black/60 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl">
-                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">WEEKLY REFRESH IN</p>
-                      <CountdownTimer />
-                    </div>
-                  </motion.div>
                 </div>
               </div>
             </div>

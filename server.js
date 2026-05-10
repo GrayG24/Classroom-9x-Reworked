@@ -489,29 +489,29 @@ async function startServer() {
   
   // Vite middleware or Production static files
   if (!isProd) {
-    console.log('Initializing Vite in middleware mode...');
+    console.log('Initializing Vite in dev mode...');
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: 'spa',
-      root: process.cwd(),
+      appType: 'custom',
+      root: process.cwd()
     });
     
     app.use(vite.middlewares);
 
     app.get('*', async (req, res, next) => {
-      const url = req.originalUrl;
-
-      // Skip non-HTML requests that fall through
-      if (url.includes('.') && !url.endsWith('.html')) {
-        return next();
-      }
-
       try {
+        const url = req.originalUrl;
+        
+        // Skip API and files with extensions (let Vite handle those)
+        if (url.startsWith('/api') || (url.includes('.') && !url.endsWith('.html'))) {
+          return next();
+        }
+
         let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
         template = await vite.transformIndexHtml(url, template);
         res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
       } catch (e) {
-        vite.ssrFixStacktrace(e);
+        if (vite) vite.ssrFixStacktrace(e);
         next(e);
       }
     });

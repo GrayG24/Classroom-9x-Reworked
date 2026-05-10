@@ -96,17 +96,17 @@ export const Layout = ({
       </div>
 
       {/* Main Content Shell */}
-      <main className="relative z-10 min-h-screen transition-all duration-500 ease-in-out pb-24 lg:pb-0 lg:pl-20">
+      <main className="relative z-10 min-h-screen transition-all duration-500 ease-in-out pb-24 lg:pb-0 lg:pl-32">
         <div className="max-w-[120rem] mx-auto px-6 md:px-12 lg:px-16">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ 
-                duration: user?.settings?.betaFeatures?.experimentalAnimations ? 0.2 : 0.4, 
-                ease: [0.16, 1, 0.3, 1] 
+                duration: user?.settings?.betaFeatures?.experimentalAnimations ? 0.15 : 0.25, 
+                ease: "easeOut"
               }}
             >
               {user?.settings?.showFPS && (
