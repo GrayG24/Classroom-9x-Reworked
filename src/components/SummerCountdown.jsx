@@ -115,8 +115,8 @@ const SummerCountdown = ({ user }) => {
 
       {/* Realistic Palmtrees - Pushed further to edges to clear text */}
       <div className="absolute inset-x-0 bottom-0 top-0 z-20 pointer-events-none overflow-hidden">
-         <DetailedPalmtree bottom="0%" left="-20%" scale={0.7} className="md:scale-[1.1] lg:scale-[1.6]" />
-         <DetailedPalmtree bottom="2%" right="-15%" scale={0.6} className="md:scale-[1.0] lg:scale-[1.4]" flip />
+         <DetailedPalmtree bottom="-8%" left="-18%" scale={1.2} className="md:scale-[1.6] lg:scale-[2.4]" />
+         <DetailedPalmtree bottom="-5%" right="-15%" scale={1.1} className="md:scale-[1.4] lg:scale-[2.0]" flip />
       </div>
 
       {/* Main Content Overlay */}
@@ -408,22 +408,22 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
       </defs>
       
       {/* Textured tapered trunk with better curvature */}
-      <path d="M200 600C210 500 215 400 200 180" stroke="url(#trunk-grad)" strokeWidth="16" strokeLinecap="round" fill="none" />
-      <path d="M200 600C210 500 215 400 200 180" stroke="url(#trunk-texture)" strokeWidth="16" strokeLinecap="round" fill="none" />
+      <path d="M200 600C210 500 215 400 200 180" stroke="url(#trunk-grad)" strokeWidth="48" strokeLinecap="round" fill="none" />
+      <path d="M200 600C210 500 215 400 200 180" stroke="url(#trunk-texture)" strokeWidth="48" strokeLinecap="round" fill="none" />
       
       {[...Array(18)].map((_, i) => (
         <path 
           key={i} 
           d={`M${200 + Math.sin(i)*1.5} ${585 - i*22} Q ${210 + Math.cos(i)*3} ${580 - i*22} ${200 - Math.sin(i)*1.5} ${575 - i*22}`} 
           stroke="#2d1d1a" 
-          strokeWidth="3.5" 
-          opacity="0.5"
+          strokeWidth="5" 
+          opacity="0.6"
           fill="none"
         />
       ))}
       
       {/* High-detail realistic leaves - Radially symmetrical and drooping structure */}
-      <g className="leaf-group" filter="url(#leafShadow)" transform="translate(100, 80)">
+      <g className="leaf-group" transform="translate(100, 80)">
         {/* Right side - Arching out and down */}
         <RealisticLeaf d="M100 100C180 100 280 140 300 220" color="#044d3b" delay={0} />
         <RealisticLeaf d="M100 100C150 120 220 200 180 300" color="#065f46" delay={0.5} />
@@ -449,26 +449,66 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
   </motion.div>
 );
 
-const RealisticLeaf = ({ d, color, delay = 0 }) => (
-  <motion.g
-    animate={{ 
-      rotate: [-0.3, 0.6, -0.3],
-      y: [0, 0.5, 0]
-    }}
-    transition={{ 
-      duration: 5 + Math.random() * 3, 
-      repeat: Infinity, 
-      ease: "easeInOut",
-      delay 
-    }}
-    style={{ transformOrigin: '100px 100px' }}
-  >
-    {/* Simplified Leaf structure */}
-    <path d={d} stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
-    <path d={d} stroke={color} strokeWidth="12" strokeDasharray="2 6" strokeLinecap="butt" fill="none" opacity="0.6" />
-    <path d={d} stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeDasharray="1 12" strokeLinecap="butt" fill="none" />
-  </motion.g>
-);
+const RealisticLeaf = ({ d, color, delay = 0 }) => {
+  const [points, setPoints] = useState([]);
+  
+  // Calculate points along the path once for leaflets
+  useEffect(() => {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    const length = path.getTotalLength();
+    const count = 40;
+    const newPoints = [];
+    for (let i = 0; i < count; i++) {
+      const point = path.getPointAtLength((i / (count - 1)) * length);
+      // More natural leaflet angle based on path progress
+      const angle = (i / count) * 45;
+      newPoints.push({ x: point.x, y: point.y, angle });
+    }
+    setPoints(newPoints);
+  }, [d]);
+
+  return (
+    <motion.g
+      animate={{ 
+        rotate: [-1, 1, -1],
+      }}
+      transition={{ 
+        duration: 10 + Math.random() * 5, 
+        repeat: Infinity, 
+        ease: "easeInOut",
+        delay 
+      }}
+    >
+      {/* Central Spine */}
+      <path d={d} stroke={color} strokeWidth="12" strokeLinecap="round" fill="none" opacity="0.9" />
+      
+      {/* Detailed Leaflets - rendered as simple paths for performance */}
+      {points.map((p, i) => (
+        <React.Fragment key={i}>
+          {/* Right leaflet */}
+          <path 
+            d={`M${p.x},${p.y} L${p.x + 60},${p.y + 15}`}
+            stroke={color}
+            strokeWidth="10"
+            strokeLinecap="round"
+            style={{ transform: `rotate(${p.angle}deg)`, transformOrigin: `${p.x}px ${p.y}px` }}
+            opacity="0.8"
+          />
+          {/* Left leaflet */}
+          <path 
+            d={`M${p.x},${p.y} L${p.x - 60},${p.y + 15}`}
+            stroke={color}
+            strokeWidth="10"
+            strokeLinecap="round"
+            style={{ transform: `rotate(${-p.angle}deg)`, transformOrigin: `${p.x}px ${p.y}px` }}
+            opacity="0.8"
+          />
+        </React.Fragment>
+      ))}
+    </motion.g>
+  );
+};
 
 const Sun = ({ isPotatoMode }) => (
   <>

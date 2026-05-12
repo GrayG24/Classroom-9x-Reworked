@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown, LayoutGrid, MessageSquare } from 'lucide-react';
 
 export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onResetProgress, onUpdateUsername }) => {
   const [redeemInput, setRedeemInput] = useState('');
@@ -171,6 +171,23 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
               
               <div className="p-3 bg-white/[0.03] rounded-[2.5rem] border border-white/10 backdrop-blur-3xl">
                  <button
+                    onClick={() => setActiveTab('upcoming')}
+                    className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all relative overflow-hidden group ${
+                      activeTab === 'upcoming' 
+                        ? 'text-black' 
+                        : 'text-white/30 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {activeTab === 'upcoming' && (
+                      <motion.div 
+                        layoutId="active-settings-tab"
+                        className="absolute inset-0 bg-white"
+                      />
+                    )}
+                    <Rocket size={18} className="relative z-10" />
+                    <span className="text-[10px] uppercase tracking-[0.2em] relative z-10 italic font-black">COMING SOON</span>
+                  </button>
+                  <button
                     onClick={() => setActiveTab('codes')}
                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all relative overflow-hidden group ${
                       activeTab === 'codes' 
@@ -207,7 +224,42 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {activeTab === 'codes' ? (
+                  {activeTab === 'upcoming' ? (
+                    <div className="p-12 rounded-[3.5rem] bg-black/40 border border-white/10 shadow-2xl space-y-12 overflow-hidden relative group">
+                      <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Rocket size={120} />
+                      </div>
+                      
+                      <div className="relative z-10">
+                        <h3 className="text-4xl font-black text-white italic tracking-tighter uppercase mb-4">COMING SOON</h3>
+                        <p className="text-[10px] font-black text-white/30 tracking-[0.5em] uppercase italic">Upcoming features</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-6 relative z-10">
+                        {[
+                          { title: 'APPS', icon: LayoutGrid },
+                          { title: 'CUSTOMIZATION', icon: Palette },
+                          { title: 'GLOBAL CHAT', icon: MessageSquare }
+                        ].map((item, i) => (
+                          <div key={i} className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 flex items-center gap-8 group/item hover:bg-white/5 transition-all">
+                            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover/item:text-theme transition-colors">
+                              <item.icon size={32} />
+                            </div>
+                            <div>
+                               <div className="flex items-center gap-4">
+                                 <h4 className="text-xl font-black text-white italic tracking-tighter uppercase">{item.title}</h4>
+                                 <span className="px-3 py-1 bg-white/10 rounded-full text-[8px] font-black text-white/40 tracking-widest uppercase">COMING SOON</span>
+                               </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-8 rounded-[2rem] bg-theme/5 border border-theme/10 text-center">
+                        <p className="text-[10px] font-black text-theme uppercase tracking-[0.3em] italic animate-pulse">WORK IN PROGRESS</p>
+                      </div>
+                    </div>
+                  ) : activeTab === 'codes' ? (
                     <div className="p-10 rounded-[3rem] bg-black/40 border border-white/10 shadow-2xl space-y-8">
                       <div className="flex flex-col gap-2">
                         <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">VALIDATE CODES</h3>

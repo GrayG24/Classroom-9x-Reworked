@@ -121,9 +121,6 @@ async function startServer() {
 
   const apiRouter = express.Router();
   
-  // Registering API router early
-  app.use('/api', apiRouter);
-
   apiRouter.get('/ping', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
   });
@@ -133,10 +130,8 @@ async function startServer() {
   });
 
   apiRouter.get('/leaderboard', (req, res) => {
-    console.log('Fetching leaderboard data...');
     try {
       if (!Array.isArray(leaderboardData)) {
-        console.error('leaderboardData is not an array, resetting:', leaderboardData);
         leaderboardData = [];
       }
       const sorted = [...leaderboardData]
@@ -144,10 +139,8 @@ async function startServer() {
         .sort((a, b) => b.score - a.score)
         .slice(0, 50);
       
-      console.log(`Returning ${sorted.length} leaderboard entries`);
       res.json(sorted);
     } catch (err) {
-      console.error('Error in /api/leaderboard:', err);
       res.status(500).json({ error: 'Internal Server Error', message: err.message });
     }
   });
@@ -180,7 +173,6 @@ async function startServer() {
         res.json(leaderboardData);
       }
     } catch (err) {
-      console.error('Failed to fetch all users:', err);
       res.status(500).json({ error: 'Failed to fetch users' });
     }
   });
@@ -461,6 +453,9 @@ async function startServer() {
     });
     res.json({ success: true });
   });
+
+  // Registering API router at the end of all definitions
+  app.use('/api', apiRouter);
 
   // --- WEB SOCKETS ---
   wss.on('connection', (ws) => {

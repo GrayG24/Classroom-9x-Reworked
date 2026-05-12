@@ -23,7 +23,7 @@ import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { InteractiveBackground } from './components/InteractiveBackground';
 import { GameView } from './components/GameView';
-import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play, Waves } from 'lucide-react';
+import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play, Waves, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const EXP_PER_PLAY = 25;
@@ -503,88 +503,92 @@ const WaveTransition = ({ isVisible, onComplete }) => {
         <motion.div
           id="summer-wave-transition"
           initial={{ y: '100%' }}
-          animate={{ y: '-120%' }}
+          animate={{ y: '-100%' }}
           exit={{ opacity: 0 }}
           transition={{ 
             duration: 4, 
-            ease: [0.65, 0, 0.35, 1],
-            opacity: { duration: 0.5, delay: 3.5 }
+            ease: [0.75, 0, 0.25, 1],
+            opacity: { duration: 0.6, delay: 3.4 }
           }}
           onAnimationComplete={onComplete}
-          className="fixed inset-0 z-[10000] pointer-events-none will-change-transform"
+          className="fixed inset-0 z-[10000] pointer-events-none"
         >
-          {/* Detailed Multi-layer Wave Body */}
-          <div className="absolute inset-x-0 bottom-0 top-[-30%]">
-             {/* Deep Ocean Layer */}
-             <div className="absolute inset-0 bg-blue-900/80" />
-             <div className="absolute inset-0 bg-gradient-to-t from-blue-600 via-sky-600 to-sky-500 opacity-90" />
+          {/* Refraction Overlay - cinematic light bending */}
+          <div className="absolute inset-0 bg-sky-400/10 backdrop-blur-[2px] opacity-0 animate-[fade-in_1s_ease-out_forwards]" />
+
+          {/* Main Water Body */}
+          <div className="absolute inset-x-0 bottom-[-100%] h-[300%] bg-[#0ea5e9]">
+             {/* Deep Gradient */}
+             <div className="absolute inset-0 bg-gradient-to-b from-[#38bdf8] via-[#0ea5e9] to-[#1d4ed8]" />
              
-             {/* Dynamic Wave Layers */}
-             <div className="absolute inset-0 overflow-visible">
-                {/* Back Layer Foam (White) */}
-                <svg viewBox="0 0 1440 320" className="absolute top-[-8%] left-0 w-full rotate-180 opacity-30 fill-sky-200 blur-[2px]">
-                  <path d="M0,192L60,170.7C120,149,240,107,360,112C480,117,600,171,720,181.3C840,192,960,160,1080,149.3C1200,139,1320,149,1380,154.7L1440,160L1440,320L0,320Z" />
-                </svg>
-
-                {/* Secondary Blue Wave */}
-                <svg viewBox="0 0 1440 320" className="absolute top-[-4%] left-0 w-full rotate-180 opacity-60 fill-sky-400">
-                  <path d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,122.7C960,117,1056,171,1152,197.3C1248,224,1344,224,1392,224L1440,224L1440,320L0,320Z" />
-                </svg>
-
-                {/* Main Crest Wave */}
-                <svg viewBox="0 0 1440 320" className="absolute top-0 left-0 w-full rotate-180 -translate-y-[99%] fill-sky-500 shadow-[0_-20px_50px_rgba(255,255,255,0.2)]">
-                  <path d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,144C672,139,768,181,864,202.7C960,224,1056,224,1152,202.7C1248,181,1344,139,1392,117.3L1440,96L1440,320L0,320Z" />
-                </svg>
-
-                {/* Sparkling Highlights (Foam particles) */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                   {[...Array(35)].map((_, i) => (
-                     <motion.div
-                       key={i}
-                       initial={{ opacity: 0, scale: 0 }}
-                       animate={{ 
-                         opacity: [0, 0.6, 0],
-                         scale: [0.4, 1.2, 0.6],
-                         y: ['110%', '-80%'],
-                         x: Math.sin(i) * 50
-                       }}
-                       transition={{ 
-                         duration: 1.5 + Math.random() * 2.5,
-                         repeat: Infinity,
-                         delay: Math.random() * 3,
-                         ease: "easeOut"
-                       }}
-                       className="absolute w-2 h-2 md:w-3 md:h-3 bg-white/40 rounded-full blur-[1px]"
-                       style={{ 
-                         left: `${Math.random() * 100}%`,
-                         bottom: `${Math.random() * 60}%` 
-                       }}
-                     />
-                   ))}
-                </div>
+             {/* Light Rays - Beaming through the water */}
+             <div className="absolute inset-0 opacity-30">
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ 
+                      opacity: [0.2, 0.5, 0.2],
+                      rotate: [i * 15 - 45, i * 15 - 35, i * 15 - 45]
+                    }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-0 w-32 h-[200%] bg-white/20 blur-[60px] origin-top"
+                    style={{ left: `${15 + i * 15}%` }}
+                  />
+                ))}
              </div>
 
-             <div className="flex flex-col items-center justify-center h-full gap-8 relative z-10">
+             {/* Dynamic Foam Crest (Multiple layers) */}
+             <div className="absolute top-0 inset-x-0 h-[20vh] -translate-y-[90%]">
+                <svg viewBox="0 0 1440 120" className="absolute bottom-0 left-0 w-full fill-white/80 blur-sm">
+                   <motion.path 
+                     animate={{ d: [
+                       "M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,120 L0,120 Z",
+                       "M0,60 C240,20 480,100 720,60 C960,20 1200,100 1440,60 L1440,120 L0,120 Z",
+                       "M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,120 L0,120 Z"
+                     ] }}
+                     transition={{ duration: 3, repeat: Infinity }}
+                   />
+                </svg>
+                <svg viewBox="0 0 1440 120" className="absolute bottom-0 left-0 w-full fill-white">
+                   <motion.path 
+                     animate={{ d: [
+                       "M0,100 C240,60 480,140 720,100 C960,60 1200,140 1440,100 L1440,120 L0,120 Z",
+                       "M0,80 C240,120 480,40 720,80 C960,120 1200,40 1440,80 L1440,120 L0,120 Z",
+                       "M0,100 C240,60 480,140 720,100 C960,60 1200,140 1440,100 L1440,120 L0,120 Z"
+                     ] }}
+                     transition={{ duration: 2, repeat: Infinity }}
+                   />
+                </svg>
+             </div>
+
+             {/* Dramatic Text & Icon */}
+             <div className="absolute inset-x-0 top-0 h-screen flex flex-col items-center justify-center pointer-events-none p-12">
                 <motion.div
-                  animate={{ 
-                    scale: [1, 1.15, 1], 
-                    rotate: [0, 8, -8, 0],
-                    y: [0, -10, 0]
-                  }}
-                  transition={{ duration: 0.8, repeat: Infinity }}
+                  initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 1 }}
+                  className="relative mb-12"
                 >
-                  <Waves size={180} className="text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.5)]" />
+                  <Waves size={240} className="text-white drop-shadow-[0_0_80px_rgba(255,255,255,0.6)]" />
+                  <div className="absolute inset-0 bg-white/10 rounded-full blur-[100px] animate-pulse" />
                 </motion.div>
-                <h2 className="text-6xl md:text-9xl font-black text-white italic tracking-tighter uppercase drop-shadow-[0_15px_60px_rgba(0,0,0,0.4)] px-10 text-center leading-[0.8]">
-                  Dropping into Summer
+                
+                <h2 className="text-7xl md:text-[12rem] font-black text-white italic tracking-tighter uppercase drop-shadow-[0_20px_80px_rgba(0,0,0,0.5)] text-center leading-[0.75] max-w-6xl">
+                  Diving <br /> <span className="text-sky-200">Into Summer</span>
                 </h2>
              </div>
-
-             {/* Bottom Exit Foam */}
-             <svg viewBox="0 0 1440 320" className="absolute bottom-0 left-0 w-full translate-y-[99%] fill-sky-500 opacity-80">
-                <path d="M0,224L60,202.7C120,181,240,139,360,149.3C480,160,600,224,720,234.7C840,245,960,203,1080,186.7C1200,171,1320,181,1380,186.7L1440,192L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z" />
-             </svg>
           </div>
+
+          {/* Bubbles / Ambient Particles */}
+          {[...Array(60)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ x: `${Math.random() * 100}%`, y: '100%', scale: 0 }}
+              animate={{ y: '-20%', scale: [0, 1, 0.5, 0], opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 2.5 + Math.random() * 2, repeat: Infinity, delay: Math.random() * 2 }}
+              className="absolute w-4 h-4 bg-white/30 rounded-full blur-[2px]"
+            />
+          ))}
         </motion.div>
       )}
     </AnimatePresence>
@@ -636,6 +640,10 @@ const App = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState(DEFAULT_USER);
+  const [isPinnedMinimized, setIsPinnedMinimized] = useState(true);
+  const pinnedGamesList = useMemo(() => {
+    return (user.pinnedGames || []).map(id => GAMES_DATA.find(g => g.id === id)).filter(Boolean);
+  }, [user.pinnedGames]);
 
   // Sync unlocks and check for admin status
   useEffect(() => {
@@ -879,6 +887,7 @@ const App = () => {
             setAdminAnnouncement({
               text: `${sender?.username || 'SYSTEM'} STARTED ${eventName.toUpperCase()} EVENT!`,
               sender: sender || { username: 'SYSTEM', characterId: 'agent-x', frameId: 'obsidian' },
+              announcementType: 'event',
               timestamp: new Date().toISOString()
             });
             setTimeout(() => setAdminAnnouncement(null), 8000);
@@ -1860,7 +1869,6 @@ const App = () => {
       case AppRoute.LEADERBOARD: 
         if (!user.isAdmin) return <LockedPage title="Leaderboard" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return <Leaderboard user={user} onPlayerClick={setSelectedPlayer} leaderboardData={leaderboardData} />;
-      case AppRoute.ADMIN: return <AdminPanel user={user} onClose={() => setCurrentView(AppRoute.HOME)} />;
       default: return (
         <Home 
           user={user} 
@@ -1941,457 +1949,481 @@ const App = () => {
     );
   }, [selectedPlayer, user, toggleFriend]);
 
-  if (isMaintenanceMode && !user.isAdmin) {
-    return (
-      <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md space-y-8"
-        >
-          <div className="w-24 h-24 bg-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto shadow-[0_0_50px_rgba(245,158,11,0.3)]">
-            <SettingsIcon size={48} className="animate-spin-slow" />
-          </div>
-          <div className="space-y-4">
-            <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">System <span className="text-amber-500">Maintenance</span></h1>
-            <div className="text-slate-400 font-medium leading-relaxed space-y-4">
-              <p>Uh oh! Classroom 9x is currently undergoing maintenance to improve performance and add new features.</p>
-              <p>Some games or features may be temporarily unavailable while we work behind the scenes.</p>
-              <p>Thanks for your patience — we’ll be back up and running soon.</p>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-white/5">
-            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  if (isInitialLoading || isExitingCloak) {
-    return <LoadingScreen onComplete={handleLoadingComplete} onCosmicEvent={handleCosmicEvent} />;
-  }
-
-  if (isCloaked) {
-    return <EducationalCloak onToggleCloak={handleToggleCloak} />;
-  }
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}
-    >
-      <div className={`proto-backdrop transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
-      <div className={`proto-grid transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
-      
-      {<InteractiveBackground user={user} enabled={!user.settings.performanceMode && currentView !== AppRoute.SUMMER} />}
-      {user.settings.customCursor && <CustomCursor />}
-      
-        <div className="proto-content-shell">
-        <div className={`min-h-screen transition-colors duration-1000 ${currentView === AppRoute.SUMMER ? 'bg-[#fdf5e6]' : 'bg-background/40'} text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
-          {/* Background Effects */}
-          {isMatrixRain && !user.settings.performanceMode && <MatrixRain performanceMode={user.settings.performanceMode} />}
-          {isRainbowChaos && <div className="rainbow-chaos-overlay" />}
-          
-          <div className={`relative z-10 ${isGravityChaos ? 'gravity-chaos-active' : ''}`}>
-            <Layout 
-              user={user}
-              onSearch={setSearchQuery} 
-              onSetTheme={(theme) => setUser(prev => ({ ...prev, currentTheme: theme }))}
-              currentView={currentView}
-              selectedCategoryId={selectedCategoryId}
-              onViewChange={handleViewChange}
-              onProfileClick={() => setIsProfileModalOpen(true)}
-            >
-              <>
-                <AnimatePresence>
-                  {isChatOpen && (
-                    <GlobalChat 
-                      messages={chatMessages} 
-                      onSendMessage={(text) => {
-                        const newMsg = { username: user.username, text, timestamp: new Date().toISOString() };
-                        setChatMessages(prev => [...prev, newMsg].slice(-50));
-                      }}
-                      user={user}
-                      onClose={() => setIsChatOpen(false)}
-                    />
-                  )}
-                </AnimatePresence>
-                {user.isBanned && (
-                  <div key="banned-overlay" className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="max-w-md space-y-8"
-                    >
-                      <div className="w-24 h-24 bg-rose-500/20 rounded-3xl flex items-center justify-center text-rose-500 border border-rose-500/20 mx-auto shadow-[0_0_50px_rgba(244,63,94,0.3)]">
-                        <Shield size={48} />
-                      </div>
-                      <div className="space-y-4">
-                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">Account <span className="text-rose-500">Restricted</span></h1>
-                        <p className="text-slate-400 font-medium leading-relaxed uppercase text-[10px] tracking-widest text-center">Your access has been restricted by an administrator. Please contact support if you think this is a mistake.</p>
-                      </div>
-                      <div className="pt-8 border-t border-white/5">
-                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Suspended</p>
-                      </div>
-                    </motion.div>
-                  </div>
-                )}
-
-                {renderContent()}
-
-                <Footer key="footer" />
-                             <div key="notifications-container" className="fixed bottom-8 right-8 z-[200] flex flex-col-reverse gap-3 pointer-events-none w-80">
-                  <AnimatePresence mode="popLayout">
-                    {notifications.map(n => (
-                      <motion.div 
-                        key={n.id} 
-                        layout
-                        initial={{ opacity: 0, y: 50, scale: 0.9, filter: 'blur(10px)' }}
-                        animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-                        className="group relative flex flex-col p-5 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden transition-all hover:bg-black/80 hover:border-white/20"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent"></div>
-                        <div className="flex items-start gap-4 relative z-10">
-                          <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 shrink-0 ${
-                            n.type === 'error' ? 'text-rose-500 bg-rose-500/10' : 
-                            n.type === 'success' ? 'text-emerald-500 bg-emerald-500/10' : 
-                            'text-cyan-500 bg-cyan-500/10'
-                          }`}>
-                            {n.icon || <Zap size={18} />}
-                          </div>
-                          <div className="flex-1 min-w-0 flex flex-col gap-1">
-                            <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] truncate italic">{n.title || 'SYSTEM'}</p>
-                            <p className="text-xs font-black text-white tracking-tight uppercase italic leading-tight">{n.message}</p>
-                          </div>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeNotification(n.id);
-                            }}
-                            className="p-1 text-white/20 hover:text-white transition-all"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                        
-                        <div className="absolute bottom-0 left-0 h-1 bg-white/[0.02] w-full">
-                          <motion.div 
-                            initial={{ width: "100%" }}
-                            animate={{ width: "0%" }}
-                            transition={{ duration: 5, ease: "linear" }}
-                            className={`h-full ${
-                              n.type === 'error' ? 'bg-rose-500' : 
-                              n.type === 'success' ? 'bg-emerald-500' : 
-                              'bg-cyan-500'
-                            } shadow-[0_0_15px_currentColor]`}
-                          />
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </>
-            </Layout>
-          </div>
-        </div>
-      </div>
-
-      <WaveTransition isVisible={showWaveTransition} onComplete={() => setShowWaveTransition(false)} />
-
-      {/* Modals outside effect containers */}
-      {activeGame && <GameModal game={activeGame} isFavorite={user.favorites.includes(activeGame.id)} onToggleFavorite={toggleFavorite} onClose={() => setActiveGame(null)} />}
-      {playingGame && <GameView game={playingGame} onClose={() => setPlayingGame(null)} />}
-      {isProfileModalOpen && (
-        <ProfileModal 
-          user={user} 
-          onUpdateUser={setUser}
-          onClose={() => setIsProfileModalOpen(false)} 
-          onLogout={() => {
-            localStorage.removeItem('classroom9x_local_profile_v4');
-            window.location.reload();
-          }}
-        />
-      )}
-      {isAdminPanelOpen && <AdminPanel user={user} onClose={() => setIsAdminPanelOpen(false)} />}
-      
-      {showBoss && (
-        <BossEvent onDefeat={() => {
-          setShowBoss(false);
-          setUser(prev => ({ ...prev, score: prev.score + 500000 }));
-          addNotification('VICTORY', 'VOID ENTITY DEFEATED! +500,000 EXP FOR EVERYONE!', 'success', <Trophy className="text-amber-400" />);
-        }} />
-      )}
-      {showBadgeRain && user.settings.backgroundEffects && (
-        <StarRain onCollect={() => {
-          setUser(prev => ({ ...prev, score: prev.score + 25000 }));
-          addNotification('STAR COLLECTED', `+25,000 EXP! Catch them all!`, 'success', <Star className="text-amber-400" />);
-        }} />
-      )}
-      {showExpRain && user.settings.backgroundEffects && (
-        <ExpRain onCollect={(amount) => {
-          setUser(prev => ({ ...prev, score: prev.score + amount }));
-          addNotification('EXP COLLECTED', `+${amount} EXP!`, 'success', <Zap size={14} className="text-cyan-400" />);
-        }} />
-      )}
-
-      <AnimatePresence>
-        {adminAnnouncement && (
+  const renderCurrentView = () => {
+    if (isMaintenanceMode && !user.isAdmin) {
+      return (
+        <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
           <motion.div 
-            initial={{ opacity: 0, y: -120, x: '-50%', scale: 0.9 }}
-            animate={{ opacity: 1, y: 30, x: '-50%', scale: 1 }}
-            exit={{ opacity: 0, y: -120, x: '-50%', scale: 0.9 }}
-            transition={{ type: "spring", damping: 15 }}
-            className="fixed top-0 left-1/2 z-[300] w-full max-w-3xl px-4 pointer-events-none"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-md space-y-8"
           >
-            <div className={`relative group overflow-hidden rounded-[2.5rem] bg-slate-950/90 backdrop-blur-3xl border-2 p-6 shadow-2xl pointer-events-auto transition-colors duration-500 ${
-              adminAnnouncement.announcementType === 'alert' ? 'border-rose-500/40 shadow-rose-500/20' :
-              adminAnnouncement.announcementType === 'event' ? 'border-amber-500/40 shadow-amber-500/20' :
-              'border-emerald-500/40 shadow-emerald-500/20'
-            }`}>
-              <div className={`absolute inset-0 bg-gradient-to-r opacity-20 animate-pulse ${
-                adminAnnouncement.announcementType === 'alert' ? 'from-rose-500 via-transparent to-rose-500' :
-                adminAnnouncement.announcementType === 'event' ? 'from-amber-500 via-transparent to-amber-500' :
-                'from-emerald-500 via-transparent to-emerald-500'
-              }`}></div>
-              
-              <div className="relative flex items-center gap-6">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border shadow-xl transition-colors ${
-                   adminAnnouncement.announcementType === 'alert' ? 'bg-rose-500/20 text-rose-500 border-rose-500/30' :
-                   adminAnnouncement.announcementType === 'event' ? 'bg-amber-500/20 text-amber-500 border-amber-500/30' :
-                   'bg-emerald-500/20 text-emerald-500 border-emerald-500/30'
-                }`}>
-                  <Megaphone size={32} className="animate-bounce" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <p className={`text-[11px] font-black uppercase tracking-[0.4em] ${
-                       adminAnnouncement.announcementType === 'alert' ? 'text-rose-500' :
-                       adminAnnouncement.announcementType === 'event' ? 'text-amber-500' :
-                       'text-emerald-500'
-                    }`}>
-                      {adminAnnouncement.announcementType} Message {adminAnnouncement.sender?.username ? `• ${adminAnnouncement.sender.username}` : ''}
-                    </p>
-                    <div className={`h-px flex-1 opacity-20 ${
-                       adminAnnouncement.announcementType === 'alert' ? 'bg-rose-500' :
-                       adminAnnouncement.announcementType === 'event' ? 'bg-amber-500' :
-                       'bg-emerald-500'
-                    }`}></div>
-                  </div>
-                  <p className="text-xl font-black text-white leading-tight italic uppercase tracking-tight">{adminAnnouncement.text}</p>
-                </div>
+            <div className="w-24 h-24 bg-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto shadow-[0_0_50px_rgba(245,158,11,0.3)]">
+              <SettingsIcon size={48} className="animate-spin-slow" />
+            </div>
+            <div className="space-y-4">
+              <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">System <span className="text-amber-500">Maintenance</span></h1>
+              <div className="text-slate-400 font-medium leading-relaxed space-y-4">
+                <p>Uh oh! Classroom 9x is currently undergoing maintenance to improve performance and add new features.</p>
+                <p>Some games or features may be temporarily unavailable while we work behind the scenes.</p>
+                <p>Thanks for your patience — we’ll be back up and running soon.</p>
               </div>
             </div>
+            <div className="pt-8 border-t border-white/5">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
+            </div>
           </motion.div>
+        </div>
+      );
+    }
+
+    if (isInitialLoading || isExitingCloak) {
+      return <LoadingScreen onComplete={handleLoadingComplete} onCosmicEvent={handleCosmicEvent} />;
+    }
+
+    if (isCloaked) {
+      return <EducationalCloak onToggleCloak={handleToggleCloak} />;
+    }
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}
+      >
+        <div className={`proto-backdrop transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
+        <div className={`proto-grid transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
+        
+        {/* Pinned Games Global Overlay */}
+        {pinnedGamesList.length > 0 && currentView !== AppRoute.SUMMER && (
+          <div className="fixed top-10 right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onClick={() => setIsPinnedMinimized(!isPinnedMinimized)}
+              className="flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl pointer-events-auto cursor-pointer hover:bg-white/10 transition-all group"
+            >
+              <Star size={14} className="text-white fill-white group-hover:scale-110 transition-transform" />
+              <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] italic">PINNED ACCESS</span>
+              {isPinnedMinimized ? <ChevronRight size={14} className="text-white/40" /> : <X size={14} className="text-white/40" />}
+            </motion.div>
+            <AnimatePresence>
+              {!isPinnedMinimized && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 20, scale: 0.9 }}
+                  className="flex flex-col gap-3 pointer-events-auto"
+                >
+                  {pinnedGamesList.slice(0, 4).map(game => (
+                    <motion.button
+                      key={game.id}
+                      whileHover={{ scale: 1.05, x: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleGameSelect(game)}
+                      className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group"
+                    >
+                      <img src={game.thumbnail} alt={game.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                        <Play size={16} fill="currentColor" className="text-white ml-0.5" />
+                      </div>
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         )}
-      </AnimatePresence>
+        {<InteractiveBackground user={user} enabled={!user.settings.performanceMode && currentView !== AppRoute.SUMMER} />}
+        {user.settings.customCursor && <CustomCursor />}
+        
+          <div className="proto-content-shell">
+          <div className={`min-h-screen transition-colors duration-1000 ${currentView === AppRoute.SUMMER ? 'bg-[#fdf5e6]' : 'bg-background/40'} text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
+            {/* Background Effects */}
+            {isMatrixRain && !user.settings.performanceMode && <MatrixRain performanceMode={user.settings.performanceMode} />}
+            {isRainbowChaos && <div className="rainbow-chaos-overlay" />}
+            
+            <div className={`relative z-10 ${isGravityChaos ? 'gravity-chaos-active' : ''}`}>
+              <Layout 
+                user={user}
+                onSearch={setSearchQuery} 
+                onSetTheme={(theme) => setUser(prev => ({ ...prev, currentTheme: theme }))}
+                currentView={currentView}
+                selectedCategoryId={selectedCategoryId}
+                onViewChange={handleViewChange}
+                onProfileClick={() => setIsProfileModalOpen(true)}
+              >
+                <>
+                  <AnimatePresence>
+                    {isChatOpen && (
+                      <GlobalChat 
+                        messages={chatMessages} 
+                        onSendMessage={(text) => {
+                          const newMsg = { username: user.username, text, timestamp: new Date().toISOString() };
+                          setChatMessages(prev => [...prev, newMsg].slice(-50));
+                        }}
+                        user={user}
+                        onClose={() => setIsChatOpen(false)}
+                      />
+                    )}
+                  </AnimatePresence>
+                  {user.isBanned && (
+                    <div key="banned-overlay" className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="max-w-md space-y-8"
+                      >
+                        <div className="w-24 h-24 bg-rose-500/20 rounded-3xl flex items-center justify-center text-rose-500 border border-rose-500/20 mx-auto shadow-[0_0_50px_rgba(244,63,94,0.3)]">
+                          <Shield size={48} />
+                        </div>
+                        <div className="space-y-4">
+                          <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">Account <span className="text-rose-500">Restricted</span></h1>
+                          <p className="text-slate-400 font-medium leading-relaxed uppercase text-[10px] tracking-widest text-center">Your access has been restricted by an administrator. Please contact support if you think this is a mistake.</p>
+                        </div>
+                        <div className="pt-8 border-t border-white/5">
+                          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Suspended</p>
+                        </div>
+                      </motion.div>
+                    </div>
+                  )}
 
-      {isFireStorm && (
-        <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gradient-to-t from-orange-600/30 via-red-600/20 to-transparent animate-pulse"
-          />
-          {[...Array(60)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: window.innerHeight + 20, 
-                scale: 0,
-                opacity: 0
-              }}
-              animate={{ 
-                y: -100,
-                scale: [0, 1.5, 1, 0],
-                opacity: [0, 1, 0.5, 0],
-                x: (Math.random() - 0.5) * 300 + (Math.random() * window.innerWidth)
-              }}
-              transition={{ 
-                duration: 1.5 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "easeOut"
-              }}
-              className="absolute"
-              style={{ color: Math.random() > 0.5 ? '#f97316' : '#ef4444' }}
-            >
-              <Flame size={16 + Math.random() * 32} className="animate-pulse" />
-            </motion.div>
-          ))}
+                  {renderContent()}
+
+                  <Footer key="footer" />
+                               <div key="notifications-container" className="fixed bottom-8 right-8 z-[200] flex flex-col-reverse gap-3 pointer-events-none w-80">
+                    <AnimatePresence mode="popLayout">
+                      {notifications.map(n => (
+                        <motion.div 
+                          key={n.id} 
+                          layout
+                          initial={{ opacity: 0, y: 50, scale: 0.9, filter: 'blur(10px)' }}
+                          animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                          className="group relative flex flex-col p-5 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden transition-all hover:bg-black/80 hover:border-white/20"
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent"></div>
+                          <div className="flex items-start gap-4 relative z-10">
+                            <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 shrink-0 ${
+                              n.type === 'error' ? 'text-rose-500 bg-rose-500/10' : 
+                              n.type === 'success' ? 'text-emerald-500 bg-emerald-500/10' : 
+                              'text-cyan-500 bg-cyan-500/10'
+                            }`}>
+                              {n.icon || <Zap size={18} />}
+                            </div>
+                            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                              <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] truncate italic">{n.title || 'SYSTEM'}</p>
+                              <p className="text-xs font-black text-white tracking-tight uppercase italic leading-tight">{n.message}</p>
+                            </div>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeNotification(n.id);
+                              }}
+                              className="p-1 text-white/20 hover:text-white transition-all"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          
+                          <div className="absolute bottom-0 left-0 h-1 bg-white/[0.02] w-full">
+                            <motion.div 
+                              initial={{ width: "100%" }}
+                              animate={{ width: "0%" }}
+                              transition={{ duration: 5, ease: "linear" }}
+                              className={`h-full ${
+                                n.type === 'error' ? 'bg-rose-500' : 
+                                n.type === 'success' ? 'bg-emerald-500' : 
+                                'bg-cyan-500'
+                              } shadow-[0_0_15px_currentColor]`}
+                            />
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </>
+              </Layout>
+            </div>
+          </div>
         </div>
-      )}
 
-      {isRainbowChaos && (
-        <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-green-500/20 to-blue-500/20 animate-[rainbow-bg_5s_linear_infinite] blur-[100px]"
-          />
-          {[...Array(50)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: -20, 
-                scale: 0,
-                rotate: 0,
-                color: `hsl(${Math.random() * 360}, 100%, 50%)`
-              }}
-              animate={{ 
-                y: window.innerHeight + 20,
-                scale: [0, 1, 1, 0],
-                rotate: 360,
-                x: (Math.random() - 0.5) * 200 + (Math.random() * window.innerWidth)
-              }}
-              transition={{ 
-                duration: 2 + Math.random() * 3,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "linear"
-              }}
-              className="absolute text-2xl"
-            >
-              <Palette size={24 + Math.random() * 24} />
-            </motion.div>
-          ))}
-        </div>
-      )}
+        <WaveTransition isVisible={showWaveTransition} onComplete={() => setShowWaveTransition(false)} />
 
-      {isVoidStorm && (
-        <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden bg-purple-950/20">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 0.4, 0.2, 0.5, 0] }}
-            transition={{ duration: 0.2, repeat: Infinity }}
-            className="absolute inset-0 bg-white/5"
-          />
-          {[...Array(30)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: Math.random() * window.innerHeight,
-                scale: 0,
-                opacity: 0
-              }}
-              animate={{ 
-                scale: [0, 4, 0],
-                opacity: [0, 0.3, 0],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ 
-                duration: 3 + Math.random() * 4,
-                repeat: Infinity,
-                delay: Math.random() * 5,
-                ease: "easeInOut"
-              }}
-              className="absolute text-purple-500/30"
-            >
-              <Ghost size={100 + Math.random() * 200} />
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {isSystemOverload && (
-        <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
-          <motion.div 
-            animate={{ 
-              backgroundColor: ['rgba(245,158,11,0)', 'rgba(245,158,11,0.1)', 'rgba(245,158,11,0)']
+        {/* Modals outside effect containers */}
+        {activeGame && <GameModal game={activeGame} isFavorite={user.favorites.includes(activeGame.id)} onToggleFavorite={toggleFavorite} onClose={() => setActiveGame(null)} />}
+        {playingGame && <GameView game={playingGame} onClose={() => setPlayingGame(null)} />}
+        {isProfileModalOpen && (
+          <ProfileModal 
+            user={user} 
+            onUpdateUser={setUser}
+            onClose={() => setIsProfileModalOpen(false)} 
+            onLogout={() => {
+              localStorage.removeItem('classroom9x_local_profile_v4');
+              window.location.reload();
             }}
-            transition={{ duration: 0.1, repeat: Infinity }}
-            className="absolute inset-0"
           />
-          {[...Array(40)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: Math.random() * window.innerHeight,
-                scale: 0,
-                opacity: 0
-              }}
-              animate={{ 
-                scale: [0, 1, 0],
-                opacity: [0, 1, 0],
-                x: (Math.random() - 0.5) * 1000 + (Math.random() * window.innerWidth),
-                y: (Math.random() - 0.5) * 1000 + (Math.random() * window.innerHeight)
-              }}
-              transition={{ 
-                duration: 0.5 + Math.random() * 1,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: "circOut"
-              }}
-              className="absolute text-amber-500"
-            >
-              <Zap size={20 + Math.random() * 40} />
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {isGoldenHour && (
-        <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 via-transparent to-yellow-500/10"
-          />
-          {[...Array(40)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: -20, 
-                scale: 0,
-                rotate: 0
-              }}
-              animate={{ 
-                y: window.innerHeight + 20,
-                scale: [0, 1, 1, 0],
-                rotate: 720,
-                x: (Math.random() - 0.5) * 100 + (Math.random() * window.innerWidth)
-              }}
-              transition={{ 
-                duration: 4 + Math.random() * 4,
-                repeat: Infinity,
-                delay: Math.random() * 10,
-                ease: "linear"
-              }}
-              className="absolute text-yellow-400"
-            >
-              <Star size={16 + Math.random() * 16} fill="currentColor" />
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      {selectPlayerModal}
-      
-      <AnimatePresence>
-        {showInitialModal && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, scale: 1.05, filter: 'blur(15px)' }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          >
-            <InitialNameModal onSubmit={handleInitialNameSubmit} error={initialModalError} />
-          </motion.div>
         )}
-      </AnimatePresence>
-    </motion.div>
-  );
+        {isAdminPanelOpen && <AdminPanel user={user} onClose={() => setIsAdminPanelOpen(false)} />}
+        
+        {showBoss && (
+          <BossEvent onDefeat={() => {
+            setShowBoss(false);
+            setUser(prev => ({ ...prev, score: prev.score + 500000 }));
+            addNotification('VICTORY', 'VOID ENTITY DEFEATED! +500,000 EXP FOR EVERYONE!', 'success', <Trophy className="text-amber-400" />);
+          }} />
+        )}
+        {showBadgeRain && user.settings.backgroundEffects && (
+          <StarRain onCollect={() => {
+            setUser(prev => ({ ...prev, score: prev.score + 25000 }));
+            addNotification('STAR COLLECTED', `+25,000 EXP! Catch them all!`, 'success', <Star className="text-amber-400" />);
+          }} />
+        )}
+        {showExpRain && user.settings.backgroundEffects && (
+          <ExpRain onCollect={(amount) => {
+            setUser(prev => ({ ...prev, score: prev.score + amount }));
+            addNotification('EXP COLLECTED', `+${amount} EXP!`, 'success', <Zap size={14} className="text-cyan-400" />);
+          }} />
+        )}
+
+        <AnimatePresence>
+          {adminAnnouncement && (
+            <motion.div 
+              initial={{ opacity: 0, y: -120, x: '-50%', scale: 0.9 }}
+              animate={{ opacity: 1, y: 30, x: '-50%', scale: 1 }}
+              exit={{ opacity: 0, y: -120, x: '-50%', scale: 0.9 }}
+              transition={{ type: "spring", damping: 15 }}
+              className="fixed top-0 left-1/2 z-[2000] w-full max-w-3xl px-4 pointer-events-none"
+            >
+              <div className="relative group overflow-hidden rounded-[2.5rem] bg-slate-950/90 backdrop-blur-3xl border-2 border-white/20 p-6 shadow-2xl pointer-events-auto transition-colors duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-20 animate-pulse"></div>
+                
+                <div className="relative flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                    <Megaphone size={32} className="animate-pulse" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/40">
+                        GLOBAL MESSAGE FROM: <span className="text-white italic">{adminAnnouncement.sender?.username || 'SYSTEM'}</span>
+                      </p>
+                      <div className="h-px flex-1 bg-white/10"></div>
+                    </div>
+                    <p className="text-2xl font-black text-white leading-tight italic uppercase tracking-tight">{adminAnnouncement.text}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {isFireStorm && (
+          <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-gradient-to-t from-orange-600/30 via-red-600/20 to-transparent animate-pulse"
+            />
+            {[...Array(60)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: Math.random() * window.innerWidth, 
+                  y: window.innerHeight + 20, 
+                  scale: 0,
+                  opacity: 0
+                }}
+                animate={{ 
+                  y: -100,
+                  scale: [0, 1.5, 1, 0],
+                  opacity: [0, 1, 0.5, 0],
+                  x: (Math.random() - 0.5) * 300 + (Math.random() * window.innerWidth)
+                }}
+                transition={{ 
+                  duration: 1.5 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 5,
+                  ease: "easeOut"
+                }}
+                className="absolute"
+                style={{ color: Math.random() > 0.5 ? '#f97316' : '#ef4444' }}
+              >
+                <Flame size={16 + Math.random() * 32} className="animate-pulse" />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {isRainbowChaos && (
+          <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-green-500/20 to-blue-500/20 animate-[rainbow-bg_5s_linear_infinite] blur-[100px]"
+            />
+            {[...Array(50)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: Math.random() * window.innerWidth, 
+                  y: -20, 
+                  scale: 0,
+                  rotate: 0,
+                  color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                }}
+                animate={{ 
+                  y: window.innerHeight + 20,
+                  scale: [0, 1, 1, 0],
+                  rotate: 360,
+                  x: (Math.random() - 0.5) * 200 + (Math.random() * window.innerWidth)
+                }}
+                transition={{ 
+                  duration: 2 + Math.random() * 3,
+                  repeat: Infinity,
+                  delay: Math.random() * 5,
+                  ease: "linear"
+                }}
+                className="absolute text-2xl"
+              >
+                <Palette size={24 + Math.random() * 24} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {isVoidStorm && (
+          <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden bg-purple-950/20">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.4, 0.2, 0.5, 0] }}
+              transition={{ duration: 0.2, repeat: Infinity }}
+              className="absolute inset-0 bg-white/5"
+            />
+            {[...Array(30)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: Math.random() * window.innerWidth, 
+                  y: Math.random() * window.innerHeight,
+                  scale: 0,
+                  opacity: 0
+                }}
+                animate={{ 
+                  scale: [0, 4, 0],
+                  opacity: [0, 0.3, 0],
+                  rotate: [0, 180, 360]
+                }}
+                transition={{ 
+                  duration: 3 + Math.random() * 4,
+                  repeat: Infinity,
+                  delay: Math.random() * 5,
+                  ease: "easeInOut"
+                }}
+                className="absolute text-purple-500/30"
+              >
+                <Ghost size={100 + Math.random() * 200} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {isSystemOverload && (
+          <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
+            <motion.div 
+              animate={{ 
+                backgroundColor: ['rgba(245,158,11,0)', 'rgba(245,158,11,0.1)', 'rgba(245,158,11,0)']
+              }}
+              transition={{ duration: 0.1, repeat: Infinity }}
+              className="absolute inset-0"
+            />
+            {[...Array(40)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: Math.random() * window.innerWidth, 
+                  y: Math.random() * window.innerHeight,
+                  scale: 0,
+                  opacity: 0
+                }}
+                animate={{ 
+                  scale: [0, 1, 0],
+                  opacity: [0, 1, 0],
+                  x: (Math.random() - 0.5) * 1000 + (Math.random() * window.innerWidth),
+                  y: (Math.random() - 0.5) * 1000 + (Math.random() * window.innerHeight)
+                }}
+                transition={{ 
+                  duration: 0.5 + Math.random() * 1,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                  ease: "circOut"
+                }}
+                className="absolute text-amber-500"
+              >
+                <Zap size={20 + Math.random() * 40} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {isGoldenHour && (
+          <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-gradient-to-b from-yellow-500/10 via-transparent to-yellow-500/10"
+            />
+            {[...Array(40)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  x: Math.random() * window.innerWidth, 
+                  y: -20, 
+                  scale: 0,
+                  rotate: 0
+                }}
+                animate={{ 
+                  y: window.innerHeight + 20,
+                  scale: [0, 1, 1, 0],
+                  rotate: 720,
+                  x: (Math.random() - 0.5) * 100 + (Math.random() * window.innerWidth)
+                }}
+                transition={{ 
+                  duration: 4 + Math.random() * 4,
+                  repeat: Infinity,
+                  delay: Math.random() * 10,
+                  ease: "linear"
+                }}
+                className="absolute text-yellow-400"
+              >
+                <Star size={16 + Math.random() * 16} fill="currentColor" />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {selectPlayerModal}
+        
+        <AnimatePresence>
+          {showInitialModal && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 1.05, filter: 'blur(15px)' }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            >
+              <InitialNameModal onSubmit={handleInitialNameSubmit} error={initialModalError} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  };
+
+  return renderCurrentView();
 };
 
 export default App;

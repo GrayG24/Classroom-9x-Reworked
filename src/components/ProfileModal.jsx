@@ -171,8 +171,20 @@ export const ProfileModal = ({ user, onClose }) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="space-y-10"
+                  className="space-y-10 relative min-h-[400px]"
                 >
+                  {/* Lock Overlay */}
+                  <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 bg-slate-950/40 backdrop-blur-md rounded-[3rem] flex flex-col items-center justify-center border border-white/5 shadow-2xl">
+                    <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center text-white/20 border border-white/10 mb-8">
+                       <Lock size={48} className="animate-pulse" />
+                    </div>
+                    <span className="text-[14px] font-black text-white uppercase tracking-[0.6em] italic mb-4">ACCESS RESTRICTED</span>
+                    <div className="px-8 py-3 bg-white text-black font-black text-[10px] uppercase tracking-[0.5em] italic rounded-full shadow-[0_0_40px_rgba(255,255,255,0.4)]">
+                      COMING SOON
+                    </div>
+                    <p className="text-[10px] font-bold text-white/20 mt-8 uppercase tracking-[0.3em] italic">FEATURE CURRENTLY IN CALIBRATION</p>
+                  </div>
+
                   <div className="flex items-center gap-6">
                     <span className="text-[11px] font-black text-white uppercase tracking-[0.5em] italic shrink-0">THE PROGRESSION ROAD</span>
                     <div className="h-px w-full bg-gradient-to-r from-white/10 to-transparent"></div>

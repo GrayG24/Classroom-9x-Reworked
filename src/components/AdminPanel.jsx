@@ -2,6 +2,43 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, X, Users, MessageSquare, Activity, Settings, Trash2, Send, Megaphone, Zap, Star, Trophy, Crown, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, ShieldAlert, AlertTriangle, RefreshCw, Power, Terminal, Clock, Palette, Sparkles, Filter, Search, ChevronRight, Binary, Fingerprint, Database, Cpu, Globe } from 'lucide-react';
 
+const ConfirmModal = ({ title, message, onConfirm, onCancel, isLoading }) => (
+  <motion.div 
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+  >
+    <motion.div 
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      className="max-w-md w-full bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 text-center shadow-2xl"
+    >
+      <div className="w-20 h-20 bg-rose-500/10 rounded-3xl flex items-center justify-center text-rose-500 mx-auto mb-8 border border-rose-500/20">
+        <AlertTriangle size={40} />
+      </div>
+      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-4">{title}</h3>
+      <p className="text-white/60 text-sm font-medium uppercase tracking-widest leading-relaxed mb-10">{message}</p>
+      <div className="flex gap-4">
+        <button 
+          onClick={onCancel}
+          disabled={isLoading}
+          className="flex-1 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.3em] italic transition-all"
+        >
+          CANCEL
+        </button>
+        <button 
+          onClick={onConfirm}
+          disabled={isLoading}
+          className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.3em] italic transition-all shadow-[0_0_30px_rgba(244,63,94,0.3)]"
+        >
+          {isLoading ? <RefreshCw className="animate-spin mx-auto" size={16} /> : 'CONFIRM'}
+        </button>
+      </div>
+    </motion.div>
+  </motion.div>
+);
+
 export const AdminPanel = ({ user, onClose }) => {
   const [activeTab, setActiveTab] = useState('summary');
   const [announcement, setAnnouncement] = useState('');
@@ -12,6 +49,9 @@ export const AdminPanel = ({ user, onClose }) => {
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statsLoading, setStatsLoading] = useState(true);
+
+  // Confirmation state
+  const [confirmConfig, setConfirmConfig] = useState(null);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -50,100 +90,124 @@ export const AdminPanel = ({ user, onClose }) => {
 
   const handleSendAnnouncement = async () => {
     if (!announcement.trim()) return;
-    if (!confirm(`INITIALIZE BROADCAST: Send this ${announcementType.toUpperCase()} packet to all active nodes?`)) return;
     
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/admin/announce', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text: announcement, 
-          type: announcementType,
-          sender: { 
-            username: user.username,
-            characterId: user.currentCharacter,
-            frameId: user.currentFrame
-          } 
-        })
-      });
-      if (res.ok) {
-        setAnnouncement('');
+    setConfirmConfig({
+      title: "BROADCAST ALERT",
+      message: "Send this global transmission to all active users?",
+      action: async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch('/api/admin/announce', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              text: announcement, 
+              type: announcementType,
+              sender: { 
+                username: user.username,
+                characterId: user.currentCharacter,
+                frameId: user.currentFrame
+              } 
+            })
+          });
+          if (res.ok) {
+            setAnnouncement('');
+          }
+        } catch (err) {
+          console.error('Admin: Broadcast failed:', err);
+        } finally {
+          setIsLoading(false);
+          setConfirmConfig(null);
+        }
       }
-    } catch (err) {
-      console.error('Admin: Broadcast failed:', err);
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleGlobalEvent = async (eventId) => {
-    if (!confirm(`EXECUTE GLOBAL EVENT: ${eventId.replace(/_/g, ' ')}? This will override local node states.`)) return;
-
-    setIsLoading(true);
-    try {
-      await fetch('/api/admin/abuse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          type: eventId, 
-          target: 'GLOBAL', 
-          sender: { 
-            username: user.username,
-            characterId: user.currentCharacter,
-            frameId: user.currentFrame
-          }
-        })
-      });
-    } catch (err) {
-      console.error('Admin: Event execution failed:', err);
-    } finally {
-      setIsLoading(false);
-    }
+    setConfirmConfig({
+      title: "CRITICAL SYSTEM OVERRIDE",
+      message: `Trigger ${eventId.replace(/_/g, ' ')} for EVERY active user? This will cause major visual effects.`,
+      action: async () => {
+        setIsLoading(true);
+        try {
+          await fetch('/api/admin/abuse', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              type: eventId, 
+              target: 'GLOBAL', 
+              sender: { 
+                username: user.username,
+                characterId: user.currentCharacter,
+                frameId: user.currentFrame
+              }
+            })
+          });
+        } catch (err) {
+          console.error('Admin: Event execution failed:', err);
+        } finally {
+          setIsLoading(false);
+          setConfirmConfig(null);
+        }
+      }
+    });
   };
 
   const handleToggleMaintenance = async () => {
     const newState = !isMaintenance;
-    if (!confirm(`MAINTENANCE OVERRIDE: ${newState ? 'RESTRICT' : 'RESTORE'} system access for non-admin nodes?`)) return;
-
-    try {
-      const res = await fetch('/api/admin/maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: newState })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setIsMaintenance(data.enabled);
+    setConfirmConfig({
+      title: "MAINTENANCE MODE",
+      message: `${newState ? 'Enable' : 'Disable'} access restrictions for all users?`,
+      action: async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch('/api/admin/maintenance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: newState })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setIsMaintenance(data.enabled);
+          }
+        } catch (err) {
+          console.error('Admin: Maintenance toggle failed:', err);
+        } finally {
+          setIsLoading(false);
+          setConfirmConfig(null);
+        }
       }
-    } catch (err) {
-      console.error('Admin: Maintenance toggle failed:', err);
-    }
+    });
   };
 
   const handleNodeAction = async (action, node) => {
     const actions = {
-      ban: { label: 'PERMANENTLY DISCONNECT', endpoint: '/api/admin/ban-player', color: 'text-rose-500' },
-      reset: { label: 'WIPE CORE DATA FOR', endpoint: '/api/admin/reset-stats', color: 'text-amber-500' },
-      remove: { label: 'PURGE FROM DATABASE', endpoint: '/api/admin/remove-player', color: 'text-rose-500' }
+      ban: { label: 'PERMANENTLY DISCONNECT', endpoint: '/api/admin/ban-player', color: 'text-rose-500', warning: 'This will prevent the user from accessing the site permanently.' },
+      reset: { label: 'WIPE CORE DATA FOR', endpoint: '/api/admin/reset-stats', color: 'text-amber-500', warning: 'This will reset all scores, levels, and progress for this user.' },
+      remove: { label: 'PURGE FROM DATABASE', endpoint: '/api/admin/remove-player', color: 'text-rose-500', warning: 'This will delete the user profile entirely.' }
     };
     
     const config = actions[action];
-    if (!confirm(`CRITICAL INTERVENTION: Are you sure you want to ${config.label} node ${node.username.toUpperCase()}?`)) return;
-
-    setIsLoading(true);
-    try {
-      const res = await fetch(config.endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: node.uid })
-      });
-      if (res.ok) fetchNodes();
-    } catch (err) {
-      console.error(`Admin: Node action ${action} failed:`, err);
-    } finally {
-      setIsLoading(false);
-    }
+    setConfirmConfig({
+      title: "SECURITY OVERRIDE",
+      message: `${config.label} ${node.username.toUpperCase()}? ${config.warning}`,
+      action: async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch(config.endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: node.uid })
+          });
+          if (res.ok) fetchNodes();
+        } catch (err) {
+          console.error(`Admin: Node action ${action} failed:`, err);
+        } finally {
+          setIsLoading(false);
+          setConfirmConfig(null);
+        }
+      }
+    });
   };
 
   const filteredNodes = nodes.filter(n => 
@@ -458,26 +522,6 @@ export const AdminPanel = ({ user, onClose }) => {
                       <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] italic">Direct broadcast to all connected neural nodes.</p>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                      {[
-                        { id: 'system', label: 'SYSTEM PACKET', color: 'bg-emerald-500 border-emerald-500' },
-                        { id: 'alert', label: 'PRIORITY ALERT', color: 'bg-rose-500 border-rose-500' },
-                        { id: 'event', label: 'EVENT DIRECTIVE', color: 'bg-amber-500 border-amber-500' }
-                      ].map(type => (
-                        <button
-                          key={type.id}
-                          onClick={() => setAnnouncementType(type.id)}
-                          className={`p-6 rounded-[1.5rem] border font-black text-[9px] uppercase tracking-widest transition-all italic ${
-                            announcementType === type.id 
-                              ? `${type.color} text-white shadow-[0_10px_30px_rgba(255,255,255,0.1)]` 
-                              : 'bg-white/5 border-white/10 text-white/30 hover:border-white/20 hover:text-white'
-                          }`}
-                        >
-                          {type.label}
-                        </button>
-                      ))}
-                    </div>
-
                     <div className="relative group">
                       <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent"></div>
                       <textarea
@@ -507,6 +551,17 @@ export const AdminPanel = ({ user, onClose }) => {
           </div>
         </div>
       </motion.div>
+      <AnimatePresence>
+        {confirmConfig && (
+          <ConfirmModal 
+            title={confirmConfig.title}
+            message={confirmConfig.message}
+            onConfirm={confirmConfig.action}
+            onCancel={() => setConfirmConfig(null)}
+            isLoading={isLoading}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

@@ -67,8 +67,9 @@ export const Sidebar = ({
       onMouseEnter={() => user.settings.sidebarAutoHide && setIsExpanded(true)}
       onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
       initial={false}
-      animate={isPotatoMode ? {} : { 
+      animate={isPotatoMode ? { opacity: 1, width: isExpanded ? 280 : 88, minWidth: isExpanded ? 280 : 88 } : { 
         width: isExpanded ? 280 : 88,
+        minWidth: isExpanded ? 280 : 88,
         height: isExpanded ? 'calc(100vh - 60px)' : '640px',
         maxHeight: isExpanded ? 'calc(100vh - 60px)' : '640px',
         top: isExpanded ? '30px' : 'calc(50% - 320px)',
@@ -77,22 +78,10 @@ export const Sidebar = ({
         opacity: 1
       }}
       transition={isPotatoMode ? { duration: 0 } : { 
-        duration: 0.3,
-        ease: [0.22, 1, 0.36, 1]
+        duration: 1.2,
+        ease: [0.16, 1, 0.3, 1]
       }}
-      style={isPotatoMode ? {
-        width: isExpanded ? 280 : 88,
-        height: isExpanded ? 'calc(100vh - 60px)' : '640px',
-        maxHeight: isExpanded ? 'calc(100vh - 60px)' : '640px',
-        left: 0,
-        x: 20,
-        top: isExpanded ? '30px' : 'calc(50% - 320px)',
-        borderRadius: isExpanded ? "2.5rem" : "2.8rem",
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed'
-      } : {}}
-      className="fixed left-0 z-50 flex flex-col shadow-[20px_0_100px_rgba(0,0,0,0.2)] bg-black/40 backdrop-blur-[16px] border border-white/5"
+      className="fixed left-0 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.2)] bg-black/40 backdrop-blur-[16px] border border-white/5"
     >
       {/* Logo Section */}
       <div className="p-8 pb-4 flex flex-col items-center w-full shrink-0">
@@ -149,8 +138,8 @@ export const Sidebar = ({
                 opacity: isComingSoon && !isActive ? 0.6 : 1
               }}
               transition={{
-                duration: 0.5,
-                ease: [0.22, 1, 0.36, 1]
+                duration: 0.4,
+                ease: [0.16, 1, 0.3, 1]
               }}
               whileHover={{ 
                 scale: isComingSoon && !isActive ? 1.01 : 1.04,
@@ -299,13 +288,19 @@ export const Sidebar = ({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="flex flex-col items-center gap-2"
+                  className="flex flex-col items-center gap-1.5 py-1"
                 >
-                  <span className="text-[8px] font-black text-white/40 tabular-nums">
-                    {time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false, timeZone: 'America/New_York' }).split(':')[0]}
-                  </span>
-                  <div className="w-4 h-px bg-white/5"></div>
-                  <span className="text-[8px] font-black text-emerald-500 tabular-nums">{onlineCount}</span>
+                  <div className="flex flex-col items-center leading-none">
+                    <span className="text-[10px] font-black text-white italic tabular-nums leading-none">
+                      {time.getHours() % 12 || 12}
+                    </span>
+                    <div className="w-4 h-px bg-white/20 my-0.5"></div>
+                    <span className="text-[10px] font-black text-white/60 italic tabular-nums leading-none">
+                      {time.getMinutes().toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="w-4 h-px bg-white/10 my-0.5"></div>
+                  <span className="text-[9px] font-black text-emerald-500 tabular-nums leading-none">{onlineCount}</span>
                 </motion.div>
               )}
             </AnimatePresence>

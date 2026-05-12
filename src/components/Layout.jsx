@@ -10,16 +10,37 @@ const WaveTransition = ({ isVisible }) => (
   <AnimatePresence>
     {isVisible && (
       <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: '-100%' }}
-        exit={{ y: '-100%' }}
-        transition={{ duration: 1.5, ease: [0.76, 0, 0.24, 1] }}
-        className="fixed inset-0 z-[100] pointer-events-none"
+        initial={{ y: '100%', clipPath: 'inset(0 0 100% 0)' }}
+        animate={{ y: '-100%', clipPath: 'inset(0 0 0 0)' }}
+        exit={{ y: '-100%', opacity: 0 }}
+        transition={{ 
+          duration: 2.2, 
+          ease: [0.43, 0.13, 0.23, 0.96] 
+        }}
+        className="fixed inset-0 z-[1000] pointer-events-none"
       >
-        <div className="absolute inset-0 bg-white" />
-        <div className="absolute top-0 inset-x-0 h-48 -translate-y-full">
-           <svg viewBox="0 0 800 200" className="w-full h-48 fill-white" preserveAspectRatio="none">
-             <path d="M 0 100 C 200 150 600 50 800 100 V 200 H 0 Z" />
+        <div className="absolute inset-0 bg-slate-100 flex flex-col justify-center items-center">
+           <motion.div
+             initial={{ scale: 0.8, opacity: 0 }}
+             animate={{ scale: 1, opacity: 1 }}
+             transition={{ delay: 0.5, duration: 1 }}
+             className="flex flex-col items-center gap-8"
+           >
+              <div className="w-24 h-2 bg-theme/20 rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ x: '-100%' }}
+                  animate={{ x: '100%' }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  className="w-full h-full bg-theme"
+                />
+              </div>
+              <span className="text-[10px] font-black tracking-[1em] text-slate-400 italic">INITIALIZING SUMMER CORE</span>
+           </motion.div>
+        </div>
+        <div className="absolute top-0 inset-x-0 h-96 -translate-y-[90%] pointer-events-none">
+           <svg viewBox="0 0 800 400" className="w-full h-full fill-slate-100" preserveAspectRatio="none">
+             <path d="M 0 200 C 200 400 600 0 800 200 V 400 H 0 Z" />
+             <path d="M 0 100 C 300 200 500 0 800 100 V 200 H 0 Z" opacity="0.5" />
            </svg>
         </div>
       </motion.div>

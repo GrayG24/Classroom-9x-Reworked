@@ -8,94 +8,54 @@ import { CHARACTERS, BADGES } from '../constants';
 
 const ProfileWidget = ({ user, onProfileClick }) => {
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || (CHARACTERS && CHARACTERS.length > 0 ? CHARACTERS[0] : { name: 'Unknown', icon: User, img: null });
-  const LEVEL_UP_BASE = 200;
-  const nextLevelExp = user.level * LEVEL_UP_BASE;
-  const progress = (user.exp / nextLevelExp) * 100;
-  const unlockedBadges = BADGES.filter(b => (user.unlockedBadges || []).includes(b.id));
-  
   const isPotatoMode = user?.settings?.performanceMode === true;
   
   return (
     <motion.div 
-      whileHover={isPotatoMode ? {} : { y: -8, scale: 1.01 }}
+      initial={false}
+      whileHover={isPotatoMode ? {} : { y: -4, scale: 1.01 }}
       whileTap={isPotatoMode ? {} : { scale: 0.99 }}
       onClick={onProfileClick}
-      className={`relative w-full rounded-[3.5rem] p-1 border border-white/5 bg-slate-950/40 backdrop-blur-3xl cursor-pointer group shadow-2xl overflow-hidden`}
+      className={`relative w-full rounded-[2.5rem] p-1 border border-white/5 bg-slate-950/40 backdrop-blur-3xl cursor-pointer group shadow-2xl overflow-hidden`}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-theme/20 via-transparent to-theme/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[length:200%_100%] animate-shimmer"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-theme/10 via-transparent to-theme/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
       
-      <div className="relative z-10 flex items-center p-6 gap-8">
-        {/* Elite Avatar System */}
+      <div className="relative z-10 flex items-center p-5 gap-6">
         <div className="relative shrink-0">
-          <div className="relative w-32 h-32">
-            <div className={`absolute -inset-2 bg-theme/20 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
-            <div className={`absolute -inset-4 frame-${user.currentFrame || 'obsidian'} z-20 pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity`}></div>
-            <div className="relative w-full h-full rounded-[2.5rem] bg-black border-2 border-white/10 overflow-hidden flex items-center justify-center shadow-2xl z-10">
+          <div className="relative w-20 h-20">
+            <div className={`absolute -inset-4 frame-${user.currentFrame || 'obsidian'} z-20 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity`}></div>
+            <div className="relative w-full h-full rounded-[1.5rem] bg-black border-2 border-white/10 overflow-hidden flex items-center justify-center shadow-2xl z-10">
               {character.img ? (
                 <img src={character.img} alt={character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" />
               ) : (
-                <User size={48} className="text-white/20" />
+                <User size={32} className="text-white/20" />
               )}
             </div>
-            <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-theme rounded-full border-4 border-black flex items-center justify-center text-black font-black text-xs italic z-30 shadow-[0_0_30px_var(--primary-glow)]">
-              {user.level}
+            <div className="absolute -bottom-2 -right-2 px-4 py-1.5 bg-white text-black rounded-xl border border-white/20 flex flex-col items-center justify-center font-black z-30 shadow-[0_8px_25px_rgba(0,0,0,0.5)] min-w-[50px] group-hover:scale-110 transition-transform">
+              <span className="text-[7px] leading-none opacity-40 uppercase tracking-widest mb-0.5">LVL</span>
+              <span className="text-[14px] leading-none italic">{user.level}</span>
             </div>
           </div>
         </div>
 
-        {/* Dynamic Identity Info */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-theme uppercase tracking-[0.4em] mb-1 italic opacity-60">IDENTIFIED AS</span>
-              <h4 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-theme transition-colors">{user.username}</h4>
-            </div>
-            <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-1 italic">ACTIVE RANK</span>
-              <span className="text-xl font-black text-white italic tracking-tighter uppercase">{user.currentTitle}</span>
-            </div>
-          </div>
-
-          {/* Luxury Progress Architecture */}
-          <div className="space-y-4">
-            <div className="flex justify-between items-end">
-               <div className="flex items-center gap-2">
-                 <div className="w-1.5 h-1.5 rounded-full bg-theme animate-pulse"></div>
-                 <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] italic">EVOLUTION PROTOCOL</span>
-               </div>
-               <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono italic">{Math.round(progress)}% COMPLETE</span>
-            </div>
-            <div className="h-4 bg-white/5 rounded-2xl p-1 border border-white/5 overflow-hidden">
+        <div className="flex-1 min-w-0">
+          <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-theme transition-colors truncate">{user.username}</h4>
+          <div className="flex items-center gap-3 mt-1">
+            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full bg-gradient-to-r from-theme via-theme/80 to-theme shadow-[0_0_30px_var(--primary-glow)] rounded-xl relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer bg-[length:200%_100%]"></div>
-              </motion.div>
+                animate={{ width: `${Math.min(100, Math.max(0, ((user.exp - (user.level - 1) * 200) / 200) * 100))}%` }}
+                className="h-full bg-theme shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
+              />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-1.5">
-                {unlockedBadges.slice(0, 5).map(badge => (
-                  <div key={badge.id} className="w-6 h-6 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center p-1 group/badge hover:bg-white/10 transition-colors">
-                    <badge.icon size={12} style={{ color: badge.color }} className={badge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} />
-                  </div>
-                ))}
-                {unlockedBadges.length > 5 && (
-                  <div className="px-2 h-6 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center">
-                    <span className="text-[8px] font-black text-white/20">+{unlockedBadges.length - 5}</span>
-                  </div>
-                )}
-              </div>
-              <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.2em] italic">ELITE ACCESS MEMBER • SINCE 2026</p>
-            </div>
+            <span className="text-[7px] font-black text-white/30 uppercase tracking-[0.2em] italic shrink-0">
+              {Math.floor(user.exp - (user.level - 1) * 200)} / 200 XP
+            </span>
           </div>
         </div>
 
-        {/* Action Gate */}
-        <div className="w-20 h-20 rounded-[2.5rem] bg-white/5 border border-white/5 flex items-center justify-center text-white/20 group-hover:bg-theme group-hover:text-black group-hover:shadow-[0_0_50px_var(--primary-glow)] transition-all duration-500">
-          <ChevronRight size={32} />
+        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 group-hover:bg-theme group-hover:text-black transition-all duration-300">
+          <ChevronRight size={20} />
         </div>
       </div>
     </motion.div>
@@ -291,110 +251,95 @@ export const Home = ({
         <Hero user={user} onBrowseLibrary={onSwitchToLibrary} />
       </motion.div>
 
-      {/* Pinned Games Section - Top Right Floating */}
-      {pinnedGamesList.length > 0 && (
-        <div className="fixed top-8 right-8 z-[60] flex flex-col items-end gap-4 pointer-events-none">
-          <motion.div 
-            variants={itemVariants}
-            onClick={() => setIsPinnedMinimized(!isPinnedMinimized)}
-            className="flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl pointer-events-auto cursor-pointer hover:bg-white/10 transition-all"
-          >
-            <Star size={14} className="text-white fill-white" />
-            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] italic">PINNED ACCESS</span>
-            {isPinnedMinimized ? <ChevronDown size={14} className="text-white/40" /> : <X size={14} className="text-white/40" />}
-          </motion.div>
-          <AnimatePresence>
-            {!isPinnedMinimized && (
-              <motion.div 
-                initial={{ opacity: 0, y: -20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                className="flex flex-col gap-3 pointer-events-auto"
-              >
-                {pinnedGamesList.slice(0, 4).map(game => (
-                  <motion.button
-                    key={game.id}
-                    whileHover={{ scale: 1.05, x: -5 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => onPlayGame(game)}
-                    className="w-16 h-16 rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group"
-                  >
-                    <img src={game.thumbnail} alt={game.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Play size={16} fill="currentColor" className="text-white ml-0.5" />
-                    </div>
-                  </motion.button>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
       {/* Featured Game Banner - REWORKED */}
       <motion.section variants={itemVariants} className="pb-20 relative z-10">
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="relative group">
-            <div className="absolute -inset-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-1000"></div>
-            <div className={`relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group cursor-pointer ${isPotatoMode ? '' : 'hover:shadow-[0_0_80px_rgba(255,255,255,0.1)]'}`}
-              onClick={() => onPlayGame(featuredGame)}
-            >
+            <div className="absolute -inset-4 bg-gradient-to-r from-theme/20 via-white/5 to-theme/20 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-1000"></div>
+            <div className={`relative h-[400px] md:h-[600px] lg:h-[700px] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group ${isPotatoMode ? '' : 'hover:shadow-[0_0_80px_rgba(255,255,255,0.1)]'}`}>
               <img 
                 src={featuredGame.thumbnail} 
                 alt="Featured Game" 
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
                 referrerPolicy="no-referrer"
               />
-              {/* Persistent Weekly Badge & Timer */}
-              <div className="absolute inset-0 pointer-events-none p-16 sm:p-24 flex flex-col justify-between z-20">
-                <div className="flex justify-between items-start w-full">
-                  <div className="px-6 py-3 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center gap-3 pointer-events-auto">
-                    <Trophy size={20} className="text-white animate-bounce" />
-                    <span className="text-xs font-black text-white uppercase tracking-[0.4em] italic">WEEKLY GAME</span>
-                  </div>
+              
+              {/* Premium Glass Header */}
+              <div className="absolute top-0 inset-x-0 p-8 md:p-12 flex justify-between items-start z-30">
+                <motion.div 
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  className="px-6 py-3 bg-black/40 backdrop-blur-2xl rounded-2xl border border-white/10 flex items-center gap-3"
+                >
+                  <Trophy size={20} className="text-yellow-400 animate-pulse" />
+                  <span className="text-xs font-black text-white uppercase tracking-[0.4em] italic">GAME OF THE WEEK</span>
+                </motion.div>
 
-                  <div className="hidden xl:flex flex-col items-end gap-12 pointer-events-auto">
-                    <div className="text-right p-10 bg-black/60 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-2xl relative">
-                      <div className="absolute -top-3 -left-3 w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/40 animate-ping" />
-                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] mb-8 italic">WEEKLY REFRESH IN</p>
+                <motion.div 
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  className="hidden xl:flex items-center gap-6"
+                >
+                   <div className="flex flex-col items-end">
+                      <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-2 italic">NEXT ROTATION</span>
                       <CountdownTimer />
-                    </div>
-                  </div>
-                </div>
+                   </div>
+                </motion.div>
               </div>
 
-              {/* Hover Interactions */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent flex flex-col justify-center p-16 sm:p-24 transition-all duration-700 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] z-10">
-                <div className="flex items-center justify-between w-full">
-                  <div className="max-w-3xl">
-                    <p 
-                      className="max-w-xl text-white/60 text-xl leading-relaxed mb-12 font-medium italic translate-y-4 group-hover:translate-y-0 transition-all duration-700 delay-100"
+              {/* Dynamic Content Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-8 md:p-16 lg:p-24 z-20">
+                <div className="max-w-4xl relative">
+                  {/* Removed duplicate holographic decoration that might look like an outline */}
+
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    className="flex flex-col gap-4 mb-8"
+                  >
+                    <div className="relative">
+                      <h2 className="text-5xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tighter italic leading-[0.85] group-hover:text-theme transition-colors duration-500 relative z-10">
+                        {featuredGame.title}
+                      </h2>
+                    </div>
+                  </motion.div>
+
+                  <p className="max-w-2xl text-white/60 text-lg md:text-xl leading-relaxed mb-12 font-medium italic line-clamp-2 md:line-clamp-none border-l-2 border-white/10 pl-8">
+                    {featuredGame.description}
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-6">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPlayGame(featuredGame);
+                      }}
+                      className="group/btn relative px-20 h-24 bg-white text-black rounded-[2rem] overflow-hidden hover:scale-105 active:scale-95 transition-all shadow-[0_0_60px_rgba(255,255,255,0.4)] border-4 border-black/10"
                     >
-                      {featuredGame.description}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-8 translate-y-4 group-hover:translate-y-0 transition-all duration-700 delay-200">
-                      <button 
-                        onClick={() => onPlayGame(featuredGame)}
-                        className="inline-flex items-center justify-center gap-4 whitespace-nowrap text-xs font-black transition-all h-20 rounded-[1.5rem] px-16 bg-white text-black hover:bg-white/90 hover:scale-105 uppercase tracking-[0.3em] shadow-[0_20px_60px_rgba(255,255,255,0.2)] italic group/btn"
-                      >
+                      <div className="absolute inset-0 bg-theme/10 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+                      <div className="relative flex items-center gap-6 text-sm font-black uppercase tracking-[0.4em] italic">
                         PLAY NOW
-                        <Rocket size={20} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
-                      </button>
+                        <div className="w-10 h-10 rounded-xl bg-black text-white flex items-center justify-center group-hover/btn:rotate-12 transition-transform shadow-xl">
+                          <Rocket size={24} />
+                        </div>
+                      </div>
+                    </button>
 
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(featuredGame.id);
-                        }}
-                        className="w-20 h-20 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                      >
-                        <Star size={28} className={favorites.includes(featuredGame.id) ? 'fill-white text-white' : ''} />
-                      </button>
-                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(featuredGame.id);
+                      }}
+                      className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all group/star"
+                    >
+                      <Star size={28} className={`${favorites.includes(featuredGame.id) ? 'fill-white text-white shadow-[0_0_20px_white]' : ''} group-hover/star:scale-110 transition-transform`} />
+                    </button>
                   </div>
                 </div>
               </div>
+
+              {/* Ambient Decoration */}
+              <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-theme/5 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
             </div>
           </div>
         </div>
