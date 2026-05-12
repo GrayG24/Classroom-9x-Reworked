@@ -24,9 +24,24 @@ export const CodesPage = ({ user, onRedeemCode }) => {
       </div>
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16 space-y-6">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
+        <div className="relative">
+          <div className="absolute -inset-8 bg-black/60 backdrop-blur-xl z-[100] flex flex-col items-center justify-center rounded-[4rem] border-2 border-white/5 shadow-2xl">
+            <motion.div
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity }}
+              className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 border border-white/10 shadow-2xl"
+            >
+              <Lock size={48} className="text-white/20" />
+            </motion.div>
+            <h2 className="text-4xl font-black text-white italic uppercase tracking-[0.2em] mb-4">Under Development</h2>
+            <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em] max-w-sm text-center px-8 leading-relaxed">
+              The Access Key system is currently offline for maintenance. Security protocols will be restored in a future update.
+            </p>
+          </div>
+          
+          <div className="text-center mb-16 space-y-6 opacity-20 pointer-events-none">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white mx-auto shadow-2xl"
           >
@@ -103,6 +118,7 @@ export const CodesPage = ({ user, onRedeemCode }) => {
             <Shield size={14} />
             <span className="text-[8px] font-black uppercase tracking-widest italic">Secure Link</span>
           </div>
+        </div>
         </div>
       </div>
     </div>

@@ -73,14 +73,17 @@ export const InteractiveBackground = ({ enabled = true, user }) => {
                 />
               )}
   
-              {/* Static Texture Overlay - Simplified/Lighter opacity */}
+              {/* Static Texture Overlay - Simplified/Lighter opacity and removed heavy fractal filter */}
               <div 
-                className={`absolute inset-0 mix-blend-overlay pointer-events-none ${isPotatoMode ? 'opacity-[0.03]' : 'opacity-[0.08]'}`}
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }}
+                className={`absolute inset-0 mix-blend-overlay pointer-events-none opacity-[0.03]`}
+                style={{ 
+                  backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)',
+                  backgroundSize: '48px 48px'
+                }}
               />
               
-              {/* Cosmic Floating Dust - Greatly reduced or disabled in Potato Mode */}
-              {!isPotatoMode && [...Array(40)].map((_, i) => (
+              {/* Cosmic Floating Dust - Reduced count for smoothness */}
+              {!isPotatoMode && [...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ 

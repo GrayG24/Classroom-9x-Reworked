@@ -1,6 +1,29 @@
 import React from 'react';
-import { motion } from 'motion/react';
-import { LayoutGrid, MessageSquare, Music, Globe, Terminal, Shield, Zap, Cpu, Activity, Plus, Lock } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { LayoutGrid, MessageSquare, Music, Globe, Terminal, Shield, Zap, Cpu, Activity, Plus, Lock, Film, X, Play } from 'lucide-react';
+
+const KoopinemaButton = ({ onClick }) => (
+  <button 
+    onClick={onClick}
+    className="group flex flex-col items-center gap-1.5 p-2 rounded-xl w-[76px] transition-all duration-150 hover:bg-white/5" 
+    title="Click or double-click to open"
+  >
+    <div className="w-12 h-12 rounded-xl border flex items-center justify-center transition-all duration-150 bg-[#141414] border-white/10 group-hover:border-white/20">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width: '21px', height: '21px', color: 'rgb(156, 163, 175)'}} aria-hidden="true">
+        <rect x="2" y="3" width="20" height="18" rx="2.5" fill="currentColor" opacity="0.12" stroke="currentColor" strokeWidth="1.5"></rect>
+        <rect x="2" y="6.5" width="2.5" height="2" rx="0.6" fill="currentColor"></rect>
+        <rect x="2" y="11" width="2.5" height="2" rx="0.6" fill="currentColor"></rect>
+        <rect x="2" y="15.5" width="2.5" height="2" rx="0.6" fill="currentColor"></rect>
+        <rect x="19.5" y="6.5" width="2.5" height="2" rx="0.6" fill="currentColor"></rect>
+        <rect x="19.5" y="11" width="2.5" height="2" rx="0.6" fill="currentColor"></rect>
+        <rect x="19.5" y="15.5" width="2.5" height="2" rx="0.6" fill="currentColor"></rect>
+        <rect x="5.5" y="5" width="13" height="14" rx="1.5" stroke="currentColor" strokeWidth="0.75" opacity="0.25"></rect>
+        <path d="M10 9.2 L10 14.8 L15.6 12 Z" fill="currentColor"></path>
+      </svg>
+    </div>
+    <span className="text-[11px] text-center leading-tight select-none px-0.5 text-gray-300" style={{maxWidth: '72px', wordBreak: 'break-word'}}>Koopinema</span>
+  </button>
+);
 
 export const AppsPage = ({ onToggleChat }) => {
   const apps = [
@@ -24,17 +47,6 @@ export const AppsPage = ({ onToggleChat }) => {
       version: '1.2.4',
       action: () => window.dispatchEvent(new CustomEvent('toggle-vapor-music', { detail: { fullScreen: true } }))
     },
-    {
-      id: 'browser',
-      name: 'Proxy Node',
-      icon: Globe,
-      description: 'Encrypted gateway to the external web.',
-      category: 'NETWORK IO',
-      status: 'COMING SOON',
-      version: '2.1.0',
-      disabled: true,
-      action: () => {}
-    }
   ];
 
   return (
@@ -70,7 +82,7 @@ export const AppsPage = ({ onToggleChat }) => {
         </div>
 
         {/* App Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
           {apps.map((app, index) => (
             <motion.div
               key={app.id}
@@ -124,16 +136,17 @@ export const AppsPage = ({ onToggleChat }) => {
               {!app.disabled && <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-primary/5 blur-[100px] rounded-full group-hover:bg-primary/10 transition-colors"></div>}
             </motion.div>
           ))}
+        </div>
 
-          {/* Empty Slots */}
-          {[...Array(3)].map((_, i) => (
-            <div key={`empty-${i}`} className="border border-dashed border-white/5 rounded-3xl p-10 flex flex-col items-center justify-center gap-6 opacity-20 grayscale">
-              <div className="w-16 h-16 rounded-2xl border border-dashed border-white/10 flex items-center justify-center text-white/10">
-                <Plus size={32} />
-              </div>
-              <div className="text-[10px] font-mono text-white/10 uppercase tracking-[0.5em]">PENDING MODULE</div>
-            </div>
-          ))}
+        {/* Quick Access Utility Section */}
+        <div className="flex flex-col gap-8 mb-24">
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-white/20">QUICK ACCESS NODES</span>
+            <div className="h-px flex-1 bg-white/5"></div>
+          </div>
+          <div className="flex flex-wrap gap-8 items-start">
+             <div className="w-[76px] h-[76px] rounded-xl border border-dashed border-white/5 flex items-center justify-center text-white/5 italic text-[8px] font-black uppercase tracking-widest text-center">Empty Slot</div>
+          </div>
         </div>
 
         {/* System Status Bar */}

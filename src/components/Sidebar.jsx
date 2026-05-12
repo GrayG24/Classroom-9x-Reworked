@@ -64,45 +64,42 @@ export const Sidebar = ({
 
   return (
     <motion.div 
-      layout
       onMouseEnter={() => user.settings.sidebarAutoHide && setIsExpanded(true)}
       onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
       initial={false}
       animate={isPotatoMode ? {} : { 
         width: isExpanded ? 280 : 88,
-        height: isExpanded ? 'calc(100% - 40px)' : 'calc(100% - 130px)',
+        height: isExpanded ? 'calc(100vh - 60px)' : '640px',
+        maxHeight: isExpanded ? 'calc(100vh - 60px)' : '640px',
+        top: isExpanded ? '30px' : 'calc(50% - 320px)',
         x: 20,
-        y: isExpanded ? 20 : 65,
-        borderRadius: isExpanded ? "2rem" : "2.8rem",
+        borderRadius: isExpanded ? "2.5rem" : "2.8rem",
         opacity: 1
       }}
       transition={isPotatoMode ? { duration: 0 } : { 
-        type: "spring", 
-        damping: 30, 
-        stiffness: 150, 
-        mass: 1,
-        layout: { duration: 0.4 }
+        duration: 0.3,
+        ease: [0.22, 1, 0.36, 1]
       }}
       style={isPotatoMode ? {
         width: isExpanded ? 280 : 88,
-        height: isExpanded ? 'calc(100% - 40px)' : 'calc(100% - 130px)',
-        left: 20,
-        top: isExpanded ? 20 : 65,
-        borderRadius: isExpanded ? "2rem" : "2.8rem",
+        height: isExpanded ? 'calc(100vh - 60px)' : '640px',
+        maxHeight: isExpanded ? 'calc(100vh - 60px)' : '640px',
+        left: 0,
+        x: 20,
+        top: isExpanded ? '30px' : 'calc(50% - 320px)',
+        borderRadius: isExpanded ? "2.5rem" : "2.8rem",
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed'
       } : {}}
-      className="fixed left-0 top-0 z-50 flex flex-col shadow-[20px_0_100px_rgba(0,0,0,0.2)] bg-black/40 backdrop-blur-[40px] border border-white/5"
+      className="fixed left-0 z-50 flex flex-col shadow-[20px_0_100px_rgba(0,0,0,0.2)] bg-black/40 backdrop-blur-[16px] border border-white/5"
     >
       {/* Logo Section */}
       <div className="p-8 pb-4 flex flex-col items-center w-full shrink-0">
-        <motion.div 
-          layout
+        <div 
           className={`flex items-center gap-4 w-full h-16 ${isExpanded ? 'justify-start px-2' : 'justify-center'}`}
         >
           <motion.div 
-            layout
             whileHover={{ scale: 1.05 }}
             className={`w-12 h-12 rounded-xl border overflow-hidden flex items-center justify-center shrink-0 group cursor-pointer transition-colors ${
               currentView === AppRoute.SUMMER ? 'bg-white border-orange-200' : 'bg-black border-white/10'
@@ -132,7 +129,7 @@ export const Sidebar = ({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -145,7 +142,6 @@ export const Sidebar = ({
           return (
             <motion.button
               key={item.id}
-              layout
               initial={false}
               animate={{
                 width: isExpanded ? "100%" : "3.5rem",
@@ -186,9 +182,9 @@ export const Sidebar = ({
                    />
                  </div>
               )}
-              <motion.div layout className={`w-6 h-6 flex items-center justify-center shrink-0 relative z-10 pointer-events-none ${isActive && item.beachBonus ? 'animate-pulse' : ''}`}>
+              <div className={`w-6 h-6 flex items-center justify-center shrink-0 relative z-10 pointer-events-none ${isActive && item.beachBonus ? 'animate-pulse' : ''}`}>
                 <item.icon size={20} className={isActive ? (isRed || item.beachBonus ? 'text-inherit' : 'text-inherit') : (isRed ? 'text-rose-500/60 group-hover:text-rose-500' : item.beachBonus ? 'text-yellow-200/80 group-hover:text-yellow-100' : 'text-white/40 group-hover:text-white')} />
-              </motion.div>
+              </div>
               <AnimatePresence mode="popLayout" initial={false}>
                   {isExpanded && (
                     <motion.div 
@@ -216,22 +212,21 @@ export const Sidebar = ({
       {/* Profile Section - LUXURY REWORK */}
       <div className={`p-4 mt-auto border-t border-white/10 flex flex-col gap-4 ${isExpanded ? 'items-start' : 'items-center'} w-full shrink-0`}>
         <motion.button 
-          layout
           onClick={onProfileClick}
           className={`w-full flex items-center transition-all group overflow-hidden relative ${isExpanded ? 'gap-4 p-2.5 rounded-2xl bg-white/[0.03] border border-white/5' : 'justify-center p-0 w-12 h-12 rounded-xl bg-transparent border-transparent'} hover:bg-white/10 hover:border-white/20`}
         >
           {isExpanded && <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>}
           
-          <motion.div layout className="relative shrink-0 flex items-center justify-center z-10">
-            <motion.div layout className={`w-9 h-9 rounded-xl bg-black border border-white/20 overflow-hidden flex items-center justify-center text-white group-hover:scale-105 transition-all duration-500 shadow-2xl`}>
+          <div className="relative shrink-0 flex items-center justify-center z-10">
+            <div className={`w-9 h-9 rounded-xl bg-black border border-white/20 overflow-hidden flex items-center justify-center text-white group-hover:scale-105 transition-all duration-500 shadow-2xl`}>
               {currentChar.img ? (
                 <img src={currentChar.img} alt={currentChar.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
                 <span className="text-lg font-black">{user.username[0]}</span>
               )}
-            </motion.div>
+            </div>
             <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-black z-20 ${!isExpanded ? 'w-2.5 h-2.5 -bottom-0.5 -right-0.5' : ''}`}></div>
-          </motion.div>
+          </div>
           
           <AnimatePresence initial={false}>
             {isExpanded && (
@@ -241,8 +236,7 @@ export const Sidebar = ({
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: -20, filter: 'blur(4px)' }}
                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col min-w-0 z-10"
-                layout
+                className="flex flex-col min-w-0 z-10 text-left"
               >
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-black text-white uppercase tracking-tight truncate italic">{user.username}</span>
@@ -268,9 +262,8 @@ export const Sidebar = ({
           )}
         </motion.button>
 
-        <motion.div layout className={`flex flex-col gap-2 w-full ${isExpanded ? 'px-1' : 'items-center'}`}>
-          <motion.div 
-            layout
+        <div className={`flex flex-col gap-2 w-full ${isExpanded ? 'px-1' : 'items-center'}`}>
+          <div 
             className={`flex items-center transition-all bg-white/[0.02] border border-white/5 shadow-inner ${isExpanded ? 'gap-3 px-3 py-2.5 rounded-xl w-full' : 'w-10 flex-col justify-center h-auto min-h-12 py-2 px-0 rounded-xl'}`}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -283,7 +276,7 @@ export const Sidebar = ({
                   transition={{ duration: 0.2 }}
                   className="flex items-center justify-between w-full"
                 >
-                  <div className="flex flex-col">
+                  <div className="flex flex-col text-left">
                     <span className="text-[7px] font-black text-white/20 uppercase tracking-widest italic mb-0.5">EST TIME</span>
                     <span className="text-[10px] font-black text-white/80 tabular-nums uppercase tracking-tighter italic">
                       {time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/New_York' })}
@@ -316,8 +309,8 @@ export const Sidebar = ({
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

@@ -6,19 +6,17 @@ import * as THREE from 'three';
 
 const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false }) => {
   const meshRef = useRef();
+  const trailRef = useRef();
   const [active, setActive] = useState(false);
   const impactTriggered = useRef(false);
-
   const hasFired = useRef(false);
 
   useEffect(() => {
     if (hasFired.current) return;
-
     const roll = Math.floor(Math.random() * 10000);
-    
     if (roll === 777 || forceTrigger) {
       hasFired.current = true;
-      const delay = forceTrigger ? 500 : 25000; // Even rarer and slower arrival
+      const delay = forceTrigger ? 500 : 25000;
       setTimeout(() => {
         setActive(true);
         onWitnessed?.();
@@ -29,29 +27,17 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
   useFrame((state) => {
     if (!active || !meshRef.current) return;
     
-    // Slower and much bigger presence
-    const speed = 0.55;
+    const speed = 1.2; // FASTER
     meshRef.current.position.x += speed; 
-    meshRef.current.position.y -= speed * 0.2;
+    meshRef.current.position.y -= speed * 0.4;
+    meshRef.current.rotation.z += 0.2;
 
-    // Pulse the light aggressively
-    if (meshRef.current.children[1]) {
-      meshRef.current.children[1].intensity = 400 + Math.sin(state.clock.elapsedTime * 20) * 150;
+    if (trailRef.current) {
+      trailRef.current.scale.set(1, 1, 1 + meshRef.current.position.x * 0.015);
     }
 
-    // Proximity logic
-    if (meshRef.current.position.x < 0) {
-      const distance = Math.abs(meshRef.current.position.x);
-      if (distance < 50) {
-         const intensity = 1 - (distance / 50);
-         onProximity?.(intensity);
-      } else {
-         onProximity?.(0);
-      }
-    } else if (meshRef.current.position.x < 15) {
-       onProximity?.(1.2); 
-    } else {
-       onProximity?.(0);
+    if (meshRef.current.children[1]) {
+      meshRef.current.children[1].intensity = 800 + Math.sin(state.clock.elapsedTime * 30) * 300;
     }
 
     // Impact detection
@@ -60,9 +46,8 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
       onImpact?.();
     }
 
-    if (meshRef.current.position.x > 80) {
+    if (meshRef.current.position.x > 150) {
       setActive(false);
-      onProximity?.(0);
     }
   });
 
@@ -70,22 +55,24 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
 
   return (
     <group>
-      <mesh ref={meshRef} position={[-120, 60, -5]}>
-        <sphereGeometry args={[12, 32, 32]} />
+      <mesh ref={meshRef} position={[-200, 100, -10]}>
+        <sphereGeometry args={[3, 16, 16]} />
         <meshBasicMaterial color="#ffffff" />
-        <pointLight intensity={1200} distance={1500} color="#f0f9ff" />
+        <pointLight intensity={1500} distance={2000} color="#60a5fa" />
         
-        {/* Massive Glowing aura */}
+        {/* Glow */}
         <mesh>
-          <sphereGeometry args={[45, 32, 32]} />
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
+          <sphereGeometry args={[15, 16, 16]} />
+          <meshBasicMaterial color="#60a5fa" transparent opacity={0.3} />
         </mesh>
         
-        {/* Kinetic trail */}
-        <mesh rotation={[0, 0, Math.PI / 4]} position={[-60, 25, 0]}>
-          <cylinderGeometry args={[4, 45, 200, 32]} />
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.1} />
-        </mesh>
+        {/* Trail */}
+        <group rotation={[0, 0, Math.PI / 4]} position={[-30, 15, 0]}>
+          <mesh ref={trailRef} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.2, 10, 120, 16]} />
+            <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
+          </mesh>
+        </group>
       </mesh>
     </group>
   );
@@ -112,14 +99,14 @@ const Singularity = () => {
   );
 };
 
-const Particles = ({ count = 5000 }) => {
+const Particles = ({ count = 2000 }) => {
   const points = useRef();
   const [positions] = useState(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
-        const radius = 5 + Math.random() * 15;
+        const radius = 6 + Math.random() * 12;
         pos[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
         pos[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
         pos[i * 3 + 2] = radius * Math.cos(phi);
@@ -130,8 +117,8 @@ const Particles = ({ count = 5000 }) => {
   useFrame((state) => {
     const time = state.clock.elapsedTime;
     if (points.current) {
-        points.current.rotation.y = time * 0.05;
-        points.current.rotation.z = time * 0.02;
+        points.current.rotation.y = time * 0.03;
+        points.current.rotation.z = time * 0.01;
     }
   });
 
@@ -147,14 +134,33 @@ const Particles = ({ count = 5000 }) => {
         />
       </bufferGeometry>
       <pointsMaterial 
-        size={0.02} 
+        size={0.015} 
         color="#ffffff" 
         transparent 
-        opacity={0.4} 
+        opacity={0.3} 
         sizeAttenuation 
         blending={THREE.AdditiveBlending}
       />
     </points>
+  );
+};
+
+const Shockwave = ({ active }) => {
+  const meshRef = useRef();
+  useFrame(() => {
+    if (active && meshRef.current) {
+      meshRef.current.scale.addScalar(0.6);
+      meshRef.current.material.opacity *= 0.92;
+    }
+  });
+
+  if (!active) return null;
+
+  return (
+    <mesh ref={meshRef} rotation={[Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[1, 1.2, 64]} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={1} side={THREE.DoubleSide} />
+    </mesh>
   );
 };
 
@@ -246,6 +252,19 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
       }}
       className={`fixed inset-0 z-[99999] bg-[#020305] flex flex-col items-center justify-center overflow-hidden ${stage === 'entering' ? 'pointer-events-none' : ''}`}
     >
+      {/* Blast Flash */}
+      <AnimatePresence>
+        {isDestroyed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="absolute inset-0 bg-white z-[100] pointer-events-none"
+          />
+        )}
+      </AnimatePresence>
+
       <div className="absolute inset-0 z-0 text-white pointer-events-none">
         <Canvas dpr={[1, 2]}>
           <PerspectiveCamera makeDefault position={[0, 0, 10]} />
@@ -253,9 +272,10 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
           <fog attach="fog" args={['#020305', 5, 25]} />
           
           <Suspense fallback={null}>
-            <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-            <Particles count={3000} />
+            <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
+            <Particles count={1500} />
             <Singularity />
+            <Shockwave active={isDestroyed} />
             <ShootingStar 
               onWitnessed={onCosmicEvent} 
               onImpact={handleImpact} 
@@ -281,17 +301,17 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
             transition={{ delay: 0.5 }}
             className="flex flex-col items-center"
           >
-            <div className="flex gap-[0.2em] relative">
+          <div className="flex gap-[0.2em] relative">
               {"CLASSROOM 9X".split('').map((char, i) => (
                 <motion.span
                   key={i}
                   animate={isDestroyed ? {
-                    x: (Math.random() - 0.5) * 1600,
-                    y: (Math.random() - 0.5) * 1000,
-                    rotate: (Math.random() - 0.5) * 1440,
-                    scale: 1 + Math.random() * 4,
-                    opacity: [1, 0.2, 0.8],
-                    filter: `blur(${5 + Math.random() * 25}px)`
+                    x: (Math.random() - 0.5) * window.innerWidth * 1.5,
+                    y: (Math.random() - 0.5) * window.innerHeight * 1.5,
+                    rotate: (Math.random() - 0.5) * 720,
+                    scale: 0,
+                    opacity: 0,
+                    filter: 'blur(20px)'
                   } : {
                     x: 0,
                     y: 0,
@@ -301,11 +321,11 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
                     filter: 'blur(0px)'
                   }}
                   transition={{ 
-                    duration: isDestroyed ? 1.2 : 4, // Smoother return speed
-                    ease: isDestroyed ? [0.16, 1, 0.3, 1] : [0.4, 0, 0.2, 1],
-                    delay: isDestroyed ? 0 : i * 0.05
+                    duration: isDestroyed ? 0.8 : 2.5, // Much smoother return
+                    ease: isDestroyed ? [0.16, 1, 0.3, 1] : "circOut",
+                    delay: isDestroyed ? 0 : i * 0.04
                   }}
-                  className={`text-6xl font-black italic uppercase transition-colors ${
+                  className={`text-6xl font-black italic uppercase inline-block whitespace-pre ${
                     char === ' ' ? 'w-8' : ''
                   } text-white`}
                 >

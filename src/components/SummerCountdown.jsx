@@ -79,10 +79,10 @@ const SummerCountdown = ({ user }) => {
           {!isPotatoMode && <WaterSparkles />}
           {!isPotatoMode && <WaterCaustics />}
           {/* Wave System - Placed BEHIND palm trees */}
-          <div className="absolute top-0 inset-x-0 h-48 -mt-24 pointer-events-none overflow-hidden z-20">
-            <Wave color="rgba(255,255,255,0.6)" duration={14} delay={0} scale={1.3} height={120} foam={!isPotatoMode} />
-            <Wave color="rgba(103,232,249,0.4)" duration={20} delay={-4} scale={1.2} height={100} />
-            {!isPotatoMode && <Wave color="rgba(14,165,233,0.3)" duration={28} delay={-8} scale={1.1} height={80} />}
+          <div className="absolute top-0 inset-x-0 h-64 -mt-32 pointer-events-none overflow-hidden z-20">
+            <Wave color="rgba(255,255,255,0.4)" duration={10} delay={0} scale={1.4} height={140} foam={!isPotatoMode} />
+            <Wave color="rgba(103,232,249,0.3)" duration={15} delay={-2} scale={1.3} height={120} />
+            {!isPotatoMode && <Wave color="rgba(14,165,233,0.2)" duration={20} delay={-5} scale={1.2} height={100} />}
           </div>
 
           {/* Ocean Elements - Positioned strictly within the blue zone */}
@@ -99,11 +99,9 @@ const SummerCountdown = ({ user }) => {
                   }} />
              <div className="absolute inset-0 opacity-20 pointer-events-none bg-gradient-to-t from-black/5 to-transparent" />
              
-             {/* Descriptive Text in Sand - Moved to be clearly in the sand area */}
-             <div className="absolute bottom-6 md:bottom-12 inset-x-0 flex justify-center opacity-40 pointer-events-none z-40 px-4">
-                <p className="text-[12px] md:text-[18px] font-black uppercase tracking-[0.4em] md:tracking-[0.6em] text-[#8b4513]/70 italic text-center max-w-2xl drop-shadow-sm font-sans">
-                  The closer summer break gets,<br/>the more the popsicles melt
-                </p>
+             {/* Visual element placeholder */}
+             <div className="absolute bottom-6 md:bottom-12 inset-x-0 flex justify-center opacity-10 pointer-events-none z-40 px-4">
+                <div className="w-12 h-1 bg-[#8b4513]/20 rounded-full" />
              </div>
 
              {/* Scattered Elements */}
@@ -115,17 +113,17 @@ const SummerCountdown = ({ user }) => {
         </div>
       </div>
 
-      {/* Realistic Palmtrees - Placed here to prevent clipping by the horizon/ocean container */}
-      <div className="absolute inset-x-0 bottom-0 top-0 z-40 pointer-events-none overflow-hidden">
-         <DetailedPalmtree bottom="5%" left="-15%" scale={1.4} className="md:scale-[2.0] lg:scale-[3.0]" />
-         <DetailedPalmtree bottom="8%" right="-12%" scale={1.2} className="md:scale-[1.8] lg:scale-[2.5]" flip />
+      {/* Realistic Palmtrees - Pushed further to edges to clear text */}
+      <div className="absolute inset-x-0 bottom-0 top-0 z-20 pointer-events-none overflow-hidden">
+         <DetailedPalmtree bottom="0%" left="-20%" scale={0.7} className="md:scale-[1.1] lg:scale-[1.6]" />
+         <DetailedPalmtree bottom="2%" right="-15%" scale={0.6} className="md:scale-[1.0] lg:scale-[1.4]" flip />
       </div>
 
       {/* Main Content Overlay */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="relative z-30 min-h-screen flex flex-col items-center justify-center px-4 md:px-8 pb-[10vh] pt-16 md:pt-0"
+        className="relative z-40 min-h-screen flex flex-col items-center justify-center px-4 md:px-8 pb-[10vh] pt-24 md:pt-16"
       >
         <AnimatePresence mode="wait">
           {isFinished ? (
@@ -161,8 +159,8 @@ const SummerCountdown = ({ user }) => {
                     SUMMER <br/> <span className="text-white text-[30px] md:text-[110px]">VACATION</span>
                   </h1>
                   <div className="h-1 md:h-2 w-32 md:w-64 bg-yellow-300/60 rounded-full mt-4 md:mt-8 blur-sm" />
-                  <p className="text-white/95 font-black uppercase tracking-[0.4em] md:tracking-[1.5em] text-[10px] md:text-lg mt-3 md:mt-6 bg-black/10 px-4 md:px-8 py-1 md:py-2 rounded-full backdrop-blur-md border border-white/10">
-                    JUNE 5TH // 11:50 AM
+                  <p className="text-white font-black uppercase tracking-[0.2em] md:tracking-[0.8em] text-[10px] md:text-base mt-2 md:mt-4 leading-relaxed max-w-xl text-center px-4">
+                    The closer summer break gets,<br/>the more the popsicles melt
                   </p>
                 </motion.div>
               </div>
@@ -188,8 +186,8 @@ const SummerCountdown = ({ user }) => {
 };
 
 const SunBeams = () => (
-  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
-    {[...Array(12)].map((_, i) => (
+  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-20">
+    {[...Array(8)].map((_, i) => (
       <motion.div
         key={i}
         initial={{ opacity: 0 }}
@@ -219,7 +217,7 @@ const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
       initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.2 + index * 0.1, type: "spring", damping: 15 }}
-      className="flex flex-col items-center group relative scale-50 sm:scale-75 md:scale-100 origin-bottom"
+      className="flex flex-col items-center group relative scale-50 sm:scale-75 md:scale-100 origin-bottom flex-shrink-0 min-w-[120px] md:min-w-[180px]"
     >
       <div className="relative">
         {/* Popsicle Stick - Detailed with grain */}
@@ -259,19 +257,20 @@ const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
                   <motion.div
                     key={j}
                     animate={{ 
-                      y: [0, 160],
+                      y: [0, 180],
                       opacity: [0, 1, 1, 0],
-                      scale: [0.8, 1.4, 1.2, 0.4]
+                      scale: [0.8, 1.8, 1.4, 0.4],
+                      borderRadius: ["50% 50% 50% 50%", "50% 50% 20% 20%", "50% 50% 50% 50%"]
                     }}
                     transition={{ 
-                      duration: 2 + Math.random(), 
+                      duration: 2.5 + Math.random(), 
                       repeat: Infinity, 
-                      delay: j * 0.6 + Math.random(),
-                      times: [0, 0.1, 0.8, 1],
-                      ease: "easeIn"
+                      delay: j * 0.8 + Math.random(),
+                      times: [0, 0.05, 0.85, 1],
+                      ease: [0.45, 0, 0.55, 1]
                     }}
-                    className="w-2 md:w-3 h-4 md:h-5 rounded-full shadow-lg"
-                    style={{ backgroundColor: stat.dripColor, opacity: 0.8 }}
+                    className="w-3 md:w-4 h-5 md:h-7 shadow-lg"
+                    style={{ backgroundColor: stat.dripColor, opacity: 0.9 }}
                   />
                ))}
             </div>
@@ -453,28 +452,21 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
 const RealisticLeaf = ({ d, color, delay = 0 }) => (
   <motion.g
     animate={{ 
-      rotate: [-1, 2, -1],
-      y: [0, 2, 0]
+      rotate: [-0.3, 0.6, -0.3],
+      y: [0, 0.5, 0]
     }}
     transition={{ 
-      duration: 3 + Math.random() * 2, 
+      duration: 5 + Math.random() * 3, 
       repeat: Infinity, 
       ease: "easeInOut",
       delay 
     }}
     style={{ transformOrigin: '100px 100px' }}
   >
-    {/* Main central rachis (spine) */}
-    <path d={d} stroke={color} strokeWidth="3" strokeLinecap="round" fill="none" />
-    
-    {/* Multiple dense layers for a bushier, more realistic look */}
-    <path d={d} stroke={color} strokeWidth="24" strokeDasharray="1.2 3" strokeLinecap="butt" fill="none" opacity="0.85" />
-    <path d={d} stroke={color} strokeWidth="20" strokeDasharray="1 4" strokeLinecap="butt" fill="none" opacity="0.65" transform="translate(1, 1)" />
-    <path d={d} stroke={color} strokeWidth="16" strokeDasharray="0.8 5" strokeLinecap="butt" fill="none" opacity="0.45" transform="translate(-1, -1)" />
-    
-    {/* Highlights and texture variation */}
-    <path d={d} stroke="rgba(255,255,255,0.12)" strokeWidth="18" strokeDasharray="0.6 8" strokeLinecap="butt" fill="none" />
-    <path d={d} stroke="rgba(0,0,0,0.15)" strokeWidth="22" strokeDasharray="0.4 12" strokeLinecap="butt" fill="none" transform="translate(2, 2)" />
+    {/* Simplified Leaf structure */}
+    <path d={d} stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" />
+    <path d={d} stroke={color} strokeWidth="12" strokeDasharray="2 6" strokeLinecap="butt" fill="none" opacity="0.6" />
+    <path d={d} stroke="rgba(255,255,255,0.05)" strokeWidth="8" strokeDasharray="1 12" strokeLinecap="butt" fill="none" />
   </motion.g>
 );
 
@@ -596,26 +588,23 @@ const WaterCaustics = () => (
 
 const WaterSparkles = () => (
   <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
-    {[...Array(30)].map((_, i) => (
+    {[...Array(5)].map((_, i) => (
       <motion.div
         key={i}
         initial={{ opacity: 0, scale: 0 }}
         animate={{ 
-          opacity: [0, 0.8, 0], 
-          scale: [0, 1, 0],
-          x: [0, (Math.random() - 0.5) * 50],
-          y: [0, (Math.random() - 0.5) * 20]
+          opacity: [0, 0.4, 0], 
+          scale: [0, 0.6, 0]
         }}
         transition={{ 
-          duration: 2 + Math.random() * 3, 
+          duration: 4 + Math.random() * 2, 
           repeat: Infinity, 
-          delay: Math.random() * 5,
-          ease: "easeInOut"
+          delay: Math.random() * 5
         }}
-        className="absolute w-1.5 h-1.5 bg-white rounded-full blur-[1px]"
+        className="absolute w-1 h-1 bg-white rounded-full blur-[0.5px]"
         style={{ 
           left: `${Math.random() * 100}%`, 
-          top: `${Math.random() * 60}%` 
+          top: `${Math.random() * 50}%` 
         }}
       />
     ))}

@@ -1,53 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Shield, X, Users, MessageSquare, Activity, Settings, Trash2, Send, Megaphone, Zap, Star, Trophy, Crown, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, ShieldAlert, AlertTriangle, RefreshCw, Power, Terminal, Clock, Palette, Sparkles } from 'lucide-react';
+import { Shield, X, Users, MessageSquare, Activity, Settings, Trash2, Send, Megaphone, Zap, Star, Trophy, Crown, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, ShieldAlert, AlertTriangle, RefreshCw, Power, Terminal, Clock, Palette, Sparkles, Filter, Search, ChevronRight, Binary, Fingerprint, Database, Cpu, Globe } from 'lucide-react';
 
 export const AdminPanel = ({ user, onClose }) => {
-  const [activeTab, setActiveTab] = useState('system');
+  const [activeTab, setActiveTab] = useState('summary');
   const [announcement, setAnnouncement] = useState('');
   const [announcementType, setAnnouncementType] = useState('system');
   const [systemStats, setSystemStats] = useState(null);
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [nodes, setNodes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isMaintenance, setIsMaintenance] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const res = await fetch('/api/system/status');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setSystemStats(data);
       setIsMaintenance(data.maintenance);
+      setStatsLoading(false);
     } catch (err) {
-      console.error('Failed to fetch system stats:', err);
+      console.error('Admin: Failed to fetch system stats:', err);
+      setStatsLoading(false);
     }
-  };
+  }, []);
 
-  const fetchLeaderboard = async () => {
+  const fetchNodes = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch('/api/leaderboard');
+      const res = await fetch('/api/admin/users');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setLeaderboard(data);
+      setNodes(data);
     } catch (err) {
-      console.error('Failed to fetch leaderboard:', err);
+      console.error('Admin: Failed to fetch nodes:', err);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
-    fetchLeaderboard();
-    const interval = setInterval(fetchStats, 10000);
+    fetchNodes();
+    const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStats, fetchNodes]);
 
   const handleSendAnnouncement = async () => {
     if (!announcement.trim()) return;
+    if (!confirm(`INITIALIZE BROADCAST: Send this ${announcementType.toUpperCase()} packet to all active nodes?`)) return;
+    
     setIsLoading(true);
     try {
-      await fetch('/api/admin/announce', {
+      const res = await fetch('/api/admin/announce', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           text: announcement, 
+          type: announcementType,
           sender: { 
             username: user.username,
             characterId: user.currentCharacter,
@@ -55,24 +67,27 @@ export const AdminPanel = ({ user, onClose }) => {
           } 
         })
       });
-      setAnnouncement('');
+      if (res.ok) {
+        setAnnouncement('');
+      }
     } catch (err) {
-      console.error('Failed to send announcement:', err);
+      console.error('Admin: Broadcast failed:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAdminAction = async (type, target = 'GLOBAL', extra = {}) => {
+  const handleGlobalEvent = async (eventId) => {
+    if (!confirm(`EXECUTE GLOBAL EVENT: ${eventId.replace(/_/g, ' ')}? This will override local node states.`)) return;
+
     setIsLoading(true);
     try {
       await fetch('/api/admin/abuse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          type, 
-          target, 
-          ...extra,
+          type: eventId, 
+          target: 'GLOBAL', 
           sender: { 
             username: user.username,
             characterId: user.currentCharacter,
@@ -81,297 +96,414 @@ export const AdminPanel = ({ user, onClose }) => {
         })
       });
     } catch (err) {
-      console.error('Admin action failed:', err);
+      console.error('Admin: Event execution failed:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleToggleMaintenance = async () => {
+    const newState = !isMaintenance;
+    if (!confirm(`MAINTENANCE OVERRIDE: ${newState ? 'RESTRICT' : 'RESTORE'} system access for non-admin nodes?`)) return;
+
     try {
       const res = await fetch('/api/admin/maintenance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: !isMaintenance })
+        body: JSON.stringify({ enabled: newState })
       });
-      const data = await res.json();
-      setIsMaintenance(data.enabled);
+      if (res.ok) {
+        const data = await res.json();
+        setIsMaintenance(data.enabled);
+      }
     } catch (err) {
-      console.error('Failed to toggle maintenance:', err);
+      console.error('Admin: Maintenance toggle failed:', err);
     }
   };
 
-  const handleUserAction = async (action, uid) => {
-    const endpoint = action === 'ban' ? '/api/admin/ban-player' : 
-                     action === 'reset' ? '/api/admin/reset-stats' : 
-                     '/api/admin/remove-player';
+  const handleNodeAction = async (action, node) => {
+    const actions = {
+      ban: { label: 'PERMANENTLY DISCONNECT', endpoint: '/api/admin/ban-player', color: 'text-rose-500' },
+      reset: { label: 'WIPE CORE DATA FOR', endpoint: '/api/admin/reset-stats', color: 'text-amber-500' },
+      remove: { label: 'PURGE FROM DATABASE', endpoint: '/api/admin/remove-player', color: 'text-rose-500' }
+    };
     
+    const config = actions[action];
+    if (!confirm(`CRITICAL INTERVENTION: Are you sure you want to ${config.label} node ${node.username.toUpperCase()}?`)) return;
+
+    setIsLoading(true);
     try {
-      await fetch(endpoint, {
+      const res = await fetch(config.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid })
+        body: JSON.stringify({ uid: node.uid })
       });
-      fetchLeaderboard();
+      if (res.ok) fetchNodes();
     } catch (err) {
-      console.error(`User action ${action} failed:`, err);
+      console.error(`Admin: Node action ${action} failed:`, err);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const filteredNodes = nodes.filter(n => 
+    n.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    n.uid.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[1000] bg-slate-950/95 backdrop-blur-3xl flex items-center justify-center p-4 sm:p-8"
+      className="fixed inset-0 z-[1000] bg-slate-950/98 backdrop-blur-3xl flex items-center justify-center p-0 lg:p-8"
     >
       <motion.div 
-        initial={{ scale: 0.95, y: 40 }}
-        animate={{ scale: 1, y: 0 }}
-        className="w-full max-w-6xl h-full max-h-[800px] bg-black border border-white/10 overflow-hidden flex flex-col shadow-[0_0_150px_rgba(0,0,0,1)] rounded-[2.5rem] relative"
+        initial={{ scale: 0.98, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="w-full max-w-[1400px] h-full max-h-[900px] bg-black border border-white/10 overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0,0,0,1)] rounded-none lg:rounded-[3.5rem] relative"
       >
-        {/* Header */}
-        <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-          <div className="flex items-center gap-5">
-            <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-500 border border-rose-500/20">
-              <Shield size={24} />
+        <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 border border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.2)]">
+              <Shield size={28} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">ADMIN <span className="text-rose-500">CONSOLE</span></h2>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${isMaintenance ? 'bg-amber-500' : 'bg-rose-500'}`}></div>
-                <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">
-                  {isMaintenance ? 'MAINTENANCE ACTIVE' : 'SYSTEM OPERATIONAL'}
+              <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none mb-1">CENTRAL <span className="text-rose-500">INTELLIGENCE</span></h2>
+              <div className="flex items-center gap-3">
+                <div className={`w-2 h-2 rounded-full animate-pulse ${isMaintenance ? 'bg-amber-500 shadow-[0_0_10px_#f59e0b]' : 'bg-rose-500 shadow-[0_0_10px_#f43f5e]'}`}></div>
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">
+                  {isMaintenance ? 'MAINTENANCE MODE ACTIVE' : 'SYSTEM STATUS: OPERATIONAL'}
                 </span>
               </div>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
-            className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-white/10"
-          >
-            <X size={20} />
-          </button>
+          
+          <div className="flex items-center gap-4">
+             <div className="hidden xl:flex items-center gap-8 px-8 py-3 bg-white/[0.03] border border-white/5 rounded-2xl">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-white/20 uppercase tracking-widest italic leading-none mb-1">KERNEL LOAD</span>
+                  <span className="text-sm font-black text-white italic tracking-tighter">0.04%</span>
+                </div>
+                <div className="flex flex-col text-right">
+                  <span className="text-[8px] font-black text-white/20 uppercase tracking-widest italic leading-none mb-1">REGION</span>
+                  <span className="text-sm font-black text-rose-500 italic tracking-tighter">US-WEST (PROD)</span>
+                </div>
+             </div>
+             <button 
+              onClick={onClose} 
+              className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-white/10 group"
+            >
+              <X size={24} className="group-hover:rotate-90 transition-transform" />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
-          {/* Sidebar */}
-          <div className="w-64 border-r border-white/5 p-6 space-y-2 bg-white/[0.01]">
+          <div className="w-80 border-r border-white/5 p-8 space-y-3 bg-white/[0.01]">
             {[
-              { id: 'system', icon: Activity, label: 'System Control' },
-              { id: 'users', icon: Users, label: 'User Management' },
-              { id: 'broadcast', icon: Megaphone, label: 'Broadcast & Events' },
+              { id: 'summary', icon: Activity, label: 'System Overview' },
+              { id: 'nodes', icon: Database, label: 'Node Directory' },
+              { id: 'events', icon: Sparkles, label: 'Event Engine' },
+              { id: 'terminal', icon: Terminal, label: 'Broadcast Terminal' },
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full p-4 rounded-xl flex items-center gap-4 transition-all group relative overflow-hidden ${
+                className={`w-full p-5 rounded-2xl flex items-center gap-5 transition-all group relative overflow-hidden ${
                   activeTab === tab.id 
-                    ? 'bg-rose-500 text-white shadow-[0_0_30px_rgba(244,63,94,0.3)]' 
+                    ? 'bg-rose-500 text-white shadow-[0_0_40px_rgba(244,63,94,0.4)] translate-x-2' 
                     : 'text-white/30 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'group-hover:scale-110 transition-transform'} />
-                <span className="text-[10px] font-black uppercase tracking-widest italic">{tab.label}</span>
+                <tab.icon size={20} className={activeTab === tab.id ? 'text-white' : 'group-hover:scale-110 transition-transform'} />
+                <span className="text-xs font-black uppercase tracking-widest italic">{tab.label}</span>
               </button>
             ))}
+            
+            <div className="pt-10 mt-10 border-t border-white/5">
+               <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-6 italic px-2">QUICK ACTIONS</h4>
+               <button 
+                onClick={handleToggleMaintenance}
+                className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all border ${
+                  isMaintenance 
+                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
+                    : 'bg-white/5 border-white/10 text-white/40 hover:text-rose-500 hover:border-rose-500/20 hover:bg-rose-500/5'
+                }`}
+               >
+                 <div className="flex items-center gap-4">
+                    <Power size={18} />
+                    <span className="text-[10px] font-black uppercase tracking-widest italic">MTN MODE</span>
+                 </div>
+                 <div className={`w-8 h-4 rounded-full relative transition-colors ${isMaintenance ? 'bg-amber-500' : 'bg-white/10'}`}>
+                    <motion.div 
+                      animate={{ x: isMaintenance ? 18 : 2 }}
+                      className="absolute top-1 left-1 w-2 h-2 rounded-full bg-white"
+                    />
+                 </div>
+               </button>
+            </div>
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1 p-10 overflow-auto">
-            {activeTab === 'system' && (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {[
-                    { label: 'Active Nodes', value: systemStats?.activeUsers || '0', icon: Activity, color: 'text-rose-500' },
-                    { label: 'Total Players', value: systemStats?.totalPlayers?.toLocaleString() || '0', icon: Users, color: 'text-emerald-500' },
-                    { label: 'Kernel Uptime', value: `${Math.floor((systemStats?.uptime || 0) / 3600)}h ${Math.floor(((systemStats?.uptime || 0) % 3600) / 60)}m`, icon: Clock, color: 'text-amber-500' }
-                  ].map((stat, i) => (
-                    <div key={i} className="p-6 rounded-3xl bg-white/[0.02] border border-white/5">
-                      <div className="flex items-center gap-3 mb-4 opacity-40">
-                        <stat.icon size={14} className={stat.color} />
-                        <span className="text-[8px] font-black uppercase tracking-widest">{stat.label}</span>
-                      </div>
-                      <p className="text-3xl font-black text-white italic tracking-tighter">{stat.value}</p>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 space-y-6">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest italic mb-2">System Commands</h3>
-                    
-                    <div className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.03] border border-white/5">
-                      <div>
-                        <p className="text-[10px] font-black text-white uppercase italic">Maintenance Mode</p>
-                        <p className="text-[8px] text-white/20 font-black uppercase tracking-widest mt-0.5">Restrict access to admins</p>
-                      </div>
-                      <button 
-                        onClick={handleToggleMaintenance}
-                        className={`w-12 h-6 rounded-full relative transition-all ${isMaintenance ? 'bg-amber-500' : 'bg-white/10'}`}
-                      >
-                        <motion.div 
-                          animate={{ x: isMaintenance ? 26 : 2 }}
-                          className="absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow-lg"
-                        />
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <button 
-                        onClick={() => fetch('/api/admin/clear-chat', { method: 'POST' })}
-                        className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-rose-500/10 hover:border-rose-500/30 transition-all group text-left"
-                      >
-                        <MessageSquare size={16} className="text-white/20 group-hover:text-rose-500 mb-3" />
-                        <p className="text-[9px] font-black text-white uppercase italic">Clear Chat</p>
-                      </button>
-                      <button 
-                        onClick={async () => {
-                          if (confirm('ARE YOU SURE? THIS WILL WIPE ALL PLAYER DATA PERMANENTLY.')) {
-                            await fetch('/api/admin/clear-leaderboard', { method: 'POST' });
-                            fetchLeaderboard();
-                            fetchStats();
-                          }
-                        }}
-                        className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-rose-500/10 hover:border-rose-500/30 transition-all group text-left"
-                      >
-                        <Trophy size={16} className="text-white/20 group-hover:text-rose-500 mb-3" />
-                        <p className="text-[9px] font-black text-white uppercase italic">Wipe Data</p>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest italic mb-6">System Metrics</h3>
-                    <div className="space-y-4">
-                      {[
-                        { label: 'Total Messages', value: systemStats?.totalMessages?.toLocaleString() || '0' },
-                        { label: 'Total Simulations', value: systemStats?.totalGames?.toLocaleString() || '0' },
-                        { label: 'Cumulative Score', value: systemStats?.totalScore?.toLocaleString() || '0' }
-                      ].map((m, i) => (
-                        <div key={i} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
-                          <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">{m.label}</span>
-                          <span className="text-xs font-black text-white italic">{m.value}</span>
+          <div className="flex-1 p-12 overflow-auto scrollbar-hide">
+            <AnimatePresence mode="wait">
+              {activeTab === 'summary' && (
+                <motion.div 
+                  key="summary"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-12"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    {[
+                      { label: 'Network Nodes', value: systemStats?.activeUsers || '0', icon: Globe, color: 'text-rose-500' },
+                      { label: 'Registered Bio', value: systemStats?.totalPlayers?.toLocaleString() || '0', icon: Users, color: 'text-emerald-400' },
+                      { label: 'Uptime Vector', value: `${Math.floor((systemStats?.uptime || 0) / 3600)}h ${Math.floor(((systemStats?.uptime || 0) % 3600) / 60)}m`, icon: Clock, color: 'text-amber-400' },
+                      { label: 'Cpu Flux', value: '4.2%', icon: Cpu, color: 'text-cyan-400' }
+                    ].map((stat, i) => (
+                      <div key={i} className="p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/5 hover:border-white/20 transition-colors group">
+                        <div className="flex items-center gap-3 mb-6 opacity-30 group-hover:opacity-100 transition-opacity">
+                          <stat.icon size={16} className={stat.color} />
+                          <span className="text-[9px] font-black uppercase tracking-[0.3em] italic">{stat.label}</span>
                         </div>
-                      ))}
+                        <p className="text-4xl font-black text-white italic tracking-tighter leading-none">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                    <div className="p-10 rounded-[3rem] bg-white/[0.03] border border-white/5 space-y-8">
+                      <div className="flex items-center justify-between">
+                         <h3 className="text-lg font-black text-white uppercase tracking-tighter italic leading-none">SYSTEM <span className="text-white/20">METRICS</span></h3>
+                         <Activity size={20} className="text-rose-500/40" />
+                      </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        {[
+                          { label: 'Data Transmission', value: systemStats?.totalMessages?.toLocaleString() || '0', unit: 'PACKETS', icon: Binary },
+                          { label: 'Combat Simulations', value: systemStats?.totalGames?.toLocaleString() || '0', unit: 'SESSIONS', icon: Rocket },
+                          { label: 'Energy Potential', value: (systemStats?.totalScore || 0).toLocaleString(), unit: 'UNITS', icon: Zap }
+                        ].map((m, i) => (
+                          <div key={i} className="p-6 rounded-3xl bg-black border border-white/5 flex items-center justify-between group hover:bg-white/[0.02] transition-all">
+                             <div className="flex items-center gap-5">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover:text-white transition-colors">
+                                   <m.icon size={20} />
+                                </div>
+                                <div>
+                                   <p className="text-[10px] font-black text-white/20 uppercase tracking-widest italic mb-0.5">{m.label}</p>
+                                   <p className="text-2xl font-black text-white italic tracking-tighter">{m.value}</p>
+                                </div>
+                             </div>
+                             <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">{m.unit}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="p-10 rounded-[3rem] bg-white/[0.03] border border-white/5 flex flex-col justify-center gap-8 relative overflow-hidden">
+                       <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-rose-500/5 rounded-full blur-[100px]" />
+                       <div className="relative">
+                         <h3 className="text-lg font-black text-white uppercase tracking-tighter italic leading-none mb-4">SYSTEM <span className="text-white/20">INTEGRITY</span></h3>
+                         <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] italic mb-6">Security protocols are active. Critical destructive actions have been decommissioned per administrative order.</p>
+                         
+                         <div className="flex items-center gap-4 p-6 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
+                            <ShieldAlert className="text-rose-500 shrink-0" size={20} />
+                            <span className="text-[8px] font-black text-rose-500/60 uppercase tracking-[0.3em] italic">ROOT DESTRUCTIVE COMMANDS ARE CURRENTLY RESTRICTED</span>
+                         </div>
+                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
 
-            {activeTab === 'users' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Node Management</h3>
-                  <button onClick={fetchLeaderboard} className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline flex items-center gap-2">
-                    <RefreshCw size={12} /> REFRESH
-                  </button>
-                </div>
+              {activeTab === 'nodes' && (
+                <motion.div 
+                  key="nodes"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-8"
+                >
+                  <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-white/[0.02] border border-white/5 p-8 rounded-[3rem]">
+                    <div className="flex items-center gap-6">
+                       <Fingerprint size={32} className="text-rose-500/60" />
+                       <div>
+                         <h3 className="text-xl font-black text-white uppercase tracking-tighter italic leading-none">NODE <span className="text-white/20">DIRECTORY</span></h3>
+                         <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic mt-1">Interacting with {nodes.length} connected entities</p>
+                       </div>
+                    </div>
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                       <div className="relative w-full md:w-80">
+                         <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-white/20" size={16} />
+                         <input 
+                           type="text" 
+                           placeholder="SEARCH BY UID / USERNAME..."
+                           value={searchQuery}
+                           onChange={(e) => setSearchQuery(e.target.value)}
+                           className="w-full h-14 pl-14 pr-6 rounded-2xl bg-black border border-white/10 text-white font-bold text-xs focus:outline-none focus:border-rose-500/50 transition-all placeholder:text-white/10 italic"
+                         />
+                       </div>
+                       <button onClick={fetchNodes} className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:text-rose-500 transition-all border border-white/10">
+                         <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                       </button>
+                    </div>
+                  </div>
 
-                <div className="bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-white/5 bg-white/[0.02]">
-                        <th className="p-6 text-[9px] font-black text-white/20 uppercase tracking-widest">Node ID</th>
-                        <th className="p-6 text-[9px] font-black text-white/20 uppercase tracking-widest">Level</th>
-                        <th className="p-6 text-[9px] font-black text-white/20 uppercase tracking-widest">Score</th>
-                        <th className="p-6 text-[9px] font-black text-white/20 uppercase tracking-widest">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {leaderboard.map((node) => (
-                        <tr key={node.uid} className="group hover:bg-white/[0.01] transition-all">
-                          <td className="p-6">
-                            <span className="text-xs font-black text-white uppercase italic">{node.username}</span>
-                          </td>
-                          <td className="p-6">
-                            <span className="text-xs font-black text-rose-500 italic">LVL {node.level}</span>
-                          </td>
-                          <td className="p-6">
-                            <span className="text-xs font-black text-white/60">{node.score.toLocaleString()}</span>
-                          </td>
-                          <td className="p-6">
-                            <div className="flex items-center gap-2">
-                              <button onClick={() => handleUserAction('reset', node.uid)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-amber-500 hover:bg-amber-500/10 transition-all"><RefreshCw size={14} /></button>
-                              <button onClick={() => handleUserAction('ban', node.uid)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all"><ShieldAlert size={14} /></button>
-                              <button onClick={() => handleUserAction('remove', node.uid)} className="p-2 rounded-lg bg-white/5 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 transition-all"><Trash2 size={14} /></button>
-                            </div>
-                          </td>
+                  <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] overflow-hidden">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/5 bg-white/[0.03]">
+                          <th className="px-8 py-6 text-[10px] font-black text-white/20 uppercase tracking-widest italic">IDENTIFIER</th>
+                          <th className="px-8 py-6 text-[10px] font-black text-white/20 uppercase tracking-widest italic">EVOLUTION</th>
+                          <th className="px-8 py-6 text-[10px] font-black text-white/20 uppercase tracking-widest italic">ENERGY TOTAL</th>
+                          <th className="px-8 py-6 text-[10px] font-black text-white/20 uppercase tracking-widest italic text-right">PROTOCOLS</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.02]">
+                        {filteredNodes.map((node) => (
+                          <tr key={node.uid} className="group hover:bg-white/[0.02] transition-colors">
+                            <td className="px-8 py-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-black border border-white/10 flex items-center justify-center text-[10px] font-black text-rose-500 shadow-lg italic">
+                                   {node.username[0]?.toUpperCase() || '?'}
+                                </div>
+                                <div className="flex flex-col">
+                                   <span className="text-xs font-black text-white uppercase italic">{node.username}</span>
+                                   <span className="text-[7px] font-black text-white/10 uppercase tracking-widest mt-0.5">{node.uid}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-8 py-6">
+                              <span className="text-xs font-black text-rose-500 italic">LVL {node.level}</span>
+                            </td>
+                            <td className="px-8 py-6">
+                              <span className="text-xs font-black text-white italic">{node.score?.toLocaleString() || 0} <span className="text-[8px] opacity-20 ml-1">UNITS</span></span>
+                            </td>
+                            <td className="px-8 py-6 text-right">
+                              <div className="flex items-center justify-end gap-3 opacity-20 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => handleNodeAction('reset', node)} title="Reset Status" className="p-3 rounded-xl bg-white/5 text-white hover:text-amber-500 hover:bg-amber-500/10 transition-all border border-white/5"><RefreshCw size={14} /></button>
+                                <button onClick={() => handleNodeAction('ban', node)} title="Terminal Disconnect" className="p-3 rounded-xl bg-white/5 text-white hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-white/5"><ShieldAlert size={14} /></button>
+                                <button onClick={() => handleNodeAction('remove', node)} title="Purge Record" className="p-3 rounded-xl bg-white/5 text-white hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-white/5"><Trash2 size={14} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+              )}
 
-            {activeTab === 'broadcast' && (
-              <div className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  <div className="space-y-6">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Global Broadcast</h3>
-                    <div className="grid grid-cols-3 gap-3">
-                      {['system', 'alert', 'event'].map(type => (
+              {activeTab === 'events' && (
+                <motion.div 
+                  key="events"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.05 }}
+                  className="space-y-10"
+                >
+                  <div className="flex items-center gap-6 bg-white/[0.02] border border-white/5 p-8 rounded-[3rem]">
+                     <Sparkles size={32} className="text-indigo-400" />
+                     <div>
+                       <h3 className="text-xl font-black text-white uppercase tracking-tighter italic leading-none">EVENT <span className="text-white/20">ENGINE</span></h3>
+                       <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic mt-1">Manual override of global environmental variables</p>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[
+                      { id: 'RAINBOW_CHAOS', label: 'Rainbow Override', icon: Palette, color: 'text-indigo-400', bg: 'bg-indigo-400/5' },
+                      { id: 'FIRE_STORM', label: 'Firestorm Phase', icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/5' },
+                      { id: 'MATRIX_RAIN', label: 'Matrix Protocol', icon: BrainCircuit, color: 'text-emerald-500', bg: 'bg-emerald-500/5' },
+                      { id: 'VOID_STORM', label: 'Void Manifestation', icon: Ghost, color: 'text-purple-500', bg: 'bg-purple-500/5' },
+                      { id: 'SYSTEM_OVERLOAD', label: 'Energy Overload', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/5' },
+                      { id: 'GOLDEN_HOUR', label: 'The Golden Hour', icon: Star, color: 'text-yellow-400', bg: 'bg-yellow-400/5' },
+                      { id: 'BOSS_SPAWN', label: 'Aggressive Entity', icon: ShieldAlert, color: 'text-rose-500', bg: 'bg-rose-500/5' },
+                      { id: 'EXP_EXPLOSION', label: 'EXP Detonation', icon: Sparkles, color: 'text-cyan-400', bg: 'bg-cyan-400/5' },
+                    ].map((event) => (
+                      <button
+                        key={event.id}
+                        onClick={() => handleGlobalEvent(event.id)}
+                        disabled={isLoading}
+                        className={`p-10 rounded-[3rem] ${event.bg} border border-white/5 flex flex-col items-center justify-center gap-6 hover:border-white/20 transition-all group group-hover:scale-105 active:scale-95 text-center`}
+                      >
+                        <div className="p-6 bg-black rounded-[2rem] border border-white/5 group-hover:scale-110 transition-transform">
+                           <event.icon size={32} className={event.color} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] italic text-white group-hover:text-theme">{event.label}</span>
+                        <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                           <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest italic">READY TO DEPLOY</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {activeTab === 'terminal' && (
+                <motion.div 
+                  key="terminal"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="max-w-4xl mx-auto space-y-10"
+                >
+                  <div className="p-12 rounded-[4rem] bg-white/[0.02] border border-white/5 space-y-10 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                       <Megaphone size={120} />
+                    </div>
+                    
+                    <div className="relative">
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic mb-3">GLOBAL <span className="text-rose-500">TRANSMISSION</span></h3>
+                      <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] italic">Direct broadcast to all connected neural nodes.</p>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                      {[
+                        { id: 'system', label: 'SYSTEM PACKET', color: 'bg-emerald-500 border-emerald-500' },
+                        { id: 'alert', label: 'PRIORITY ALERT', color: 'bg-rose-500 border-rose-500' },
+                        { id: 'event', label: 'EVENT DIRECTIVE', color: 'bg-amber-500 border-amber-500' }
+                      ].map(type => (
                         <button
-                          key={type}
-                          onClick={() => setAnnouncementType(type)}
-                          className={`p-3 rounded-xl border font-black text-[8px] uppercase tracking-widest transition-all ${
-                            announcementType === type 
-                              ? 'bg-rose-500 border-rose-500 text-white' 
-                              : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                          key={type.id}
+                          onClick={() => setAnnouncementType(type.id)}
+                          className={`p-6 rounded-[1.5rem] border font-black text-[9px] uppercase tracking-widest transition-all italic ${
+                            announcementType === type.id 
+                              ? `${type.color} text-white shadow-[0_10px_30px_rgba(255,255,255,0.1)]` 
+                              : 'bg-white/5 border-white/10 text-white/30 hover:border-white/20 hover:text-white'
                           }`}
                         >
-                          {type}
+                          {type.label}
                         </button>
                       ))}
                     </div>
-                    <div className="relative">
+
+                    <div className="relative group">
+                      <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-rose-500/50 to-transparent"></div>
                       <textarea
                         value={announcement}
                         onChange={(e) => setAnnouncement(e.target.value)}
-                        placeholder="ENTER TRANSMISSION DATA..."
-                        className="w-full h-40 p-6 bg-black border border-white/10 rounded-2xl text-white placeholder:text-white/10 focus:outline-none focus:border-rose-500/50 transition-all resize-none font-bold text-sm"
+                        placeholder="ENTER TRANSMISSION DATA STRING..."
+                        className="w-full h-56 p-10 bg-black border border-white/10 rounded-[2.5rem] text-white placeholder:text-white/5 transition-all resize-none font-black text-lg focus:outline-none focus:border-rose-500/50 italic focus:ring-4 focus:ring-rose-500/5"
                       />
                     </div>
+
                     <button 
                       onClick={handleSendAnnouncement}
                       disabled={!announcement.trim() || isLoading}
-                      className="w-full h-14 rounded-xl bg-rose-500 text-white font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-rose-600 transition-all disabled:opacity-50 italic"
+                      className="w-full h-24 rounded-[2rem] bg-rose-500 text-white font-black text-base uppercase tracking-[0.4em] flex items-center justify-center gap-6 hover:bg-rose-600 transition-all disabled:opacity-50 italic shadow-[0_20px_60px_rgba(244,63,94,0.3)] group"
                     >
-                      {isLoading ? <RefreshCw className="animate-spin" size={18} /> : <Send size={18} />}
-                      INITIALIZE BROADCAST
+                      {isLoading ? <RefreshCw className="animate-spin" size={24} /> : (
+                        <>
+                          INITIALIZE GLOBAL BROADCAST
+                          <ChevronRight size={24} className="group-hover:translate-x-2 transition-transform" />
+                        </>
+                      )}
                     </button>
                   </div>
-
-                  <div className="space-y-6">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest italic">Global Events</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { id: 'RAINBOW_CHAOS', label: 'Rainbow', icon: Palette, color: 'text-indigo-400' },
-                        { id: 'FIRE_STORM', label: 'Fire Storm', icon: Flame, color: 'text-orange-500' },
-                        { id: 'MATRIX_RAIN', label: 'Matrix', icon: BrainCircuit, color: 'text-emerald-500' },
-                        { id: 'VOID_STORM', label: 'Void Storm', icon: Ghost, color: 'text-purple-500' },
-                        { id: 'SYSTEM_OVERLOAD', label: 'Overload', icon: Zap, color: 'text-amber-500' },
-                        { id: 'GOLDEN_HOUR', label: 'Golden Hour', icon: Star, color: 'text-yellow-400' },
-                        { id: 'BOSS_SPAWN', label: 'Spawn Boss', icon: ShieldAlert, color: 'text-rose-500' },
-                        { id: 'EXP_EXPLOSION', label: 'EXP Rain', icon: Sparkles, color: 'text-cyan-400' },
-                      ].map((event) => (
-                        <button
-                          key={event.id}
-                          onClick={() => handleAdminAction(event.id)}
-                          disabled={isLoading}
-                          className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center gap-4 hover:bg-white/5 hover:border-white/20 transition-all group"
-                        >
-                          <event.icon size={16} className={event.color} />
-                          <span className="text-[9px] font-black uppercase tracking-widest italic">{event.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.div>

@@ -167,6 +167,24 @@ async function startServer() {
     });
   });
 
+  apiRouter.get('/admin/users', (req, res) => {
+    try {
+      if (db_sqlite) {
+        const rows = db_sqlite.prepare('SELECT * FROM leaderboard').all();
+        const users = rows.map((row) => ({
+          ...row,
+          unlockedBadges: row.unlockedBadges ? JSON.parse(row.unlockedBadges) : []
+        }));
+        res.json(users);
+      } else {
+        res.json(leaderboardData);
+      }
+    } catch (err) {
+      console.error('Failed to fetch all users:', err);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
   apiRouter.post('/admin/maintenance', (req, res) => {
     const { enabled } = req.body;
     isMaintenanceMode = enabled !== undefined ? enabled : !isMaintenanceMode;
@@ -392,12 +410,13 @@ async function startServer() {
   });
 
   apiRouter.post('/admin/announce', (req, res) => {
-    const { text, sender } = req.body;
+    const { text, sender, type = 'system' } = req.body;
     if (!text) return res.status(400).json({ error: 'Announcement text required' });
     
     const announcementPayload = JSON.stringify({
       type: 'ADMIN_ANNOUNCEMENT',
       text,
+      announcementType: type,
       sender: sender || { username: 'System', characterId: 'agent-x', frameId: 'obsidian' },
       timestamp: new Date().toISOString()
     });
@@ -411,6 +430,7 @@ async function startServer() {
       frame: sender?.frameId || 'obsidian',
       isAdmin: true,
       isBoss: true,
+      announcementType: type,
       timestamp: new Date().toISOString()
     });
 

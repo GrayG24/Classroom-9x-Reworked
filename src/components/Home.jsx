@@ -8,7 +8,8 @@ import { CHARACTERS, BADGES } from '../constants';
 
 const ProfileWidget = ({ user, onProfileClick }) => {
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || (CHARACTERS && CHARACTERS.length > 0 ? CHARACTERS[0] : { name: 'Unknown', icon: User, img: null });
-  const nextLevelExp = user.level * 1000;
+  const LEVEL_UP_BASE = 200;
+  const nextLevelExp = user.level * LEVEL_UP_BASE;
   const progress = (user.exp / nextLevelExp) * 100;
   const unlockedBadges = BADGES.filter(b => (user.unlockedBadges || []).includes(b.id));
   
@@ -16,60 +17,85 @@ const ProfileWidget = ({ user, onProfileClick }) => {
   
   return (
     <motion.div 
-      whileHover={isPotatoMode ? {} : { y: -8, scale: 1.02 }}
-      whileTap={isPotatoMode ? {} : { scale: 0.98 }}
+      whileHover={isPotatoMode ? {} : { y: -8, scale: 1.01 }}
+      whileTap={isPotatoMode ? {} : { scale: 0.99 }}
       onClick={onProfileClick}
-      className={`rounded-[40px] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-3xl cursor-pointer group relative overflow-hidden ${isPotatoMode ? '' : 'shadow-[0_30px_60px_rgba(0,0,0,0.4)]'}`}
+      className={`relative w-full rounded-[3.5rem] p-1 border border-white/5 bg-slate-950/40 backdrop-blur-3xl cursor-pointer group shadow-2xl overflow-hidden`}
     >
-      {!isPotatoMode && <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>}
+      <div className="absolute inset-0 bg-gradient-to-r from-theme/20 via-transparent to-theme/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-[length:200%_100%] animate-shimmer"></div>
       
-      <div className="flex items-center gap-8 relative z-10">
+      <div className="relative z-10 flex items-center p-6 gap-8">
+        {/* Elite Avatar System */}
         <div className="relative shrink-0">
-          <div className="w-24 h-24 rounded-[2rem] bg-black border-2 border-white/10 overflow-hidden flex items-center justify-center text-white relative z-10 shadow-2xl group-hover:border-white/40 transition-all duration-500">
-            {character.img ? (
-              <img src={character.img} alt={character.name} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" referrerPolicy="no-referrer" />
-            ) : (
-              <character.icon size={40} className="text-white/20" />
-            )}
-          </div>
-          <div className={`absolute -inset-4 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20 opacity-40 group-hover:opacity-100 transition-opacity duration-500`}></div>
-          <div className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-white text-black flex items-center justify-center text-xs font-black z-30 shadow-2xl border-4 border-black italic">
-            {user.level}
+          <div className="relative w-32 h-32">
+            <div className={`absolute -inset-2 bg-theme/20 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
+            <div className={`absolute -inset-4 frame-${user.currentFrame || 'obsidian'} z-20 pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity`}></div>
+            <div className="relative w-full h-full rounded-[2.5rem] bg-black border-2 border-white/10 overflow-hidden flex items-center justify-center shadow-2xl z-10">
+              {character.img ? (
+                <img src={character.img} alt={character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" />
+              ) : (
+                <User size={48} className="text-white/20" />
+              )}
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-theme rounded-full border-4 border-black flex items-center justify-center text-black font-black text-xs italic z-30 shadow-[0_0_30px_var(--primary-glow)]">
+              {user.level}
+            </div>
           </div>
         </div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <h4 className="text-3xl font-black text-white truncate uppercase tracking-tighter italic leading-none">{user.username}</h4>
-              <div className="flex gap-1">
-                {unlockedBadges.slice(0, 3).map(badge => (
-                  <badge.icon key={badge.id} size={14} style={{ color: badge.color }} className={badge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} />
-                ))}
-                {unlockedBadges.length > 3 && <span className="text-[8px] font-black text-white/20">+{unlockedBadges.length - 3}</span>}
-              </div>
+
+        {/* Dynamic Identity Info */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-theme uppercase tracking-[0.4em] mb-1 italic opacity-60">IDENTIFIED AS</span>
+              <h4 className="text-4xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-theme transition-colors">{user.username}</h4>
             </div>
-            <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic">{user.currentTitle}</span>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-1 italic">ACTIVE RANK</span>
+              <span className="text-xl font-black text-white italic tracking-tighter uppercase">{user.currentTitle}</span>
+            </div>
           </div>
-          
-          <div className="space-y-3">
-            <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+
+          {/* Luxury Progress Architecture */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-end">
+               <div className="flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-theme animate-pulse"></div>
+                 <span className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] italic">EVOLUTION PROTOCOL</span>
+               </div>
+               <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] font-mono italic">{Math.round(progress)}% COMPLETE</span>
+            </div>
+            <div className="h-4 bg-white/5 rounded-2xl p-1 border border-white/5 overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 1.5, ease: "circOut" }}
-                className="h-full bg-white shadow-[0_0_20px_white]"
-              />
+                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full bg-gradient-to-r from-theme via-theme/80 to-theme shadow-[0_0_30px_var(--primary-glow)] rounded-xl relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer bg-[length:200%_100%]"></div>
+              </motion.div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">EXPERIENCE: {user.exp} / {nextLevelExp}</span>
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">{Math.round(progress)}%</span>
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1.5">
+                {unlockedBadges.slice(0, 5).map(badge => (
+                  <div key={badge.id} className="w-6 h-6 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center p-1 group/badge hover:bg-white/10 transition-colors">
+                    <badge.icon size={12} style={{ color: badge.color }} className={badge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} />
+                  </div>
+                ))}
+                {unlockedBadges.length > 5 && (
+                  <div className="px-2 h-6 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center">
+                    <span className="text-[8px] font-black text-white/20">+{unlockedBadges.length - 5}</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.2em] italic">ELITE ACCESS MEMBER • SINCE 2026</p>
             </div>
           </div>
         </div>
-        
-        <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-white/10 group-hover:text-white group-hover:bg-white/10 transition-all duration-500 border border-white/5">
-          <ChevronRight size={28} />
+
+        {/* Action Gate */}
+        <div className="w-20 h-20 rounded-[2.5rem] bg-white/5 border border-white/5 flex items-center justify-center text-white/20 group-hover:bg-theme group-hover:text-black group-hover:shadow-[0_0_50px_var(--primary-glow)] transition-all duration-500">
+          <ChevronRight size={32} />
         </div>
       </div>
     </motion.div>
@@ -121,19 +147,17 @@ const CountdownTimer = () => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      // Get current date in NY time (EST/EDT)
+      // Use UTC calculation to avoid local timezone issues for a "Global" weekly timer
       const now = new Date();
-      const nyDate = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
       
-      // Target next Monday 00:00:00 EST
-      const targetStr = nyDate.toLocaleString("en-US", {timeZone: "America/New_York"});
-      const targetDate = new Date(targetStr);
-      targetDate.setDate(targetDate.getDate() + (1 + 7 - targetDate.getDay()) % 7 || 7); 
-      targetDate.setHours(0, 0, 0, 0);
+      // Target: Next Monday at 05:00:00 UTC (which is 12:00 AM EST)
+      const targetDate = new Date(now);
+      const day = targetDate.getUTCDay();
+      const daysUntilMonday = (1 + 7 - day) % 7 || 7;
+      targetDate.setUTCDate(targetDate.getUTCDate() + daysUntilMonday);
+      targetDate.setUTCHours(5, 0, 0, 0);
 
-      // We need the absolute time difference. 
-      // The most reliable way is to find when that specific "Next Monday 12AM EST" happens in UTC.
-      const diff = targetDate.getTime() - nyDate.getTime();
+      const diff = targetDate.getTime() - now.getTime();
       
       if (diff > 0) {
         setTimeLeft({

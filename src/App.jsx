@@ -851,8 +851,12 @@ const App = () => {
       } else if (data.type === 'DELETE_MESSAGE') {
         setChatMessages((prev) => prev.filter(msg => msg.id !== data.messageId));
       } else if (data.type === 'ADMIN_ANNOUNCEMENT') {
-        setAdminAnnouncement({ text: data.text, sender: data.sender });
-        setTimeout(() => setAdminAnnouncement(null), 10000);
+        setAdminAnnouncement({ 
+          text: data.text, 
+          sender: data.sender,
+          announcementType: data.announcementType || 'system'
+        });
+        setTimeout(() => setAdminAnnouncement(null), 12000);
       } else if (data.type === 'SYSTEM_MAINTENANCE') {
         setIsMaintenanceMode(data.enabled);
       } else if (data.type === 'GAME_OF_THE_WEEK') {
@@ -2142,26 +2146,41 @@ const App = () => {
             transition={{ type: "spring", damping: 15 }}
             className="fixed top-0 left-1/2 z-[300] w-full max-w-3xl px-4 pointer-events-none"
           >
-            <div className="relative group overflow-hidden rounded-[2.5rem] bg-slate-950/90 backdrop-blur-3xl border-2 border-amber-500/40 p-6 shadow-[0_0_80px_rgba(245,158,11,0.3)] pointer-events-auto">
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-transparent to-amber-500/20 animate-pulse"></div>
-              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/5 to-transparent rotate-45 animate-[shimmer_3s_infinite]"></div>
+            <div className={`relative group overflow-hidden rounded-[2.5rem] bg-slate-950/90 backdrop-blur-3xl border-2 p-6 shadow-2xl pointer-events-auto transition-colors duration-500 ${
+              adminAnnouncement.announcementType === 'alert' ? 'border-rose-500/40 shadow-rose-500/20' :
+              adminAnnouncement.announcementType === 'event' ? 'border-amber-500/40 shadow-amber-500/20' :
+              'border-emerald-500/40 shadow-emerald-500/20'
+            }`}>
+              <div className={`absolute inset-0 bg-gradient-to-r opacity-20 animate-pulse ${
+                adminAnnouncement.announcementType === 'alert' ? 'from-rose-500 via-transparent to-rose-500' :
+                adminAnnouncement.announcementType === 'event' ? 'from-amber-500 via-transparent to-amber-500' :
+                'from-emerald-500 via-transparent to-emerald-500'
+              }`}></div>
               
               <div className="relative flex items-center gap-6">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-500 border border-amber-500/30 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border shadow-xl transition-colors ${
+                   adminAnnouncement.announcementType === 'alert' ? 'bg-rose-500/20 text-rose-500 border-rose-500/30' :
+                   adminAnnouncement.announcementType === 'event' ? 'bg-amber-500/20 text-amber-500 border-amber-500/30' :
+                   'bg-emerald-500/20 text-emerald-500 border-emerald-500/30'
+                }`}>
                   <Megaphone size={32} className="animate-bounce" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-1">
-                    <p className="text-[11px] font-black text-amber-500 uppercase tracking-[0.4em]">
-                      Admin Message {adminAnnouncement.sender?.username ? `• ${adminAnnouncement.sender.username}` : ''}
+                    <p className={`text-[11px] font-black uppercase tracking-[0.4em] ${
+                       adminAnnouncement.announcementType === 'alert' ? 'text-rose-500' :
+                       adminAnnouncement.announcementType === 'event' ? 'text-amber-500' :
+                       'text-emerald-500'
+                    }`}>
+                      {adminAnnouncement.announcementType} Message {adminAnnouncement.sender?.username ? `• ${adminAnnouncement.sender.username}` : ''}
                     </p>
-                    <div className="h-px flex-1 bg-amber-500/20"></div>
+                    <div className={`h-px flex-1 opacity-20 ${
+                       adminAnnouncement.announcementType === 'alert' ? 'bg-rose-500' :
+                       adminAnnouncement.announcementType === 'event' ? 'bg-amber-500' :
+                       'bg-emerald-500'
+                    }`}></div>
                   </div>
                   <p className="text-xl font-black text-white leading-tight italic uppercase tracking-tight">{adminAnnouncement.text}</p>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping"></div>
-                  <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest">Active</span>
                 </div>
               </div>
             </div>
