@@ -8,7 +8,7 @@ export const InitialNameModal = ({ onSubmit, error }) => {
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
     const trimmedName = name.trim();
-    if (trimmedName.length >= 3) {
+    if (trimmedName.length >= 2) {
       onSubmit(trimmedName);
     }
   };
@@ -63,7 +63,7 @@ export const InitialNameModal = ({ onSubmit, error }) => {
 
           <button
             type="submit"
-            disabled={name.trim().length < 3}
+            disabled={name.trim().length < 2}
             className="w-full py-4 bg-white text-black font-black rounded-xl hover:bg-zinc-200 active:scale-[0.98] transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(255,255,255,0.2)]"
           >
             START <ChevronRight size={16} />

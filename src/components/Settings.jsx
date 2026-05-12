@@ -307,7 +307,8 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                         />
                         <button 
                           onClick={() => setShowUsernameConfirm(true)}
-                          className="w-full py-6 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.01] active:scale-[0.98] transition-all italic shadow-xl"
+                          disabled={usernameInput.trim().length < 2}
+                          className="w-full py-6 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:scale-[1.01] active:scale-[0.98] transition-all italic shadow-xl disabled:opacity-20 disabled:cursor-not-allowed"
                         >
                           UPDATE USERNAME
                         </button>

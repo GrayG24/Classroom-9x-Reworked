@@ -2015,7 +2015,7 @@ const App = () => {
                   exit={{ opacity: 0, x: 20, scale: 0.9 }}
                   className="flex flex-col gap-3 pointer-events-auto"
                 >
-                  {pinnedGamesList.slice(0, 4).map(game => (
+                  {pinnedGamesList.slice(0, 6).map(game => (
                     <motion.button
                       key={game.id}
                       whileHover={{ scale: 1.05, x: -5 }}

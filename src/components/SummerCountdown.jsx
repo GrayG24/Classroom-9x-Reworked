@@ -217,11 +217,11 @@ const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
       initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.2 + index * 0.1, type: "spring", damping: 15 }}
-      className="flex flex-col items-center group relative scale-50 sm:scale-75 md:scale-100 origin-bottom flex-shrink-0 min-w-[120px] md:min-w-[180px]"
+      className="flex flex-col items-center group relative scale-[0.6] sm:scale-75 md:scale-100 origin-bottom flex-shrink-0 min-w-[100px] md:min-w-[180px]"
     >
       <div className="relative">
         {/* Popsicle Stick - Detailed with grain */}
-        <div className="absolute -bottom-12 md:-bottom-16 left-1/2 -translate-x-1/2 w-6 md:w-10 h-24 md:h-32 bg-[#d2b48c] rounded-b-xl md:rounded-b-2xl border-b-4 md:border-b-8 border-black/10 shadow-xl overflow-hidden">
+        <div className="absolute -bottom-10 md:-bottom-16 left-1/2 -translate-x-1/2 w-5 md:w-10 h-20 md:h-32 bg-[#d2b48c] rounded-b-xl md:rounded-b-2xl border-b-4 md:border-b-8 border-black/10 shadow-xl overflow-hidden">
            {/* Wood grain details */}
            {!isPotatoMode && [...Array(5)].map((_, i) => (
              <div key={i} className="absolute inset-x-0 h-[1px] bg-[#bc8f8f]/30" style={{ top: `${20 + i * 15}%` }} />
@@ -233,11 +233,11 @@ const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
         {/* Main Body */}
         <motion.div 
           animate={{ 
-            height: (window.innerHeight < 700 ? 140 : (window.innerWidth < 768 ? 180 : 288)) - visualMeltHeight,
+            height: (window.innerWidth < 768 ? (window.innerHeight < 700 ? 160 : 220) : 288) - visualMeltHeight,
             borderBottomLeftRadius: 24 + (visualMeltHeight * 0.4),
             borderBottomRightRadius: 24 + (visualMeltHeight * 0.4)
           }}
-          className={`w-24 sm:w-32 md:w-44 bg-gradient-to-br ${stat.color} rounded-t-[4rem] md:rounded-t-[6rem] relative shadow-2xl transition-all duration-300 group-hover:scale-105 group-hover:-translate-y-2 flex flex-col items-center justify-center border-t-2 border-white/20`}
+          className={`w-20 sm:w-32 md:w-44 bg-gradient-to-br ${stat.color} rounded-t-[3rem] md:rounded-t-[6rem] relative shadow-2xl transition-all duration-300 group-hover:scale-105 group-hover:-translate-y-2 flex flex-col items-center justify-center border-t-2 border-white/20`}
           style={{ overflow: 'visible' }}
         >
           {/* Surface highlights for 3D look */}
