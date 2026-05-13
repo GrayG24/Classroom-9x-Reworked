@@ -6,7 +6,7 @@ export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
   return (
     <motion.div 
       whileHover={{ y: -12, scale: 1.02 }}
-      className="group relative bg-slate-950/40 border border-white/10 rounded-[2rem] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
+      className="group relative bg-black/40 border border-white/10 rounded-[2rem] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)]"
     >
       <div className="aspect-[3/4] relative overflow-hidden" onClick={() => onClick(game)}>
         <img 
@@ -15,7 +15,7 @@ export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
           className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
         
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">

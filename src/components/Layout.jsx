@@ -19,7 +19,7 @@ const WaveTransition = ({ isVisible }) => (
         }}
         className="fixed inset-0 z-[1000] pointer-events-none"
       >
-        <div className="absolute inset-0 bg-slate-100 flex flex-col justify-center items-center">
+        <div className="absolute inset-0 bg-white flex flex-col justify-center items-center">
            <motion.div
              initial={{ scale: 0.8, opacity: 0 }}
              animate={{ scale: 1, opacity: 1 }}
@@ -34,11 +34,11 @@ const WaveTransition = ({ isVisible }) => (
                   className="w-full h-full bg-theme"
                 />
               </div>
-              <span className="text-[10px] font-black tracking-[1em] text-slate-400 italic">INITIALIZING SUMMER CORE</span>
+              <span className="text-[10px] font-black tracking-[1em] text-black/40 italic">INITIALIZING SUMMER CORE</span>
            </motion.div>
         </div>
         <div className="absolute top-0 inset-x-0 h-96 -translate-y-[90%] pointer-events-none">
-           <svg viewBox="0 0 800 400" className="w-full h-full fill-slate-100" preserveAspectRatio="none">
+           <svg viewBox="0 0 800 400" className="w-full h-full fill-white" preserveAspectRatio="none">
              <path d="M 0 200 C 200 400 600 0 800 200 V 400 H 0 Z" />
              <path d="M 0 100 C 300 200 500 0 800 100 V 200 H 0 Z" opacity="0.5" />
            </svg>
@@ -157,11 +157,11 @@ export const Layout = ({
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentView}
-                initial={currentView === AppRoute.SUMMER ? { opacity: 0, scale: 1.05, filter: 'brightness(2) blur(20px)' } : { opacity: 0, y: 20, scale: 0.98, filter: 'blur(10px)' }}
+                initial={currentView === AppRoute.SUMMER ? { opacity: 0, scale: 1.05, filter: 'brightness(2) blur(20px)' } : { opacity: 0, y: 15, scale: 0.99, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', brightness: 1 }}
-                exit={currentView === AppRoute.SUMMER ? { opacity: 0, scale: 0.95, filter: 'brightness(0.5) blur(20px)' } : { opacity: 0, y: -20, scale: 0.98, filter: 'blur(10px)' }}
+                exit={currentView === AppRoute.SUMMER ? { opacity: 0, scale: 0.95, filter: 'brightness(0.5) blur(20px)' } : { opacity: 0, y: -15, scale: 0.99, filter: 'blur(10px)' }}
                 transition={{ 
-                  duration: currentView === AppRoute.SUMMER ? 1.2 : (isPotatoMode ? 0.3 : 0.6), 
+                  duration: currentView === AppRoute.SUMMER ? 1.0 : (isPotatoMode ? 0.2 : 0.5), 
                   ease: [0.22, 1, 0.36, 1] 
                 }}
                 className="w-full h-full"

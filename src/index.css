@@ -31,10 +31,10 @@
 }
 
 :root {
-  --background: #02040a;
-  --foreground: #f8fafc;
-  --card: rgba(15, 23, 42, 0.3);
-  --border: rgba(255, 255, 255, 0.08);
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: rgba(0, 0, 0, 0.4);
+  --border: rgba(255, 255, 255, 0.1);
   --primary: #3b82f6;
   --primary-rgb: 59, 130, 246;
   --primary-foreground: #ffffff;
@@ -1024,10 +1024,10 @@ html, body {
 .liquid-glass .proto-panel-surface,
 .liquid-glass .proto-rail-panel,
 .liquid-glass .proto-mobile-dock,
-.liquid-glass .bg-slate-900\/50,
-.liquid-glass .bg-slate-950\/40 {
+.liquid-glass .bg-black/50,
+.liquid-glass .bg-black/40 {
   backdrop-filter: blur(40px) saturate(180%) !important;
-  background: rgba(15, 23, 42, 0.4) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
   animation: liquid-flow 10s ease-in-out infinite alternate !important;
   box-shadow: 0 8px 32px rgba(var(--primary-rgb), 0.1), inset 0 0 20px rgba(255, 255, 255, 0.05) !important;

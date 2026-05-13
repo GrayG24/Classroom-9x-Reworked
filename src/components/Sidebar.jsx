@@ -68,20 +68,22 @@ export const Sidebar = ({
       onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
       initial={false}
       animate={isPotatoMode ? { opacity: 1, width: isExpanded ? 280 : 88, minWidth: isExpanded ? 280 : 88 } : { 
-        width: isExpanded ? 280 : 88,
-        minWidth: isExpanded ? 280 : 88,
-        height: isExpanded ? 'calc(100vh - 60px)' : '640px',
-        maxHeight: isExpanded ? 'calc(100vh - 60px)' : '640px',
-        top: isExpanded ? '30px' : 'calc(50% - 320px)',
-        x: 20,
-        borderRadius: isExpanded ? "2.5rem" : "2.8rem",
+        width: isExpanded ? 280 : 80,
+        minWidth: isExpanded ? 280 : 80,
+        maxWidth: isExpanded ? 280 : 80,
+        height: isExpanded ? 'calc(100vh - 40px)' : '600px',
+        maxHeight: isExpanded ? 'calc(100vh - 40px)' : '600px',
+        top: isExpanded ? '20px' : 'calc(50% - 300px)',
+        x: 16,
+        borderRadius: isExpanded ? "2rem" : "2.5rem",
         opacity: 1
       }}
       transition={isPotatoMode ? { duration: 0 } : { 
-        duration: 1.2,
-        ease: [0.16, 1, 0.3, 1]
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1]
       }}
-      className="fixed left-0 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.2)] bg-black/40 backdrop-blur-[16px] border border-white/5"
+      className="fixed left-0 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 overflow-hidden"
+      style={{ willChange: 'transform, width, height' }}
     >
       {/* Logo Section */}
       <div className="p-8 pb-4 flex flex-col items-center w-full shrink-0">
@@ -138,12 +140,12 @@ export const Sidebar = ({
                 opacity: isComingSoon && !isActive ? 0.6 : 1
               }}
               transition={{
-                duration: 0.4,
-                ease: [0.16, 1, 0.3, 1]
+                duration: 0.3,
+                ease: [0.22, 1, 0.36, 1]
               }}
               whileHover={{ 
                 scale: isComingSoon && !isActive ? 1.01 : 1.04,
-                x: isExpanded ? 6 : 0
+                x: isExpanded ? 8 : 0
               }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
@@ -181,7 +183,7 @@ export const Sidebar = ({
                       initial={{ opacity: 0, x: -15, filter: 'blur(4px)' }}
                       animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                       exit={{ opacity: 0, x: -15, filter: 'blur(4px)' }}
-                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                       className="ml-4 flex flex-col items-start relative z-10 whitespace-nowrap pointer-events-none"
                     >
                       <span className={`text-[10px] font-black uppercase tracking-[0.2em] italic ${isActive ? (isRed || item.beachBonus ? 'text-inherit' : 'text-inherit') : ''}`}>

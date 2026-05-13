@@ -25,10 +25,10 @@ export const ProxyPage = () => {
             className="flex items-center justify-center gap-3 text-primary"
           >
             <Shield size={14} />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em]">ENCRYPTION LAYER OFFLINE</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.5em]">OFFLINE</span>
           </motion.div>
           <h1 className="text-7xl font-black text-white uppercase tracking-tighter italic leading-none">
-            PROXY <span className="text-primary">NODE</span>
+            WEB <span className="text-primary">PROXY</span>
           </h1>
         </div>
         
@@ -40,8 +40,8 @@ export const ProxyPage = () => {
       </div>
 
       <p className="text-white/20 font-medium max-w-lg leading-relaxed uppercase text-[10px] tracking-[0.2em]">
-        The secure web tunnel protocol is currently undergoing deep-kernel calibration. 
-        Access to the external web through the Sector gateway will be available in the next system update.
+        The web proxy is currently being updated. 
+        Access to the web will be available in a future update.
       </p>
 
       <div className="pt-12 grid grid-cols-3 gap-12 opacity-10 grayscale">
@@ -61,7 +61,7 @@ export const ProxyPage = () => {
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
         <div className="w-1 h-12 bg-gradient-to-b from-primary/40 to-transparent rounded-full"></div>
-        <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">Awaiting Protocol Handshake</span>
+        <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">Connecting...</span>
       </div>
     </div>
   );

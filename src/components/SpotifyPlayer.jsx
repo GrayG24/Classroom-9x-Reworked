@@ -5,15 +5,15 @@ import { motion, AnimatePresence } from 'motion/react';
 export const SpotifyPlayer = ({ isExpanded = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState({
-    title: "NEURAL NETWORK",
-    artist: "CYBERPUNK 2077",
+    title: "RADIO",
+    artist: "NIGHT CITY",
     albumArt: "https://picsum.photos/seed/cyberpunk/200/200",
     progress: 45,
     duration: 180
   });
 
   return (
-    <div className={`relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950/40 backdrop-blur-3xl transition-all duration-700 ${isExpanded ? 'p-8' : 'p-4'}`}>
+    <div className={`relative overflow-hidden rounded-3xl border border-white/10 bg-black/40 backdrop-blur-3xl transition-all duration-700 ${isExpanded ? 'p-8' : 'p-4'}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       
       <div className={`flex items-center gap-6 ${isExpanded ? 'flex-col sm:flex-row' : ''}`}>
@@ -64,7 +64,7 @@ export const SpotifyPlayer = ({ isExpanded = false }) => {
                   <button className="text-white/40 hover:text-white transition-colors"><SkipBack size={20} /></button>
                   <button 
                     onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-14 h-14 rounded-full bg-white text-slate-950 flex items-center justify-center hover:scale-110 transition-transform shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+                    className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform shadow-[0_0_30px_rgba(255,255,255,0.3)]"
                   >
                     {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                   </button>

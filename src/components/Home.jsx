@@ -16,7 +16,7 @@ const ProfileWidget = ({ user, onProfileClick }) => {
       whileHover={isPotatoMode ? {} : { y: -4, scale: 1.01 }}
       whileTap={isPotatoMode ? {} : { scale: 0.99 }}
       onClick={onProfileClick}
-      className={`relative w-full rounded-[2.5rem] p-1 border border-white/5 bg-slate-950/40 backdrop-blur-3xl cursor-pointer group shadow-2xl overflow-hidden`}
+      className={`relative w-full rounded-[2.5rem] p-1 border border-white/5 bg-black/40 backdrop-blur-3xl cursor-pointer group shadow-2xl overflow-hidden`}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-theme/10 via-transparent to-theme/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
       
@@ -143,7 +143,7 @@ const CountdownTimer = () => {
         { label: 'SEC', value: timeLeft.seconds }
       ].map((unit, i) => (
         <div key={unit.label} className="flex flex-col items-center">
-          <div className="w-12 h-12 rounded-xl bg-slate-950/60 backdrop-blur-md border border-white/10 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center">
             <span className="text-xl font-black text-white tabular-nums">{unit.value.toString().padStart(2, '0')}</span>
           </div>
           <span className="text-[8px] font-black text-white/30 mt-1 tracking-widest">{unit.label}</span>
@@ -288,7 +288,7 @@ export const Home = ({
               </div>
 
               {/* Dynamic Content Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent flex flex-col justify-end p-8 md:p-16 lg:p-24 z-20">
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-8 md:p-16 lg:p-24 z-20">
                 <div className="max-w-4xl relative">
                   {/* Removed duplicate holographic decoration that might look like an outline */}
 

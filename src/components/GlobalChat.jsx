@@ -27,7 +27,7 @@ export const GlobalChat = ({ messages, onSendMessage, user, onClose }) => {
           </div>
           <div>
             <h3 className="font-black text-white uppercase tracking-[0.2em] text-xs italic leading-none">GLOBAL CHAT</h3>
-            <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mt-1.5 italic">USERS ONLINE</p>
+            <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.4em] mt-1.5 italic">PLAYERS ONLINE</p>
           </div>
         </div>
         <button 

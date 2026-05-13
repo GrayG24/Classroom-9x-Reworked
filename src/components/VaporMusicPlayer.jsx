@@ -39,7 +39,7 @@ export const VaporMusicPlayer = ({
             zIndex: isFullScreen ? 40 : 1000
           }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="fixed bg-slate-950/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
+          className="fixed bg-black/90 backdrop-blur-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col"
         >
           {/* Header */}
           <div className={`h-16 shrink-0 px-6 flex items-center justify-between border-b border-white/5 bg-white/5 ${!isFullScreen ? 'cursor-grab active:cursor-grabbing' : ''}`}>

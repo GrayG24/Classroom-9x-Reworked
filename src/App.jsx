@@ -46,7 +46,7 @@ const LockedPage = ({ title, onReturn }) => (
         <div className="h-px w-12 bg-rose-500/30"></div>
       </div>
     </div>
-    <p className="text-slate-400 font-medium max-w-md leading-relaxed uppercase text-[10px] tracking-widest">
+    <p className="text-white/40 font-medium max-w-md leading-relaxed uppercase text-[10px] tracking-widest">
       This section is not finished yet. Check back soon.
     </p>
     <button 
@@ -271,7 +271,7 @@ const BossEvent = ({ onDefeat }) => {
           <div className="absolute inset-0 bg-rose-600/30 blur-[100px] rounded-full animate-pulse"></div>
         )}
         
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-6 bg-slate-950 rounded-full border-2 border-white/10 overflow-hidden shadow-2xl">
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-6 bg-black rounded-full border-2 border-white/10 overflow-hidden shadow-2xl">
           <motion.div 
             initial={{ width: '100%' }}
             animate={{ 
@@ -287,7 +287,7 @@ const BossEvent = ({ onDefeat }) => {
         
         <div className="relative">
           <div className={`absolute inset-0 bg-rose-500/20 blur-3xl rounded-full ${health < 50 ? 'animate-ping' : 'animate-pulse'}`}></div>
-          <div className={`w-48 h-48 bg-slate-950 rounded-full border-8 ${health < 30 ? 'border-rose-600 shadow-[0_0_100px_#ef4444]' : 'border-rose-500 shadow-[0_0_50px_rgba(244,63,94,0.5)]'} flex items-center justify-center transition-all duration-300 ${isHit ? 'brightness-150' : ''}`}>
+          <div className={`w-48 h-48 bg-black rounded-full border-8 ${health < 30 ? 'border-rose-600 shadow-[0_0_100px_#ef4444]' : 'border-rose-500 shadow-[0_0_50px_rgba(244,63,94,0.5)]'} flex items-center justify-center transition-all duration-300 ${isHit ? 'brightness-150' : ''}`}>
             <Ghost size={96} className={`${health < 30 ? 'text-rose-600' : 'text-rose-500'} ${health < 50 ? 'animate-bounce' : ''}`} />
           </div>
           <div className="absolute -inset-8 border-4 border-dashed border-rose-500/30 rounded-full animate-spin-slow"></div>
@@ -298,7 +298,7 @@ const BossEvent = ({ onDefeat }) => {
           <motion.div
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ repeat: Infinity, duration: 1 }}
-            className="px-6 py-2 bg-rose-500 text-slate-950 font-black text-xs uppercase tracking-[0.3em] rounded-full shadow-[0_0_30px_rgba(239,68,68,0.5)] border-2 border-white/20"
+            className="px-6 py-2 bg-rose-500 text-black font-black text-xs uppercase tracking-[0.3em] rounded-full shadow-[0_0_30px_rgba(239,68,68,0.5)] border-2 border-white/20"
           >
             DEFEAT BOSS
           </motion.div>
@@ -835,75 +835,82 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws.current = new WebSocket(`${protocol}//${window.location.host}`);
+    let wsInstance = null;
+    let reconnectTimeout = null;
 
-    ws.current.onopen = () => {
-      console.log('WS Connection Established');
-    };
+    const connect = () => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const newWs = new WebSocket(`${protocol}//${window.location.host}`);
+      ws.current = newWs;
+      wsInstance = newWs;
 
-    ws.current.onerror = (error) => {
-      console.log('WS Connection Error (expected in dev):', error);
-    };
+      newWs.onopen = () => {
+        console.log('WS Connection Established');
+      };
 
-    ws.current.onclose = () => {
-      console.log('WS Connection Closed');
-    };
+      newWs.onerror = (error) => {
+        console.log('WS Connection Error (expected in dev):', error);
+      };
 
-    ws.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log('WS Message Received:', data.type, data);
-      if (data.type === 'CHAT_MESSAGE') {
-        setChatMessages((prev) => [...prev, data].slice(-50));
-      } else if (data.type === 'DELETE_MESSAGE') {
-        setChatMessages((prev) => prev.filter(msg => msg.id !== data.messageId));
-      } else if (data.type === 'ADMIN_ANNOUNCEMENT') {
-        setAdminAnnouncement({ 
-          text: data.text, 
-          sender: data.sender,
-          announcementType: data.announcementType || 'system'
-        });
-        setTimeout(() => setAdminAnnouncement(null), 12000);
-      } else if (data.type === 'SYSTEM_MAINTENANCE') {
-        setIsMaintenanceMode(data.enabled);
-      } else if (data.type === 'GAME_OF_THE_WEEK') {
-        setGameOfTheWeek({ id: data.gameId, name: data.gameName });
-        addNotification('GAME OF THE WEEK', `NEW FEATURED TITLE: ${data.gameName.toUpperCase()}!`, 'success', <Star className="text-amber-400" />);
-      } else if (data.type === 'CLEAR_CHAT') {
-        setChatMessages([]);
-        addNotification('System', 'Chat history has been cleared by an administrator.', 'system', <MessageSquare size={14} />);
-      } else if (data.type === 'LEADERBOARD_WIPED') {
-        setLeaderboardData([]);
-        addNotification('System', 'The global leaderboard has been wiped by an administrator.', 'system', <Trophy size={14} />);
-      } else if (data.type === 'ADMIN_ACTION') {
-        const { actionType, target, abuseType, sender } = data;
-        console.log('WS Admin Action Received:', actionType, target, abuseType);
+      newWs.onclose = () => {
+        console.log('WS Connection Closed');
+        reconnectTimeout = setTimeout(connect, 3000);
+      };
 
-        // Handle Global Events or Admin Abuse
-        if (target === 'GLOBAL' || actionType === 'ADMIN_ABUSE') {
-          if (abuseType) {
-            const eventName = abuseType.replace(/_/g, ' ').toLowerCase();
-            setAdminAnnouncement({
-              text: `${sender?.username || 'SYSTEM'} STARTED ${eventName.toUpperCase()} EVENT!`,
-              sender: sender || { username: 'SYSTEM', characterId: 'agent-x', frameId: 'obsidian' },
-              announcementType: 'event',
-              timestamp: new Date().toISOString()
+      newWs.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WS Message Received:', data.type, data);
+          if (data.type === 'CHAT_MESSAGE') {
+            setChatMessages((prev) => [...prev, data].slice(-50));
+          } else if (data.type === 'DELETE_MESSAGE') {
+            setChatMessages((prev) => prev.filter(msg => msg.id !== data.messageId));
+          } else if (data.type === 'ADMIN_ANNOUNCEMENT') {
+            setAdminAnnouncement({ 
+              text: data.text, 
+              sender: data.sender,
+              announcementType: data.announcementType || 'system'
             });
-            setTimeout(() => setAdminAnnouncement(null), 8000);
-          }
+            setTimeout(() => setAdminAnnouncement(null), 12000);
+          } else if (data.type === 'SYSTEM_MAINTENANCE') {
+            setIsMaintenanceMode(data.enabled);
+          } else if (data.type === 'GAME_OF_THE_WEEK') {
+            setGameOfTheWeek({ id: data.gameId, name: data.gameName });
+            addNotification('GAME OF THE WEEK', `NEW FEATURED TITLE: ${data.gameName.toUpperCase()}!`, 'success', <Star className="text-amber-400" />);
+          } else if (data.type === 'CLEAR_CHAT') {
+            setChatMessages([]);
+            addNotification('System', 'Chat history has been cleared by an administrator.', 'system', <MessageSquare size={14} />);
+          } else if (data.type === 'LEADERBOARD_WIPED') {
+            setLeaderboardData([]);
+            addNotification('System', 'The global leaderboard has been wiped by an administrator.', 'system', <Trophy size={14} />);
+          } else if (data.type === 'ADMIN_ACTION') {
+            const { actionType, target, abuseType, sender } = data;
+            console.log('WS Admin Action Received:', actionType, target, abuseType);
 
-          if (abuseType === 'RAINBOW_CHAOS') {
-            setIsRainbowChaos(true);
-            addNotification('ADMIN ABUSE', 'RAINBOW CHAOS ENABLED! RAINBOW THEME UNLOCKED!', 'system', <Palette className="text-indigo-400" />);
-            setUser(prev => ({
-              ...prev,
+            // Handle Global Events or Admin Action
+            if (target === 'GLOBAL' || actionType === 'ADMIN_ACTION') {
+              if (abuseType) {
+                const eventName = abuseType.replace(/_/g, ' ').toLowerCase();
+                setAdminAnnouncement({
+                  text: `${sender?.username || 'SYSTEM'} STARTED ${eventName.toUpperCase()} EVENT!`,
+                  sender: sender || { username: 'SYSTEM', characterId: 'agent-x', frameId: 'obsidian' },
+                  announcementType: 'event',
+                  timestamp: new Date().toISOString()
+                });
+                setTimeout(() => setAdminAnnouncement(null), 8000);
+              }
+
+              if (abuseType === 'RAINBOW_CHAOS') {
+                setIsRainbowChaos(true);
+                addNotification('ADMIN EVENT', 'RAINBOW CHAOS ENABLED! RAINBOW THEME UNLOCKED!', 'system', <Palette className="text-indigo-400" />);
+                setUser(prev => ({
+                  ...prev,
               unlockedThemes: Array.from(new Set([...(prev.unlockedThemes || []), 'rainbow']))
             }));
             setTimeout(() => setIsRainbowChaos(false), 30000);
           } else if (abuseType === 'GIVE_ALL_BADGE') {
             setShowBadgeRain(true);
-            addNotification('ADMIN ABUSE', 'ALL BADGES GRANTED BY THE GODS!', 'system', <Award className="text-amber-400" />);
+            addNotification('ADMIN EVENT', 'ALL BADGES GRANTED!', 'system', <Award className="text-amber-400" />);
             setUser(prev => ({
               ...prev,
               unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), 'tester', 'owner', 'early_adopter', 'bug_hunter', 'top_player', 'social_butterfly', 'wealthy', 'legendary']))
@@ -911,27 +918,27 @@ const App = () => {
             setTimeout(() => setShowBadgeRain(false), 30000);
           } else if (abuseType === 'EXP_EXPLOSION') {
             setShowExpRain(true);
-            addNotification('ADMIN ABUSE', 'EXP EXPLOSION! COLLECT THE ORBS!', 'system', <Zap className="text-cyan-400" />);
+            addNotification('ADMIN EVENT', 'EXP EXPLOSION! COLLECT THE ORBS!', 'system', <Zap className="text-cyan-400" />);
             setTimeout(() => setShowExpRain(false), 20000);
           } else if (abuseType === 'SYSTEM_GLITCH') {
             setIsGlitched(true);
-            addNotification('ADMIN ABUSE', 'CRITICAL SYSTEM FAILURE DETECTED!', 'error', <ShieldAlert className="text-rose-500" />);
+            addNotification('ADMIN EVENT', 'CRITICAL SYSTEM FAILURE DETECTED!', 'error', <ShieldAlert className="text-rose-500" />);
             setTimeout(() => setIsGlitched(false), 10000);
           } else if (abuseType === 'PARTY_MODE') {
             setIsPartyMode(true);
             setIsRainbowChaos(true);
-            addNotification('ADMIN ABUSE', 'PARTY MODE ACTIVATED! ENJOY THE CHAOS!', 'success', <Sparkles className="text-yellow-400" />);
+            addNotification('ADMIN EVENT', 'PARTY MODE ACTIVATED! ENJOY THE CHAOS!', 'success', <Sparkles className="text-yellow-400" />);
             setTimeout(() => {
               setIsPartyMode(false);
               setIsRainbowChaos(false);
             }, 30000);
           } else if (abuseType === 'NUKE_CHAT') {
             setIsChatOnFire(true);
-            addNotification('ADMIN ABUSE', 'CHAT IS ON FIRE!', 'system', <ZapOff className="text-rose-600" />);
+            addNotification('ADMIN EVENT', 'CHAT IS ON FIRE!', 'system', <ZapOff className="text-rose-600" />);
             setTimeout(() => setIsChatOnFire(false), 20000);
           } else if (abuseType === 'BOOST_ALL') {
             setBoosts(prev => [...prev, { id: 'admin-boost-' + Date.now(), name: 'ADMIN BOOST', multiplier: 5, expiresAt: Date.now() + 600000 }]);
-            addNotification('ADMIN ABUSE', 'GLOBAL 5x EXP BOOST GRANTED!', 'system', <Zap className="text-amber-500" />);
+            addNotification('ADMIN EVENT', 'GLOBAL 5x EXP BOOST GRANTED!', 'system', <Zap className="text-amber-500" />);
           } else if (abuseType === 'BOSS_SPAWN') {
             setShowBoss(true);
             setChatMessages(prev => [...prev, {
@@ -946,15 +953,15 @@ const App = () => {
             addNotification('BOSS SPAWNED', 'A VOID ENTITY HAS ENTERED THE CHAT!', 'error', <Ghost className="text-white" />);
           } else if (abuseType === 'MATRIX_RAIN') {
             setIsMatrixRain(true);
-            addNotification('ADMIN ABUSE', 'MATRIX OVERRIDE INITIATED!', 'system', <BrainCircuit className="text-emerald-500" />);
+            addNotification('ADMIN EVENT', 'MATRIX OVERRIDE INITIATED!', 'system', <BrainCircuit className="text-emerald-500" />);
             setTimeout(() => setIsMatrixRain(false), 15000);
           } else if (abuseType === 'GRAVITY_CHAOS') {
             setIsGravityChaos(true);
-            addNotification('ADMIN ABUSE', 'GRAVITY PROTOCOL OFFLINE!', 'system', <Rocket className="text-cyan-400" />);
+            addNotification('ADMIN EVENT', 'GRAVITY SYSTEM OFFLINE!', 'system', <Rocket className="text-cyan-400" />);
             setTimeout(() => setIsGravityChaos(false), 15000);
           } else if (abuseType === 'FIRE_STORM') {
             setIsFireStorm(true);
-            addNotification('ADMIN ABUSE', 'FIRE STORM INITIATED! FIRE THEME UNLOCKED!', 'system', <Zap className="text-orange-500" />);
+            addNotification('ADMIN EVENT', 'FIRE STORM INITIATED! FIRE THEME UNLOCKED!', 'system', <Zap className="text-orange-500" />);
             setUser(prev => ({
               ...prev,
               unlockedThemes: Array.from(new Set([...(prev.unlockedThemes || []), 'fire']))
@@ -962,17 +969,18 @@ const App = () => {
             setTimeout(() => setIsFireStorm(false), 15000);
           } else if (abuseType === 'VOID_STORM') {
             setIsVoidStorm(true);
-            addNotification('ADMIN ABUSE', 'VOID STORM INCOMING! REALITY COLLAPSING!', 'system', <Ghost className="text-purple-500" />);
+            addNotification('ADMIN EVENT', 'VOID STORM INCOMING! REALITY COLLAPSING!', 'system', <Ghost className="text-purple-500" />);
             setTimeout(() => setIsVoidStorm(false), 20000);
           } else if (abuseType === 'SYSTEM_OVERLOAD') {
             setIsSystemOverload(true);
-            addNotification('ADMIN ABUSE', 'SYSTEM OVERLOAD! ENERGY SURGE DETECTED!', 'system', <Zap className="text-amber-500" />);
+            addNotification('ADMIN EVENT', 'SYSTEM OVERLOAD! ENERGY SURGE DETECTED!', 'system', <Zap className="text-amber-500" />);
             setTimeout(() => setIsSystemOverload(false), 15000);
           } else if (abuseType === 'GOLDEN_HOUR') {
             setIsGoldenHour(true);
-            addNotification('ADMIN ABUSE', 'GOLDEN HOUR! ALL REWARDS TRIPLED!', 'system', <Star className="text-yellow-400" />);
+            addNotification('ADMIN EVENT', 'GOLDEN HOUR! ALL REWARDS TRIPLED!', 'system', <Star className="text-yellow-400" />);
             setTimeout(() => setIsGoldenHour(false), 60000);
           }
+
         }
 
         // Handle Targeted Actions
@@ -1010,13 +1018,22 @@ const App = () => {
             addNotification('2x EXP Boost!', 'An administrator granted you a temporary 2x Experience Boost!', 'system', <Zap className="text-amber-500" />);
           }
         }
-      } 
+      }
     } catch (err) {
       console.error('Error parsing WS message:', err);
     }
   };
+};
 
-    return () => ws.current?.close();
+    connect();
+
+    return () => {
+      if (wsInstance) {
+        wsInstance.onclose = null;
+        wsInstance.close();
+      }
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
   }, []);
 
   const sendChatMessage = (text) => {
@@ -1736,6 +1753,11 @@ const App = () => {
     if (typeof gameId !== 'string') return;
     const isAdding = !(user.favorites || []).includes(gameId);
     
+    if (isAdding && (user.favorites || []).length >= 7) {
+      addNotification('Limit Reached', 'You can only have 7 favorites. Unfavorite something first!', 'error', <ShieldAlert className="text-rose-500" />);
+      return;
+    }
+    
     setUser(prev => {
       const newFavorites = isAdding 
         ? [...(prev.favorites || []), gameId]
@@ -1952,7 +1974,7 @@ const App = () => {
   const renderCurrentView = () => {
     if (isMaintenanceMode && !user.isAdmin) {
       return (
-        <div className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
+        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-8 text-center">
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1963,14 +1985,14 @@ const App = () => {
             </div>
             <div className="space-y-4">
               <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">System <span className="text-amber-500">Maintenance</span></h1>
-              <div className="text-slate-400 font-medium leading-relaxed space-y-4">
+              <div className="text-white/40 font-medium leading-relaxed space-y-4">
                 <p>Uh oh! Classroom 9x is currently undergoing maintenance to improve performance and add new features.</p>
                 <p>Some games or features may be temporarily unavailable while we work behind the scenes.</p>
                 <p>Thanks for your patience — we’ll be back up and running soon.</p>
               </div>
             </div>
             <div className="pt-8 border-t border-white/5">
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
             </div>
           </motion.div>
         </div>
@@ -2038,7 +2060,7 @@ const App = () => {
         {user.settings.customCursor && <CustomCursor />}
         
           <div className="proto-content-shell">
-          <div className={`min-h-screen transition-colors duration-1000 ${currentView === AppRoute.SUMMER ? 'bg-[#fdf5e6]' : 'bg-background/40'} text-white font-inter selection:bg-theme selection:text-slate-950 overflow-x-hidden`}>
+          <div className={`min-h-screen transition-colors duration-1000 ${currentView === AppRoute.SUMMER ? 'bg-[#fdf5e6]' : 'bg-background/40'} text-white font-inter selection:bg-theme selection:text-black overflow-x-hidden`}>
             {/* Background Effects */}
             {isMatrixRain && !user.settings.performanceMode && <MatrixRain performanceMode={user.settings.performanceMode} />}
             {isRainbowChaos && <div className="rainbow-chaos-overlay" />}
@@ -2068,7 +2090,7 @@ const App = () => {
                     )}
                   </AnimatePresence>
                   {user.isBanned && (
-                    <div key="banned-overlay" className="fixed inset-0 z-[9999] bg-slate-950 flex items-center justify-center p-8 text-center">
+                    <div key="banned-overlay" className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-8 text-center">
                       <motion.div 
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -2079,10 +2101,10 @@ const App = () => {
                         </div>
                         <div className="space-y-4">
                           <h1 className="text-4xl font-black text-white uppercase tracking-tighter italic">Account <span className="text-rose-500">Restricted</span></h1>
-                          <p className="text-slate-400 font-medium leading-relaxed uppercase text-[10px] tracking-widest text-center">Your access has been restricted by an administrator. Please contact support if you think this is a mistake.</p>
+                          <p className="text-white/40 font-medium leading-relaxed uppercase text-[10px] tracking-widest text-center">Your access has been restricted by an administrator. Please contact support if you think this is a mistake.</p>
                         </div>
                         <div className="pt-8 border-t border-white/5">
-                          <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Status: Suspended</p>
+                          <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Status: Suspended</p>
                         </div>
                       </motion.div>
                     </div>
@@ -2195,12 +2217,17 @@ const App = () => {
               transition={{ type: "spring", damping: 15 }}
               className="fixed top-0 left-1/2 z-[2000] w-full max-w-3xl px-4 pointer-events-none"
             >
-              <div className="relative group overflow-hidden rounded-[2.5rem] bg-slate-950/90 backdrop-blur-3xl border-2 border-white/20 p-6 shadow-2xl pointer-events-auto transition-colors duration-500">
+              <div className="relative group overflow-hidden rounded-[2.5rem] bg-black/90 backdrop-blur-3xl border-2 border-white/20 p-6 shadow-2xl pointer-events-auto transition-colors duration-500">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-20 animate-pulse"></div>
                 
                 <div className="relative flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 text-white shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                    <Megaphone size={32} className="animate-pulse" />
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center border border-white/20 bg-black text-white shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                    <img 
+                      src="https://1key.lol/images/ui/key-turning.gif" 
+                      alt="Announcement Icon" 
+                      className="w-full h-full object-cover" 
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">

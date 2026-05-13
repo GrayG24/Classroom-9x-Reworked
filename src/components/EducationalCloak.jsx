@@ -8,12 +8,12 @@ export const EducationalCloak = ({ onToggleCloak }) => {
       {/* Top Navigation */}
       <nav className="bg-[#ffffff] border-b border-[#dddfe2] px-6 py-3 flex justify-between items-center sticky top-0 z-10 shadow-sm">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2 text-[#1877f2]">
+          <div className="flex items-center gap-2 text-black">
             <GraduationCap size={32} fill="currentColor" />
             <span className="text-xl font-bold tracking-tight">EduPortal</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-[#65676b]">
-            <a href="#" className="text-[#1877f2] border-b-2 border-[#1877f2] pb-4 -mb-4">Dashboard</a>
+            <a href="#" className="text-black border-b-2 border-black pb-4 -mb-4">Dashboard</a>
             <a href="#" className="hover:text-[#1c1e21] transition-colors">My Courses</a>
             <a href="#" className="hover:text-[#1c1e21] transition-colors">Assignments</a>
             <a href="#" className="hover:text-[#1c1e21] transition-colors">Grades</a>
@@ -25,7 +25,7 @@ export const EducationalCloak = ({ onToggleCloak }) => {
             <input 
               type="text" 
               placeholder="Search courses..." 
-              className="bg-[#f0f2f5] border-none rounded-full px-10 py-2 text-sm w-64 focus:ring-2 focus:ring-[#1877f2]/20 outline-none"
+              className="bg-[#f0f2f5] border-none rounded-full px-10 py-2 text-sm w-64 focus:ring-2 focus:ring-black/20 outline-none"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#65676b]" size={16} />
           </div>
@@ -34,7 +34,7 @@ export const EducationalCloak = ({ onToggleCloak }) => {
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
           <div className="flex items-center gap-2 pl-2 border-l border-[#dddfe2]">
-            <div className="w-8 h-8 bg-[#1877f2] rounded-full flex items-center justify-center text-white text-xs font-bold">
+            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white text-xs font-bold">
               JD
             </div>
             <button onClick={onToggleCloak} className="text-[#65676b] hover:text-[#1c1e21]">
@@ -49,7 +49,7 @@ export const EducationalCloak = ({ onToggleCloak }) => {
         <aside className="lg:col-span-3 space-y-6">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-[#dddfe2]">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
+              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
                 <User size={24} />
               </div>
               <div>

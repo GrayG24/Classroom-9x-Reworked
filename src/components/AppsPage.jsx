@@ -31,8 +31,8 @@ export const AppsPage = ({ onToggleChat }) => {
       id: 'chat',
       name: 'Global Chat',
       icon: MessageSquare,
-      description: 'Connect with other system nodes in real-time.',
-      category: 'COMMS LINK',
+      description: 'Chat with other players in real-time.',
+      category: 'MESSAGES',
       status: 'ACTIVE',
       version: '2.0.1',
       action: onToggleChat
@@ -41,8 +41,8 @@ export const AppsPage = ({ onToggleChat }) => {
       id: 'music',
       name: 'Vapor Music',
       icon: Music,
-      description: 'Educational music streaming protocol.',
-      category: 'MEDIA STREAM',
+      description: 'Listen to lo-fi and chill music.',
+      category: 'MUSIC',
       status: 'STABLE',
       version: '1.2.4',
       action: () => window.dispatchEvent(new CustomEvent('toggle-vapor-music', { detail: { fullScreen: true } }))
@@ -66,18 +66,18 @@ export const AppsPage = ({ onToggleChat }) => {
             className="flex items-center gap-4"
           >
             <div className="w-3 h-3 bg-primary animate-pulse"></div>
-            <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-primary">MODULE LOADER // v4.5.0</span>
+            <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-primary">v4.5.0</span>
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-8xl font-black text-white uppercase tracking-tighter italic leading-none"
           >
-            SYSTEM <br />
-            <span className="text-primary">APPLICATIONS</span>
+            THE <br />
+            <span className="text-primary">APPS</span>
           </motion.h1>
           <p className="text-white/30 font-mono text-xs uppercase tracking-[0.2em] max-w-xl">
-            Authorized modules for system expansion. All protocols are verified and encrypted via the Void Network kernel.
+            Choose an app to open.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export const AppsPage = ({ onToggleChat }) => {
                       disabled={app.disabled}
                       className={`flex-1 py-4 rounded-xl font-black text-[9px] uppercase tracking-[0.3em] italic transition-all shadow-xl ${app.disabled ? 'bg-white/5 text-white/20 cursor-not-allowed' : 'bg-white text-black hover:bg-primary'}`}
                     >
-                      {app.disabled ? 'LOCKED' : 'INITIALIZE'}
+                      {app.disabled ? 'LOCKED' : 'OPEN'}
                     </button>
                     <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-white/20">
                       {app.disabled ? <Lock size={16} /> : <Zap size={16} />}
@@ -141,7 +141,7 @@ export const AppsPage = ({ onToggleChat }) => {
         {/* Quick Access Utility Section */}
         <div className="flex flex-col gap-8 mb-24">
           <div className="flex items-center gap-4">
-            <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-white/20">QUICK ACCESS NODES</span>
+            <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-white/20">RECENT APPS</span>
             <div className="h-px flex-1 bg-white/5"></div>
           </div>
           <div className="flex flex-wrap gap-8 items-start">
@@ -158,7 +158,7 @@ export const AppsPage = ({ onToggleChat }) => {
         >
           <div className="flex items-center gap-10">
             <div className="flex flex-col gap-1">
-              <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">CPU LOAD</span>
+              <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">SERVER LOAD</span>
               <div className="flex items-center gap-2">
                 <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden">
                   <motion.div 
@@ -167,31 +167,14 @@ export const AppsPage = ({ onToggleChat }) => {
                     className="h-full bg-primary"
                   ></motion.div>
                 </div>
-                <span className="text-[10px] font-mono text-primary">32%</span>
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">MEM USAGE</span>
-              <div className="flex items-center gap-2">
-                <div className="w-32 h-1 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    animate={{ width: ['60%', '55%', '65%'] }}
-                    transition={{ duration: 5, repeat: Infinity }}
-                    className="h-full bg-accent"
-                  ></motion.div>
-                </div>
-                <span className="text-[10px] font-mono text-accent">64%</span>
+                <span className="text-[10px] font-mono text-primary">STABLE</span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-3">
               <Shield size={14} className="text-emerald-500" />
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">KERNEL SECURE</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Zap size={14} className="text-amber-500" />
-              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">POWER OPTIMIZED</span>
+              <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest">SECURE CONNECTION</span>
             </div>
           </div>
         </motion.div>

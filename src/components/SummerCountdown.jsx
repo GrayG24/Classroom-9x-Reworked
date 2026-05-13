@@ -63,9 +63,6 @@ const SummerCountdown = ({ user }) => {
     <div className="min-h-screen bg-[#fdf5e6] overflow-hidden relative font-sans">
       {/* Sky Section */}
       <div className="absolute top-0 inset-x-0 h-[65vh] bg-gradient-to-b from-[#0e7490] via-[#0ea5e9] to-[#7dd3fc]">
-        {!isPotatoMode && <SunBeams />}
-        <Sun isPotatoMode={isPotatoMode} />
-        
         {/* Clouds */}
         <FloatingCloud delay={0} top="10%" left="5%" scale={1.2} />
         {!isPotatoMode && <FloatingCloud delay={5} top="20%" left="30%" scale={0.7} />}
@@ -113,10 +110,15 @@ const SummerCountdown = ({ user }) => {
         </div>
       </div>
 
+      {/* Sun Layer - Explicitly above elements but below main UI */}
+      <div className="absolute inset-x-0 top-0 h-[65vh] pointer-events-none z-30">
+        {!isPotatoMode && <SunBeams />}
+        <Sun isPotatoMode={isPotatoMode} />
+      </div>
+
       {/* Realistic Palmtrees - Pushed further to edges to clear text */}
       <div className="absolute inset-x-0 bottom-0 top-0 z-20 pointer-events-none overflow-hidden">
-         <DetailedPalmtree bottom="-8%" left="-18%" scale={1.2} className="md:scale-[1.6] lg:scale-[2.4]" />
-         <DetailedPalmtree bottom="-5%" right="-15%" scale={1.1} className="md:scale-[1.4] lg:scale-[2.0]" flip />
+         <DetailedPalmtree bottom="-8%" left="-18%" scale={1.0} className="md:scale-[1.3] lg:scale-[1.8]" />
       </div>
 
       {/* Main Content Overlay */}

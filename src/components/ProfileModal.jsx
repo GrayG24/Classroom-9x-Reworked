@@ -45,7 +45,7 @@ export const ProfileModal = ({ user, onClose }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-5xl bg-[#020617] border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row max-h-[90vh]"
+          className="relative w-full max-w-5xl bg-black border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row max-h-[90vh]"
         >
           {/* Left Side - Fixed Profile Card */}
           <div className="lg:w-[380px] bg-white/[0.03] p-10 flex flex-col items-center text-center border-r border-white/5 shrink-0 relative overflow-hidden">
@@ -174,7 +174,7 @@ export const ProfileModal = ({ user, onClose }) => {
                   className="space-y-10 relative min-h-[400px]"
                 >
                   {/* Lock Overlay */}
-                  <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 bg-slate-950/40 backdrop-blur-md rounded-[3rem] flex flex-col items-center justify-center border border-white/5 shadow-2xl">
+                  <div className="absolute inset-x-[-2rem] inset-y-[-2rem] z-50 bg-black/40 backdrop-blur-md rounded-[3rem] flex flex-col items-center justify-center border border-white/5 shadow-2xl">
                     <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center text-white/20 border border-white/10 mb-8">
                        <Lock size={48} className="animate-pulse" />
                     </div>

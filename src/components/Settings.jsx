@@ -67,7 +67,7 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                 <p>This action will permanently erase ALL of your data, including:</p>
                 <ul className="list-disc list-inside space-y-1 text-white/60 text-xs italic">
                   <li>Levels & Experience (XP)</li>
-                  <li>Unlocked neural avatars</li>
+                  <li>Unlocked special avatars</li>
                   <li>Game records & achievements</li>
                   <li>Custom UI configurations</li>
                 </ul>
@@ -111,7 +111,7 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
             >
               <h3 className="text-2xl font-black text-white italic tracking-tighter uppercase mb-4 text-center">Are you sure?</h3>
               <p className="text-white/40 text-[11px] font-medium leading-relaxed uppercase tracking-widest text-center italic mb-10">
-                Updating your session identity will change how you appear across the interface and leaderboards.
+                Changing your name will update how you look on the leaderboard.
               </p>
               <div className="flex flex-col gap-4">
                 <button 
@@ -139,9 +139,9 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
         <div className="max-w-[80rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="mb-16">
             <h1 className="text-7xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none mb-4">
-              SETTINGS <span className="text-white/20">CONFIG</span>
+              SETTINGS
             </h1>
-            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] italic">Manage your classroom experience</p>
+            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em] italic">Customize your experience</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
@@ -262,8 +262,8 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                   ) : activeTab === 'codes' ? (
                     <div className="p-10 rounded-[3rem] bg-black/40 border border-white/10 shadow-2xl space-y-8">
                       <div className="flex flex-col gap-2">
-                        <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">VALIDATE CODES</h3>
-                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic leading-none">Enter system keys to unlock content</p>
+                        <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">REDEEM CODES</h3>
+                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic leading-none">Enter a code to get items</p>
                       </div>
                       
                       <div className="relative group">
@@ -281,7 +281,7 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                           }}
                           className="absolute right-2 top-2 bottom-2 px-8 bg-white text-black font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-white/90 transition-all italic"
                         >
-                          VALIDATE
+                          REDEEM
                         </button>
                       </div>
                       
@@ -293,8 +293,8 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                   ) : activeTab === 'account' ? (
                     <div className="p-10 rounded-[3rem] bg-black/40 border border-white/10 shadow-2xl space-y-10">
                       <div className="flex flex-col gap-2">
-                        <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">CHANGE USERNAME</h3>
-                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic leading-none">Update your session identity</p>
+                        <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none">CHANGE NAME</h3>
+                        <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic leading-none">Update your username</p>
                       </div>
                       
                       <div className="flex flex-col gap-4">

@@ -8,20 +8,20 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
   const [tempUsername, setTempUsername] = useState(user.username);
 
   const themes = [
-    { id: 'void', name: 'VOID_PROTOCOL', primary: '#ffffff', bg: '#000000', desc: 'The original darkness.', level: 1 },
-    { id: 'black-white', name: 'MONOCHROME', primary: '#ffffff', bg: '#000000', desc: 'High contrast binary.', level: 1 },
-    { id: 'cyan', name: 'CYBERPUNK', primary: '#06b6d4', bg: '#083344', desc: 'Neon digital landscape.', level: 1 },
-    { id: 'emerald', name: 'MATRIX', primary: '#10b981', bg: '#064e3b', desc: 'Follow the white rabbit.', level: 10 },
-    { id: 'rose', name: 'VAPORWAVE', primary: '#f43f5e', bg: '#4c0519', desc: 'Aesthetic retro-future.', level: 25 },
-    { id: 'gold', name: 'ROYAL_GOLD', primary: '#fbbf24', bg: '#451a03', desc: 'Prestige and power.', isCode: true },
-    { id: 'interstellar', name: 'INTERSTELLAR', primary: '#f0f9ff', bg: '#020617', desc: 'The farthest reaches of the galaxy.', rarity: 'Transcendant' },
+    { id: 'void', name: 'VOID', primary: '#ffffff', bg: '#000000', desc: 'The original darkness.', level: 1 },
+    { id: 'black-white', name: 'MONOCHROME', primary: '#ffffff', bg: '#000000', desc: 'Simple black and white.', level: 1 },
+    { id: 'cyan', name: 'CYBERPUNK', primary: '#06b6d4', bg: '#083344', desc: 'Neon world.', level: 1 },
+    { id: 'emerald', name: 'MATRIX', primary: '#10b981', bg: '#064e3b', desc: 'Green digital world.', level: 10 },
+    { id: 'rose', name: 'VAPORWAVE', primary: '#f43f5e', bg: '#4c0519', desc: 'Retro colors.', level: 25 },
+    { id: 'gold', name: 'GOLD', primary: '#fbbf24', bg: '#451a03', desc: 'Shining like a winner.', isCode: true },
+    { id: 'interstellar', name: 'INTERSTELLAR', primary: '#f0f9ff', bg: '#020617', desc: 'High above the stars.', rarity: 'Transcendant' },
   ];
 
   const frames = [
     { id: 'obsidian', name: 'OBSIDIAN', rarity: 'Common', level: 1 },
-    { id: 'neon', name: 'NEON_PULSE', rarity: 'Rare', level: 5 },
+    { id: 'neon', name: 'NEON', rarity: 'Rare', level: 5 },
     { id: 'emerald', name: 'EMERALD', rarity: 'Rare', level: 15 },
-    { id: 'gold', name: 'ROYAL_GOLD', rarity: 'Epic', level: 30 },
+    { id: 'gold', name: 'GOLD', rarity: 'Epic', level: 30 },
   ];
 
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
@@ -44,19 +44,18 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                   className="flex items-center gap-4 mb-6"
                 >
                   <div className="w-3 h-3 bg-primary animate-pulse"></div>
-                  <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-primary">VISUAL_ENGINE // v2.1</span>
+                  <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-primary">SETTINGS</span>
                 </motion.div>
                 <h1 className="text-8xl font-black text-white uppercase tracking-tighter italic leading-none">
-                  STYLE <br />
-                  <span className="text-white/20">LABS</span>
+                  CUSTOMIZE
                 </h1>
               </div>
 
               <div className="flex flex-col gap-3">
                 {[
-                  { id: 'identity', label: 'Neural Identity', icon: User, desc: 'Avatar & Signature' },
-                  { id: 'visuals', label: 'Color Protocols', icon: Palette, desc: 'System Themes' },
-                  { id: 'frames', label: 'Neural Frames', icon: Layers, desc: 'Profile Borders' }
+                  { id: 'identity', label: 'Character', icon: User, desc: 'Avatar & Name' },
+                  { id: 'visuals', label: 'System Themes', icon: Palette, desc: 'Change Colors' },
+                  { id: 'frames', label: 'Profile Borders', icon: Layers, desc: 'Avatar Frames' }
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -97,8 +96,8 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                 >
                   <div className="xl:col-span-7 space-y-10">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">NEURAL_AVATARS</h3>
-                      <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{CHARACTERS.length} MODULES_AVAILABLE</span>
+                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">CHARACTERS</h3>
+                      <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{CHARACTERS.length} AVAILABLE</span>
                     </div>
                     
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
@@ -163,10 +162,10 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                             value={tempUsername}
                             onChange={(e) => setTempUsername(e.target.value)}
                             className="w-full bg-white/5 border-2 border-white/10 rounded-3xl px-8 py-6 text-center text-4xl font-black text-white uppercase tracking-tighter italic focus:outline-none focus:border-white/40 transition-all shadow-inner"
-                            placeholder="ENTER NEW IDENTITY..."
+                            placeholder="ENTER NEW NAME..."
                           />
                           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic">NEURAL_SIGNATURE_OVERRIDE</p>
+                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic">CHANGE USERNAME</p>
                           </div>
                         </div>
                         
@@ -176,7 +175,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                             disabled={tempUsername.trim() === user.username || !tempUsername.trim()}
                             className="px-16 py-6 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all disabled:opacity-10 disabled:scale-100 italic shadow-[0_0_50px_rgba(255,255,255,0.2)]"
                           >
-                            UPDATE_IDENTITY
+                            UPDATE NAME
                           </button>
                         </div>
 
@@ -230,7 +229,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                         
                         {isUnlocked && !isSelected && (
                           <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
-                            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20">PROTOCOL_READY</span>
+                            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20">READY</span>
                             <ChevronRight size={14} className="text-white/20 group-hover:translate-x-1 transition-transform" />
                           </div>
                         )}

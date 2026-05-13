@@ -33,9 +33,9 @@ export const CodesPage = ({ user, onRedeemCode }) => {
             >
               <Lock size={48} className="text-white/20" />
             </motion.div>
-            <h2 className="text-4xl font-black text-white italic uppercase tracking-[0.2em] mb-4">Under Development</h2>
+            <h2 className="text-4xl font-black text-white italic uppercase tracking-[0.2em] mb-4">Coming Soon</h2>
             <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em] max-w-sm text-center px-8 leading-relaxed">
-              The Access Key system is currently offline for maintenance. Security protocols will be restored in a future update.
+              This feature is currently being worked on. Check back later!
             </p>
           </div>
           
@@ -48,8 +48,8 @@ export const CodesPage = ({ user, onRedeemCode }) => {
             <Key size={32} />
           </motion.div>
           <div className="space-y-2">
-            <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic">ACCESS <span className="text-primary">KEYS</span></h1>
-            <p className="text-white/30 font-mono text-[10px] uppercase tracking-[0.4em]">DECRYPT PROTOCOLS // AUTH REQUIRED</p>
+            <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic">REDEEM <span className="text-primary">CODES</span></h1>
+            <p className="text-white/30 font-mono text-[10px] uppercase tracking-[0.4em]">ENTER CODES HERE</p>
           </div>
         </div>
 
@@ -63,7 +63,7 @@ export const CodesPage = ({ user, onRedeemCode }) => {
                 value={redeemInput}
                 onChange={(e) => setRedeemInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
-                placeholder="ENTER DECRYPTION KEY..."
+                placeholder="ENTER CODE..."
                 className="w-full bg-black/60 border-2 border-white/10 rounded-2xl px-8 py-6 text-xl font-black text-white uppercase tracking-widest focus:outline-none focus:border-primary/50 transition-all placeholder:text-white/5"
               />
               <div className="absolute top-1/2 right-6 -translate-y-1/2 flex items-center gap-2 text-white/20">
@@ -75,7 +75,7 @@ export const CodesPage = ({ user, onRedeemCode }) => {
               onClick={handleRedeem}
               className="w-full py-6 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-[0.5em] italic hover:bg-primary transition-all shadow-[0_0_50px_rgba(255,255,255,0.2)] active:scale-[0.98]"
             >
-              INITIALIZE DECRYPTION
+              SUBMIT CODE
             </button>
 
             {status && (
