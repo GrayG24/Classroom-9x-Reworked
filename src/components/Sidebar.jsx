@@ -41,6 +41,7 @@ export const Sidebar = ({
   const rawMenuItems = [
     { id: AppRoute.HOME, label: 'Home', icon: House, isReleased: true },
     { id: AppRoute.LIBRARY, label: 'Games', icon: Gamepad2, isReleased: true },
+    { id: AppRoute.SPOTIFY, label: 'Spotify', icon: Music, isReleased: true, isBroken: true },
     { id: AppRoute.SUMMER, label: 'Summer Countdown', icon: Sun, isReleased: true, accentColor: 'text-orange-400', beachBonus: true },
     { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid, isReleased: false },
     { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: false },
@@ -68,9 +69,9 @@ export const Sidebar = ({
       onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
       initial={false}
       animate={isPotatoMode ? { opacity: 1, width: isExpanded ? 280 : 88, minWidth: isExpanded ? 280 : 88 } : { 
-        width: isExpanded ? 280 : 80,
-        minWidth: isExpanded ? 280 : 80,
-        maxWidth: isExpanded ? 280 : 80,
+        width: isExpanded ? 280 : 88,
+        minWidth: isExpanded ? 280 : 88,
+        maxWidth: isExpanded ? 280 : 88,
         height: isExpanded ? 'calc(100vh - 40px)' : '600px',
         maxHeight: isExpanded ? 'calc(100vh - 40px)' : '600px',
         top: isExpanded ? '20px' : 'calc(50% - 300px)',
@@ -79,16 +80,18 @@ export const Sidebar = ({
         opacity: 1
       }}
       transition={isPotatoMode ? { duration: 0 } : { 
-        duration: 0.6,
-        ease: [0.22, 1, 0.36, 1]
+        type: "spring",
+        stiffness: 220,
+        damping: 28,
+        mass: 1.2
       }}
       className="fixed left-0 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 overflow-hidden"
       style={{ willChange: 'transform, width, height' }}
     >
       {/* Logo Section */}
-      <div className="p-8 pb-4 flex flex-col items-center w-full shrink-0">
+      <div className={`flex flex-col items-center w-full shrink-0 transition-all duration-500 h-24 ${isExpanded ? 'p-8 pb-4' : 'justify-center'}`}>
         <div 
-          className={`flex items-center gap-4 w-full h-16 ${isExpanded ? 'justify-start px-2' : 'justify-center'}`}
+          className={`flex items-center gap-4 w-full h-full ${isExpanded ? 'justify-start px-2' : 'justify-center'}`}
         >
           <motion.div 
             whileHover={{ scale: 1.05 }}
@@ -111,7 +114,7 @@ export const Sidebar = ({
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: -20, filter: 'blur(8px)' }}
                 transition={{ duration: 0.4, ease: "circOut" }}
-                className="flex flex-col overflow-visible pr-8"
+                className="flex flex-col pr-8"
               >
                 <span className="font-black text-xl tracking-tighter leading-tight italic whitespace-nowrap text-white">
                   CLASSROOM <span className="text-white/40">9X</span>
@@ -124,11 +127,12 @@ export const Sidebar = ({
       </div>
 
       {/* Navigation */}
-      <nav className={`flex-1 px-4 space-y-2 mt-6 ${isExpanded ? 'items-start' : 'items-center'} flex flex-col w-full overflow-y-auto overflow-x-hidden scrollbar-hide`}>
+      <nav className={`flex-1 space-y-2 mt-6 ${isExpanded ? 'px-4 items-start' : 'px-0 items-center'} flex flex-col w-full overflow-y-auto overflow-x-hidden scrollbar-hide`}>
         {menuItems.map((item) => {
           const isActive = currentView === item.id;
           const isRed = 'color' in item && item.color === 'text-rose-500';
           const isComingSoon = item.isReleased === false;
+          const isBroken = 'isBroken' in item && item.isBroken === true;
           
           return (
             <motion.button
@@ -137,19 +141,19 @@ export const Sidebar = ({
               animate={{
                 width: isExpanded ? "100%" : "3.5rem",
                 borderRadius: isExpanded ? "1.5rem" : "1.2rem",
-                opacity: isComingSoon && !isActive ? 0.6 : 1
+                opacity: (isComingSoon && !isActive) || (isBroken && !isActive) ? 0.6 : 1
               }}
               transition={{
-                duration: 0.3,
-                ease: [0.22, 1, 0.36, 1]
+                duration: 0.35,
+                ease: [0.16, 1, 0.3, 1]
               }}
               whileHover={{ 
-                scale: isComingSoon && !isActive ? 1.01 : 1.04,
+                scale: (isComingSoon && !isActive) || (isBroken && !isActive) ? 1.01 : 1.04,
                 x: isExpanded ? 8 : 0
               }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (!isComingSoon || user.isAdmin) {
+                if ((!isComingSoon && !isBroken) || user.isAdmin) {
                   onViewChange(item.id);
                 }
               }}
@@ -157,7 +161,7 @@ export const Sidebar = ({
                 isActive 
                   ? `${isRed ? 'bg-rose-500 text-white shadow-[0_0_30px_rgba(244,63,94,0.3)]' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-300 shadow-[0_10px_30px_rgba(34,211,238,0.4)] border-b-2 border-yellow-300' : 'bg-white/20 text-white shadow-[0_0_40px_rgba(255,255,255,0.1)] border border-white/20'} font-black italic` 
                   : `${isRed ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-100 shadow-lg border border-white/20' : 'text-white/40 hover:text-white hover:bg-white/5'}`
-              } ${isExpanded ? 'px-4' : 'justify-center mx-auto'} ${isComingSoon && !isActive ? 'cursor-not-allowed grayscale' : ''}`}
+              } ${(isComingSoon || isBroken) && !isActive ? 'cursor-not-allowed grayscale' : ''} ${isExpanded ? 'px-4' : 'justify-center'}`}
             >
               {item.beachBonus && (
                  <div className="absolute inset-0 opacity-40 pointer-events-none overflow-hidden">
@@ -192,6 +196,9 @@ export const Sidebar = ({
                       {isComingSoon && !isActive && (
                         <span className="text-[6px] font-black tracking-widest text-white/40 -mt-0.5">COMING SOON</span>
                       )}
+                      {isBroken && !isActive && (
+                        <span className="text-[6px] font-black tracking-widest text-rose-500 -mt-0.5">BROKEN</span>
+                      )}
                     </motion.div>
                   )}
               </AnimatePresence>
@@ -200,11 +207,11 @@ export const Sidebar = ({
         })}
       </nav>
 
-      {/* Profile Section - LUXURY REWORK */}
-      <div className={`p-4 mt-auto border-t border-white/10 flex flex-col gap-4 ${isExpanded ? 'items-start' : 'items-center'} w-full shrink-0`}>
+      {/* Profile Section */}
+      <div className={`mt-auto border-t border-white/10 flex flex-col gap-4 ${isExpanded ? 'p-4 items-start' : 'p-4 items-center'} w-full shrink-0 transition-all duration-300`}>
         <motion.button 
           onClick={onProfileClick}
-          className={`w-full flex items-center transition-all group overflow-hidden relative ${isExpanded ? 'gap-4 p-2.5 rounded-2xl bg-white/[0.03] border border-white/5' : 'justify-center p-0 w-12 h-12 rounded-xl bg-transparent border-transparent'} hover:bg-white/10 hover:border-white/20`}
+          className={`w-full flex items-center transition-all group overflow-hidden relative ${isExpanded ? 'gap-4 p-2.5 rounded-2xl bg-white/[0.03] border border-white/5' : 'justify-center p-0 w-12 h-12 rounded-xl bg-white/[0.05] border border-white/10'} hover:bg-white/10 hover:border-white/20`}
         >
           {isExpanded && <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>}
           
@@ -255,7 +262,7 @@ export const Sidebar = ({
 
         <div className={`flex flex-col gap-2 w-full ${isExpanded ? 'px-1' : 'items-center'}`}>
           <div 
-            className={`flex items-center transition-all bg-white/[0.02] border border-white/5 shadow-inner ${isExpanded ? 'gap-3 px-3 py-2.5 rounded-xl w-full' : 'w-10 flex-col justify-center h-auto min-h-12 py-2 px-0 rounded-xl'}`}
+            className={`flex items-center transition-all bg-white/[0.02] border border-white/5 shadow-inner ${isExpanded ? 'gap-3 px-3 py-2.5 rounded-xl w-full' : 'w-12 flex-col justify-center h-auto min-h-12 py-2 px-0 rounded-xl'}`}
           >
             <AnimatePresence mode="wait" initial={false}>
               {isExpanded ? (

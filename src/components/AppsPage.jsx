@@ -38,14 +38,15 @@ export const AppsPage = ({ onToggleChat }) => {
       action: onToggleChat
     },
     {
-      id: 'music',
-      name: 'Vapor Music',
+      id: 'spotify',
+      name: 'Spotify',
       icon: Music,
-      description: 'Listen to lo-fi and chill music.',
+      description: 'This app is currently broken and unavailable.',
       category: 'MUSIC',
-      status: 'STABLE',
+      status: 'BROKEN',
       version: '1.2.4',
-      action: () => window.dispatchEvent(new CustomEvent('toggle-vapor-music', { detail: { fullScreen: true } }))
+      disabled: true,
+      action: () => window.dispatchEvent(new CustomEvent('toggle-spotify-player', { detail: { fullScreen: true } }))
     },
   ];
 

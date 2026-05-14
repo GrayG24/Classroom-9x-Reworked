@@ -97,7 +97,7 @@ const SimpleGameCard = ({ game, isFavorite, isPinned, onToggleFavorite, onToggle
   return (
     <motion.div
       whileHover={{ y: -12, scale: 1.02 }}
-      className="group relative aspect-[16/10] rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all cursor-pointer shadow-2xl"
+      className="group relative aspect-[16/10] rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all cursor-pointer shadow-2xl will-change-transform"
       onClick={onPlay}
     >
       <img

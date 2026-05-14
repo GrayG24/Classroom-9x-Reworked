@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Waves, Palmtree, Shell } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const SummerCountdown = ({ user }) => {
       const now = new Date();
       const difference = targetDate - now;
 
-      // For melting logic: assume summer countdown starts May 1st
+      // May 1st start date for overall progress
       const startDate = new Date('2026-05-01T00:00:00-04:00');
       const totalDuration = targetDate - startDate;
       const elapsed = now - startDate;
@@ -38,11 +38,16 @@ const SummerCountdown = ({ user }) => {
         });
       } else {
         setIsFinished(false);
+        const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const h = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((difference / 1000 / 60) % 60);
+        const s = Math.floor((difference / 1000) % 60);
+        
         setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60)
+          days: d,
+          hours: h,
+          minutes: m,
+          seconds: s
         });
       }
     };

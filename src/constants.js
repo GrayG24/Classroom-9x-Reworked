@@ -11,7 +11,8 @@ export const AppRoute = {
   CATEGORY: 'category',
   ADMIN: 'admin',
   CODES: 'codes',
-  SUMMER: 'summer'
+  SUMMER: 'summer',
+  SPOTIFY: 'spotify'
 };
 
 export const CATEGORIES = [

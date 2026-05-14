@@ -5,16 +5,23 @@ import './index.css';
 
 // Suppress benign sandbox-specific WebSocket errors that do not affect the app's functionality
 window.addEventListener('unhandledrejection', (event) => {
-  if (event.reason && (
-    event.reason.message?.includes('WebSocket') || 
-    event.reason.message?.includes('websocket')
-  )) {
+  const message = event.reason?.message || String(event.reason || '');
+  if (
+    message.includes('WebSocket') || 
+    message.includes('websocket') ||
+    message.includes('WebSocket closed without opened')
+  ) {
     event.preventDefault();
   }
 });
 
 window.addEventListener('error', (event) => {
-  if (event.message?.includes('WebSocket') || event.message?.includes('websocket')) {
+  const message = event.message || '';
+  if (
+    message.includes('WebSocket') || 
+    message.includes('websocket') ||
+    message.includes('WebSocket closed without opened')
+  ) {
     event.preventDefault();
   }
 });

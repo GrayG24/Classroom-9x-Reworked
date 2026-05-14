@@ -1,48 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { House, Gamepad2, LayoutGrid, Globe, Shield, Palette, Settings as SettingsIcon, User, Users, Music, Key } from 'lucide-react';
+import { House, Gamepad2, LayoutGrid, Globe, Shield, Palette, Settings as SettingsIcon, User, Users, Music, Key, Waves } from 'lucide-react';
 import { AppRoute } from '../constants'; // Changed from types to constants
 import { FPSCounter } from './FPSCounter';
-import { VaporMusicPlayer } from './VaporMusicPlayer';
+import { SpotifyWindow } from './SpotifyWindow';
 import { Sidebar } from './Sidebar';
 
 const WaveTransition = ({ isVisible }) => (
-  <AnimatePresence>
+  <AnimatePresence mode="wait">
     {isVisible && (
       <motion.div
-        initial={{ y: '100%', clipPath: 'inset(0 0 100% 0)' }}
-        animate={{ y: '-100%', clipPath: 'inset(0 0 0 0)' }}
-        exit={{ y: '-100%', opacity: 0 }}
+        initial={{ y: '100%' }}
+        animate={{ y: '-130%' }}
+        exit={{ opacity: 0 }}
         transition={{ 
-          duration: 2.2, 
-          ease: [0.43, 0.13, 0.23, 0.96] 
+          duration: 0.8, 
+          ease: [0.65, 0, 0.35, 1] 
         }}
         className="fixed inset-0 z-[1000] pointer-events-none"
       >
-        <div className="absolute inset-0 bg-white flex flex-col justify-center items-center">
-           <motion.div
-             initial={{ scale: 0.8, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             transition={{ delay: 0.5, duration: 1 }}
-             className="flex flex-col items-center gap-8"
-           >
-              <div className="w-24 h-2 bg-theme/20 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '100%' }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                  className="w-full h-full bg-theme"
-                />
-              </div>
-              <span className="text-[10px] font-black tracking-[1em] text-black/40 italic">INITIALIZING SUMMER CORE</span>
-           </motion.div>
+        {/* Main Water Body */}
+        <div className="absolute inset-x-0 top-0 h-[100vh] bg-gradient-to-b from-cyan-400 via-blue-500 to-transparent flex flex-col justify-center items-center">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0, y: 50 }}
+              animate={{ scale: 1.2, opacity: 1, y: 0 }}
+              transition={{ delay: 0.05, duration: 0.3, type: "spring" }}
+              className="flex flex-col items-center gap-2"
+            >
+               <Waves className="text-white w-16 h-16 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" />
+               <span className="text-[14px] font-black tracking-[1.5em] text-white italic drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)] ml-4">SPLASH!</span>
+            </motion.div>
         </div>
-        <div className="absolute top-0 inset-x-0 h-96 -translate-y-[90%] pointer-events-none">
-           <svg viewBox="0 0 800 400" className="w-full h-full fill-white" preserveAspectRatio="none">
-             <path d="M 0 200 C 200 400 600 0 800 200 V 400 H 0 Z" />
-             <path d="M 0 100 C 300 200 500 0 800 100 V 200 H 0 Z" opacity="0.5" />
+
+        {/* Wave Head */}
+        <div className="absolute top-0 inset-x-0 h-48 -translate-y-full">
+           <svg viewBox="0 0 800 200" className="w-full h-full fill-cyan-400" preserveAspectRatio="none">
+             <path d="M 0 100 C 150 -50 250 250 400 100 C 550 -50 650 250 800 100 V 200 H 0 Z" />
            </svg>
         </div>
+        
+        {/* Secondary Foam Layer */}
+        <div className="absolute top-0 inset-x-0 h-40 -translate-y-full opacity-70">
+           <svg viewBox="0 0 800 200" className="w-full h-full fill-white" preserveAspectRatio="none">
+             <path d="M 0 100 C 100 180 300 20 400 100 C 500 180 700 20 800 100 V 200 H 0 Z" />
+           </svg>
+        </div>
+
+        {/* Splash Drops - More explosive */}
+        {[...Array(12)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ scale: 0, x: '50vw', y: '100vh' }}
+            animate={{ 
+              scale: [0, 2.5, 0],
+              x: `${Math.random() * 100}vw`,
+              y: '-30vh'
+            }}
+            transition={{ 
+              duration: 0.5 + Math.random() * 0.3, 
+              delay: i * 0.02,
+              ease: "easeOut"
+            }}
+            className="absolute w-12 h-12 bg-white/50 rounded-full blur-xl shadow-2xl"
+          />
+        ))}
       </motion.div>
     )}
   </AnimatePresence>
@@ -64,7 +85,7 @@ export const Layout = ({
   useEffect(() => {
     if (currentView === AppRoute.SUMMER && prevView !== AppRoute.SUMMER) {
       setShowWave(true);
-      const timer = setTimeout(() => setShowWave(false), 2000);
+      const timer = setTimeout(() => setShowWave(false), 800);
       return () => clearTimeout(timer);
     }
     setPrevView(currentView);
@@ -99,13 +120,14 @@ export const Layout = ({
         setIsVaporMusicFullScreen(prev => !prev);
       }
     };
-    window.addEventListener('toggle-vapor-music', handleToggle);
-    return () => window.removeEventListener('toggle-vapor-music', handleToggle);
+    window.addEventListener('toggle-spotify-player', handleToggle);
+    return () => window.removeEventListener('toggle-spotify-player', handleToggle);
   }, []);
 
   const navItems = [
     { id: AppRoute.HOME, icon: House, label: 'Home' },
     { id: AppRoute.LIBRARY, icon: Gamepad2, label: 'Games' },
+    { id: AppRoute.SPOTIFY, icon: Music, label: 'Spotify' },
     { id: AppRoute.APPS, icon: LayoutGrid, label: 'Apps' },
     { id: AppRoute.CODES, icon: Key, label: 'Codes' },
     { id: AppRoute.PROXY, icon: Globe, label: 'Proxy' },
@@ -218,12 +240,14 @@ export const Layout = ({
         </div>
       )}
 
-      <VaporMusicPlayer 
-        isOpen={isVaporMusicOpen} 
-        onClose={() => setIsVaporMusicOpen(false)} 
-        isFullScreen={isVaporMusicFullScreen}
-        onToggleFullScreen={() => setIsVaporMusicFullScreen(!isVaporMusicFullScreen)}
-      />
+      {currentView !== AppRoute.SPOTIFY && (
+        <SpotifyWindow 
+          isOpen={isVaporMusicOpen} 
+          onClose={() => setIsVaporMusicOpen(false)} 
+          isFullScreen={isVaporMusicFullScreen}
+          onToggleFullScreen={() => setIsVaporMusicFullScreen(!isVaporMusicFullScreen)}
+        />
+      )}
     </div>
   );
 };

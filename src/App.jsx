@@ -19,6 +19,7 @@ import { AppsPage } from './components/AppsPage';
 import { ProxyPage } from './components/ProxyPage';
 import { CodesPage } from './components/CodesPage';
 import SummerCountdown from './components/SummerCountdown';
+import MusicPage from './components/MusicPage';
 import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { InteractiveBackground } from './components/InteractiveBackground';
@@ -1030,7 +1031,9 @@ const App = () => {
     return () => {
       if (wsInstance) {
         wsInstance.onclose = null;
-        wsInstance.close();
+        if (wsInstance.readyState === WebSocket.OPEN || wsInstance.readyState === WebSocket.CONNECTING) {
+          wsInstance.close();
+        }
       }
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
@@ -1808,17 +1811,20 @@ const App = () => {
       return;
     }
     
-    setUser(prev => ({ ...prev, username: newName }));
+    setUser(prev => ({ 
+      ...prev, 
+      username: newName,
+      hasSetProfile: true 
+    }));
     addNotification('Identity Updated', `New username: ${newName}`, 'system', <Star className="text-theme" />);
   };
 
   const handleResetProgress = () => {
     setUser({
       ...DEFAULT_USER,
-      username: user.username, // Keep username if they want? Or full reset? 
-      // User said "permanently erase ALL of your data", so let's do a full reset but maybe keep the username they just set?
-      // Actually, DEFAULT_USER has 'Player', so let's just reset everything.
-      uid: user.uid // Keep UID for consistency if needed, but they said "ALL of your data"
+      username: user.username,
+      hasSetProfile: true, // Keep profile status so they don't have to re-enter name
+      uid: user.uid 
     });
     setCurrentView(AppRoute.HOME);
     addNotification('System Reset', 'All progress has been erased.', 'error', <Trash2 className="text-rose-500" />);
@@ -1836,7 +1842,11 @@ const App = () => {
     }
     
     setInitialModalError(null);
-    setUser(prev => ({ ...prev, username: name, hasSetProfile: true }));
+    setUser(prev => {
+      const newUser = { ...prev, username: name, hasSetProfile: true };
+      localStorage.setItem('classroom9x_local_profile_v4', JSON.stringify(newUser));
+      return newUser;
+    });
     setShowInitialModal(false);
   };
 
@@ -1888,6 +1898,7 @@ const App = () => {
         );
       case AppRoute.SETTINGS: return <Settings user={user} onUpdateSettings={updateSettings} onSetTheme={setTheme} onRedeemCode={redeemCode} onResetProgress={handleResetProgress} onUpdateUsername={handleUpdateUsername} />;
       case AppRoute.SUMMER: return <SummerCountdown user={user} />;
+      case AppRoute.SPOTIFY: return <MusicPage />;
       case AppRoute.LEADERBOARD: 
         if (!user.isAdmin) return <LockedPage title="Leaderboard" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return <Leaderboard user={user} onPlayerClick={setSelectedPlayer} leaderboardData={leaderboardData} />;
