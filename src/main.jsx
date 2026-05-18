@@ -5,28 +5,29 @@ import './index.css';
 
 // Suppress benign sandbox-specific WebSocket errors that do not affect the app's functionality
 window.addEventListener('unhandledrejection', (event) => {
-  const message = event.reason?.message || String(event.reason || '');
+  const reason = event.reason;
+  const message = (reason?.message || String(reason || '')).toLowerCase();
   if (
-    message.includes('WebSocket') || 
-    message.includes('websocket') ||
-    message.includes('WebSocket closed without opened') ||
-    message.includes('failed to connect to websocket')
+    message.includes('websocket') || 
+    message.includes('closed without opened') ||
+    message.includes('failed to connect') ||
+    message.includes('sockjs-node')
   ) {
+    event.stopImmediatePropagation();
     event.preventDefault();
-    event.stopPropagation();
   }
 }, true);
 
 window.addEventListener('error', (event) => {
-  const message = event.message || '';
+  const message = (event.message || '').toLowerCase();
   if (
-    message.includes('WebSocket') || 
-    message.includes('websocket') ||
-    message.includes('WebSocket closed without opened') ||
-    message.includes('failed to connect to websocket')
+    message.includes('websocket') || 
+    message.includes('closed without opened') ||
+    message.includes('failed to connect') ||
+    message.includes('sockjs-node')
   ) {
+    event.stopImmediatePropagation();
     event.preventDefault();
-    event.stopPropagation();
   }
 }, true);
 
