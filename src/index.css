@@ -519,16 +519,6 @@ html, body {
   100% { background-position: 0% 50%; }
 }
 
-.animate-rainbow-bg {
-  animation: rainbow-bg-alt 3s linear infinite;
-  background-size: 200% auto;
-}
-
-@keyframes rainbow-bg-alt {
-  0% { background-position: 0% center; }
-  100% { background-position: -200% center; }
-}
-
 /* Tilt Cards */
 .proto-tilt-wrap {
   perspective: 1200px;

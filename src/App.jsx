@@ -25,7 +25,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { InteractiveBackground } from './components/InteractiveBackground';
 import { GameView } from './components/GameView';
 import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play, Waves, ChevronRight, Pin } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from 'firebase/auth';

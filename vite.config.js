@@ -10,8 +10,9 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    hmr: {
-      overlay: false
+    hmr: false, // Explicitly disable HMR to prevent WebSocket connection attempts in the sandbox
+    watch: {
+      usePolling: true
     }
   }
 });

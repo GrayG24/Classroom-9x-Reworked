@@ -71,9 +71,11 @@ export const Tilt = ({ children, options = {}, className = '', disabled = false 
       const x = (e.clientX - left) / width;
       const y = (e.clientY - top) / height;
 
-      // Flip signs for "tilt towards" behavior
-      const tiltX = ((x * defaultOptions.max - defaultOptions.max / 2) * -1).toFixed(2);
-      const tiltY = ((defaultOptions.max / 2 - y * defaultOptions.max) * -1).toFixed(2);
+      // Tilt towards behavior:
+      // High X (right) -> rotateY should be negative to move right side towards viewer
+      // High Y (bottom) -> rotateX should be negative to move bottom side towards viewer
+      const tiltX = (defaultOptions.max / 2 - x * defaultOptions.max).toFixed(2);
+      const tiltY = (defaultOptions.max / 2 - y * defaultOptions.max).toFixed(2);
 
       el.style.transform = `perspective(${defaultOptions.perspective}px) rotateX(${tiltY}deg) rotateY(${tiltX}deg) scale3d(${defaultOptions.scale}, ${defaultOptions.scale}, ${defaultOptions.scale})`;
       

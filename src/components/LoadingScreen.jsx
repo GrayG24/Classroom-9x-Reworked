@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, PerspectiveCamera } from '@react-three/drei';
-import * as THREE from 'three';
+import { StaticDrawUsage, AdditiveBlending, DoubleSide } from 'three';
 
 const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false }) => {
   const meshRef = useRef();
@@ -24,9 +24,12 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
     }
   }, [onWitnessed, forceTrigger]);
 
-  useFrame((state) => {
+  const startTime = useRef(Date.now());
+
+  useFrame(() => {
     if (!active || !meshRef.current) return;
     
+    const elapsedTime = (Date.now() - startTime.current) / 1000;
     const speed = 1.2; // FASTER
     meshRef.current.position.x += speed; 
     meshRef.current.position.y -= speed * 0.4;
@@ -37,7 +40,7 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
     }
 
     if (meshRef.current.children[1]) {
-      meshRef.current.children[1].intensity = 800 + Math.sin(state.clock.elapsedTime * 30) * 300;
+      meshRef.current.children[1].intensity = 800 + Math.sin(elapsedTime * 30) * 300;
     }
 
     // Impact detection
@@ -81,8 +84,10 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
 const Singularity = () => {
   const meshRef = useRef();
   
-  useFrame((state) => {
-    const time = state.clock.elapsedTime;
+  const startTime = useRef(Date.now());
+  
+  useFrame(() => {
+    const time = (Date.now() - startTime.current) / 1000;
     if (meshRef.current) {
       meshRef.current.rotation.z = time * 0.2;
       meshRef.current.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
@@ -114,8 +119,10 @@ const Particles = ({ count = 2000 }) => {
     return pos;
   });
 
-  useFrame((state) => {
-    const time = state.clock.elapsedTime;
+  const startTime = useRef(Date.now());
+
+  useFrame(() => {
+    const time = (Date.now() - startTime.current) / 1000;
     if (points.current) {
         points.current.rotation.y = time * 0.03;
         points.current.rotation.z = time * 0.01;
@@ -130,7 +137,7 @@ const Particles = ({ count = 2000 }) => {
           count={positions.length / 3}
           array={positions}
           itemSize={3}
-          usage={THREE.StaticDrawUsage}
+          usage={StaticDrawUsage}
         />
       </bufferGeometry>
       <pointsMaterial 
@@ -139,7 +146,7 @@ const Particles = ({ count = 2000 }) => {
         transparent 
         opacity={0.3} 
         sizeAttenuation 
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </points>
   );
@@ -159,7 +166,7 @@ const Shockwave = ({ active }) => {
   return (
     <mesh ref={meshRef} rotation={[Math.PI / 2, 0, 0]}>
       <ringGeometry args={[1, 1.2, 64]} />
-      <meshBasicMaterial color="#ffffff" transparent opacity={1} side={THREE.DoubleSide} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={1} side={DoubleSide} />
     </mesh>
   );
 };

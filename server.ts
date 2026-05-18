@@ -14,10 +14,14 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const DB_PATH = 'leaderboard.db';
 let db_sqlite: any = null;
-try {
-  db_sqlite = new Database('leaderboard.db');
-  
+
+function initDatabase() {
+  try {
+    db_sqlite = new Database(DB_PATH);
+    
+    // Create table with all necessary columns
     db_sqlite.exec(`
       CREATE TABLE IF NOT EXISTS leaderboard (
         uid TEXT PRIMARY KEY,
@@ -30,50 +34,39 @@ try {
         frameId TEXT,
         unlockedBadges TEXT,
         currentTheme TEXT,
-        last_active_ms INTEGER,
+        last_active_ms INTEGER DEFAULT 0,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Migration: Add last_active_ms if it doesn't exist (for existing databases)
+    // Migration helper for existing databases missing last_active_ms
     try {
       db_sqlite.prepare("SELECT last_active_ms FROM leaderboard LIMIT 1").get();
     } catch (e) {
-      console.log('Adding last_active_ms column to leaderboard table...');
+      console.log('Migrating: Adding last_active_ms column to leaderboard table...');
       db_sqlite.exec("ALTER TABLE leaderboard ADD COLUMN last_active_ms INTEGER DEFAULT 0");
     }
-  console.log('Successfully connected to SQLite database');
-} catch (err: any) {
-  console.error('Failed to initialize SQLite database:', err);
-  // If database is malformed, try to delete and recreate it
-  if (err.message && err.message.includes('malformed')) {
-    console.log('Database is malformed, attempting to delete and recreate...');
-    try {
-      if (fs.existsSync('leaderboard.db')) {
-        fs.unlinkSync('leaderboard.db');
-        db_sqlite = new Database('leaderboard.db');
-        db_sqlite.exec(`
-          CREATE TABLE IF NOT EXISTS leaderboard (
-            uid TEXT PRIMARY KEY,
-            username TEXT,
-            level INTEGER,
-            score INTEGER,
-            characterId TEXT,
-            featuredBadgeId TEXT,
-            gamesPlayed INTEGER,
-            frameId TEXT,
-            unlockedBadges TEXT,
-            currentTheme TEXT,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-          )
-        `);
-        console.log('Database recreated successfully');
+
+    console.log('Successfully connected to SQLite database');
+  } catch (err: any) {
+    console.error('Failed to initialize SQLite database:', err);
+    
+    if (err.message && err.message.includes('malformed')) {
+      console.log('Database is malformed, attempting recovery...');
+      try {
+        if (fs.existsSync(DB_PATH)) {
+          fs.unlinkSync(DB_PATH);
+          console.log('Deleted corrupted database file.');
+          initDatabase(); // Recursive retry
+        }
+      } catch (recoveryErr) {
+        console.error('Critical failure during database recovery:', recoveryErr);
       }
-    } catch (recreateErr) {
-      console.error('Failed to recreate database:', recreateErr);
     }
   }
 }
+
+initDatabase();
 
 const PORT = 3000;
 

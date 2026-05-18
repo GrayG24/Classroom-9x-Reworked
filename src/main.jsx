@@ -9,22 +9,26 @@ window.addEventListener('unhandledrejection', (event) => {
   if (
     message.includes('WebSocket') || 
     message.includes('websocket') ||
-    message.includes('WebSocket closed without opened')
+    message.includes('WebSocket closed without opened') ||
+    message.includes('failed to connect to websocket')
   ) {
     event.preventDefault();
+    event.stopPropagation();
   }
-});
+}, true);
 
 window.addEventListener('error', (event) => {
   const message = event.message || '';
   if (
     message.includes('WebSocket') || 
     message.includes('websocket') ||
-    message.includes('WebSocket closed without opened')
+    message.includes('WebSocket closed without opened') ||
+    message.includes('failed to connect to websocket')
   ) {
     event.preventDefault();
+    event.stopPropagation();
   }
-});
+}, true);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
