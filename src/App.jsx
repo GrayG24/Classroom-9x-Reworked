@@ -1632,7 +1632,7 @@ const App = () => {
   ]);
 
   const addExpAndTrackPlay = (game) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+    if (ws.current && typeof window !== 'undefined' && window.WebSocket && ws.current.readyState === window.WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ type: 'GAME_START', gameId: game.id, gameName: game.title }));
     }
     setUser(prev => {

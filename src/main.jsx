@@ -7,26 +7,45 @@ import './index.css';
 window.addEventListener('unhandledrejection', (event) => {
   const reason = event.reason;
   const message = (reason?.message || String(reason || '')).toLowerCase();
-  if (
+  
+  const isWebsocketError = 
     message.includes('websocket') || 
     message.includes('closed without opened') ||
     message.includes('failed to connect') ||
-    message.includes('sockjs-node')
-  ) {
+    message.includes('sockjs-node') ||
+    message.includes('connection refused') ||
+    message.includes('connection closed');
+
+  if (isWebsocketError) {
     event.stopImmediatePropagation();
     event.preventDefault();
+    console.warn('Suppressed benign WebSocket rejection:', message);
   }
 }, true);
 
 window.addEventListener('error', (event) => {
   const message = (event.message || '').toLowerCase();
-  if (
+  
+  const isWebsocketError = 
     message.includes('websocket') || 
     message.includes('closed without opened') ||
     message.includes('failed to connect') ||
-    message.includes('sockjs-node')
-  ) {
+    message.includes('sockjs-node') ||
+    message.includes('connection refused') ||
+    message.includes('connection closed');
+
+  if (isWebsocketError) {
     event.stopImmediatePropagation();
+    event.preventDefault();
+    console.warn('Suppressed benign WebSocket error:', message);
+  }
+}, true);
+
+// Pre-emptively handle potential sockjs and vite hmr errors
+window.addEventListener('rejectionhandled', (event) => {
+  const reason = event.reason;
+  const message = (reason?.message || String(reason || '')).toLowerCase();
+  if (message.includes('websocket') || message.includes('failed to connect')) {
     event.preventDefault();
   }
 }, true);
