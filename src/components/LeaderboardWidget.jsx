@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { Trophy, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Crown, Palette } from 'lucide-react';
 
 export const LeaderboardWidget = ({ leaderboardData, onPlayerClick }) => {
-  const topPlayers = (leaderboardData || []).slice(0, 5);
+  const topPlayers = leaderboardData || [];
 
   return (
     <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl shadow-2xl relative group">

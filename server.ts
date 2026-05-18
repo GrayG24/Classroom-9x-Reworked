@@ -18,21 +18,30 @@ let db_sqlite: any = null;
 try {
   db_sqlite = new Database('leaderboard.db');
   
-  db_sqlite.exec(`
-    CREATE TABLE IF NOT EXISTS leaderboard (
-      uid TEXT PRIMARY KEY,
-      username TEXT,
-      level INTEGER,
-      score INTEGER,
-      characterId TEXT,
-      featuredBadgeId TEXT,
-      gamesPlayed INTEGER,
-      frameId TEXT,
-      unlockedBadges TEXT,
-      currentTheme TEXT,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    db_sqlite.exec(`
+      CREATE TABLE IF NOT EXISTS leaderboard (
+        uid TEXT PRIMARY KEY,
+        username TEXT,
+        level INTEGER,
+        score INTEGER,
+        characterId TEXT,
+        featuredBadgeId TEXT,
+        gamesPlayed INTEGER,
+        frameId TEXT,
+        unlockedBadges TEXT,
+        currentTheme TEXT,
+        last_active_ms INTEGER,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Migration: Add last_active_ms if it doesn't exist (for existing databases)
+    try {
+      db_sqlite.prepare("SELECT last_active_ms FROM leaderboard LIMIT 1").get();
+    } catch (e) {
+      console.log('Adding last_active_ms column to leaderboard table...');
+      db_sqlite.exec("ALTER TABLE leaderboard ADD COLUMN last_active_ms INTEGER DEFAULT 0");
+    }
   console.log('Successfully connected to SQLite database');
 } catch (err: any) {
   console.error('Failed to initialize SQLite database:', err);
@@ -96,9 +105,10 @@ async function startServer() {
     try {
       if (db_sqlite) {
         const countRow = db_sqlite.prepare('SELECT count(*) as count FROM leaderboard').get();
-        const activeCount = clients.size || 1;
+        const activeCountRow = db_sqlite.prepare('SELECT count(*) as count FROM leaderboard WHERE last_active_ms > ?').get(Date.now() - 300000); // Active in last 5 mins
+        
         res.json({ 
-          activeUsers: activeCount,
+          activeUsers: Math.max(activeCountRow.count, 1),
           totalPlayers: countRow.count
         });
       } else {
@@ -133,8 +143,8 @@ async function startServer() {
     if (db_sqlite) {
       try {
         const stmt = db_sqlite.prepare(`
-          INSERT INTO leaderboard (uid, username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO leaderboard (uid, username, level, score, characterId, featuredBadgeId, gamesPlayed, frameId, unlockedBadges, currentTheme, last_active_ms)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(uid) DO UPDATE SET
             username = excluded.username,
             level = excluded.level,
@@ -145,6 +155,7 @@ async function startServer() {
             frameId = excluded.frameId,
             unlockedBadges = excluded.unlockedBadges,
             currentTheme = excluded.currentTheme,
+            last_active_ms = excluded.last_active_ms,
             updated_at = CURRENT_TIMESTAMP
         `);
         stmt.run(
@@ -157,7 +168,8 @@ async function startServer() {
           entry.gamesPlayed, 
           entry.frameId, 
           JSON.stringify(entry.unlockedBadges || []), 
-          entry.currentTheme
+          entry.currentTheme,
+          entry.lastActive || Date.now()
         );
         res.json({ success: true });
       } catch (err: any) {

@@ -169,6 +169,8 @@ export const AdminPanel = ({ user, onClose }) => {
             type: eventId,
             senderUid: user.uid,
             senderName: user.username,
+            character: user.currentCharacter,
+            frame: user.currentFrame,
             timestamp: serverTimestamp(),
             target: 'GLOBAL'
           });

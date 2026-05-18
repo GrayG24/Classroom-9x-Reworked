@@ -10,7 +10,7 @@ export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
     >
       <div className="aspect-[3/4] relative overflow-hidden rounded-t-[2rem]" onClick={() => onClick(game)}>
         <img 
-          src={game.thumbnail} 
+          src={game.thumbnail || null} 
           alt={game.title} 
           className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
           referrerPolicy="no-referrer"

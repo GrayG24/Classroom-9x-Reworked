@@ -4,8 +4,8 @@ export const Tilt = ({ children, options = {}, className = '', disabled = false 
   const tilt = useRef(null);
 
   const defaultOptions = useMemo(() => ({
-    max: 15,
-    perspective: 1000,
+    max: 20,
+    perspective: 1200,
     scale: 1.02,
     speed: 1000,
     transition: true,
@@ -19,31 +19,32 @@ export const Tilt = ({ children, options = {}, className = '', disabled = false 
     const el = tilt.current;
     if (!el || disabled) return;
 
+    // Use the main container for everything to ensure consistency
     el.style.transformStyle = 'preserve-3d';
     el.style.willChange = 'transform';
-    el.parentElement.style.perspective = `${defaultOptions.perspective}px`;
-    el.parentElement.style.transformStyle = 'preserve-3d';
-
+    
     // Create glare elements if requested
     let glareEl;
     if (defaultOptions.glare) {
       glareEl = document.createElement('div');
-      glareEl.className = 'proto-glare';
+      glareEl.className = 'proto-tilt-shine';
       glareEl.style.cssText = `
         position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 150%;
-        height: 150%;
-        background: radial-gradient(circle at center, rgba(255,255,255,0.2) 0%, transparent 70%);
-        transform: translate(-50%, -50%);
+        top: 0;
+        left: 0;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
         pointer-events: none;
-        z-index: 10;
+        z-index: 1000;
         opacity: 0;
         transition: opacity ${defaultOptions.speed}ms ${defaultOptions.easing};
+        transform: translate(-50%, -50%);
+        will-change: transform, opacity;
       `;
-      el.style.position = el.style.position || 'relative';
-      el.style.overflow = el.style.overflow || 'hidden';
+      
+      // Glare Setup
+      el.style.position = 'relative';
       el.appendChild(glareEl);
     }
 
@@ -70,15 +71,16 @@ export const Tilt = ({ children, options = {}, className = '', disabled = false 
       const x = (e.clientX - left) / width;
       const y = (e.clientY - top) / height;
 
-      const tiltX = (x * defaultOptions.max - defaultOptions.max / 2).toFixed(2);
-      const tiltY = (defaultOptions.max / 2 - y * defaultOptions.max).toFixed(2);
+      // Flip signs for "tilt towards" behavior
+      const tiltX = ((x * defaultOptions.max - defaultOptions.max / 2) * -1).toFixed(2);
+      const tiltY = ((defaultOptions.max / 2 - y * defaultOptions.max) * -1).toFixed(2);
 
       el.style.transform = `perspective(${defaultOptions.perspective}px) rotateX(${tiltY}deg) rotateY(${tiltX}deg) scale3d(${defaultOptions.scale}, ${defaultOptions.scale}, ${defaultOptions.scale})`;
       
       if (glareEl) {
-        const glareOpacity = ((x + y) / 2 * (defaultOptions['max-glare'] || 0.4)).toFixed(2);
-        glareEl.style.opacity = glareOpacity;
-        glareEl.style.transform = `translate(-50%, -50%) translate(${(x - 0.5) * 20}%, ${(y - 0.5) * 20}%)`;
+        // Glare follows mouse
+        glareEl.style.opacity = (defaultOptions['max-glare'] || 0.4).toString();
+        glareEl.style.transform = `translate(-50%, -50%) translate(${x * 100}%, ${y * 100}%)`;
       }
     };
 
@@ -107,7 +109,7 @@ export const Tilt = ({ children, options = {}, className = '', disabled = false 
   }, [defaultOptions]);
 
   return (
-    <div ref={tilt} className={`relative block w-fit h-fit ${className}`}>
+    <div ref={tilt} className={`relative block ${className}`} style={{ transformStyle: 'preserve-3d' }}>
       {children}
     </div>
   );

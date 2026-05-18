@@ -28,8 +28,10 @@ import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff
 import { motion, AnimatePresence } from 'motion/react';
 
 import { auth, db } from './lib/firebase';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc, collection, query, orderBy, limit, serverTimestamp, getDocFromServer } from 'firebase/firestore';
+
+import { filterProfanity } from './lib/profanity';
 
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;
@@ -108,10 +110,10 @@ const DEFAULT_USER = {
   gamesPlayed: 0,
   currentTheme: 'void',
   unlockedThemes: ['void', 'cyan', 'black-white'],
-  currentFrame: 'obsidian',
-  unlockedFrames: ['obsidian'],
-  currentCharacter: 'pilot',
-  unlockedCharacters: ['pilot'],
+  currentFrame: 'default',
+  unlockedFrames: ['default'],
+  currentCharacter: 'agent-x',
+  unlockedCharacters: ['agent-x'],
   unlockedCursors: ['default'],
   unlockedBadges: [],
   redeemedCodes: [],
@@ -654,6 +656,14 @@ const App = () => {
       setFirebaseUser(u);
       setIsAuthLoading(false);
     });
+
+    // Handle redirect result for schools/browsers that block popups
+    getRedirectResult(auth).catch((error) => {
+      if (error.code !== 'auth/redirect-cancelled-by-user') {
+        console.error('Redirect result error:', error);
+      }
+    });
+
     return () => unsubscribe();
   }, []);
 
@@ -678,10 +688,28 @@ const App = () => {
     isLoggingIn.current = true;
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      // Attempt popup first as it's better UX
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (popupErr) {
+        // If popup is blocked, immediately fallback to redirect
+        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request') {
+          if (addNotification) {
+            addNotification('AUTH FALLBACK', 'Popup blocked. Initializing redirect sequence...', 'info', <Shield size={14} className="text-theme" />);
+          }
+          await signInWithRedirect(auth, provider);
+        } else {
+          throw popupErr;
+        }
+      }
     } catch (err) {
       if (err.code !== 'auth/cancelled-popup-request' && err.code !== 'auth/popup-closed-by-user') {
         console.error('Login Error:', err);
+        if (addNotification) {
+          addNotification('AUTH ERROR', 'Access protocols failed. Please try again.', 'error', <Shield size={14} className="text-rose-500" />);
+        }
       }
     } finally {
       isLoggingIn.current = false;
@@ -736,8 +764,6 @@ const App = () => {
       const unlockedFrames = [...(prev.unlockedFrames || ['obsidian'])];
       const unlockedCharacters = [...(prev.unlockedCharacters || ['agent-x'])];
       
-      // Check for admin status based on existing isAdmin
-      // Note: In a real app, this would be handled by a secure backend
       const isAdmin = prev.isAdmin;
 
       Object.entries(themeUnlocks).forEach(([lvl, theme]) => {
@@ -802,10 +828,10 @@ const App = () => {
     const theme = user.currentTheme === 'custom' ? user.customTheme : themes[user.currentTheme] || themes.cyan;
     
     root.style.setProperty('--primary', theme.primary);
+    root.style.setProperty('--primary-glow', theme.glow);
     root.style.setProperty('--accent', theme.primary);
     root.style.setProperty('--ring', theme.primary);
     
-    // Apply theme class for specific styles if needed
     root.className = `font-sans antialiased bg-background text-foreground theme-${user.currentTheme}`;
   }, [user.currentTheme, user.customTheme]);
   const [activeGame, setActiveGame] = useState(null);
@@ -896,10 +922,10 @@ const App = () => {
         if (Date.now() - eventTime > 5000) return;
       }
 
-      const { type, senderName } = eventData;
+      const { type, senderName, character, frame } = eventData;
       setAdminAnnouncement({
         text: `${senderName.toUpperCase()} STARTED ${type.replace(/_/g, ' ').toUpperCase()} EVENT!`,
-        sender: { username: senderName, characterId: 'agent-x', frameId: 'obsidian' },
+        sender: { username: senderName, characterId: character || 'agent-x', frameId: frame || 'obsidian' },
         announcementType: 'event',
         timestamp: new Date().toISOString()
       });
@@ -1028,8 +1054,9 @@ const App = () => {
     lastChatTime.current = now;
 
     try {
+      const filteredText = filterProfanity(text);
       await addDoc(collection(db, 'chat'), {
-        text: text,
+        text: filteredText,
         senderUid: firebaseUser.uid,
         username: user.username,
         timestamp: serverTimestamp(),
@@ -1207,7 +1234,8 @@ const App = () => {
           gamesPlayed: user.gamesPlayed,
           frameId: user.currentFrame,
           unlockedBadges: user.unlockedBadges,
-          currentTheme: user.currentTheme
+          currentTheme: user.currentTheme,
+          lastActive: Date.now()
         })
       })
       .then(res => {
@@ -1238,10 +1266,14 @@ const App = () => {
     const quest = quests.find(q => q.id === questId);
     if (quest && quest.isCompleted) {
       if (quest.type === 'exp') {
-        const multiplier = boosts.reduce((acc, b) => acc + (b.multiplier - 1), 1);
-        const finalReward = Math.floor(quest.reward * multiplier);
-        setUser(prev => ({ ...prev, exp: prev.exp + finalReward }));
-        addNotification('Reward Claimed!', `+${finalReward} EXP Added`, 'level', <Zap className="text-theme" />);
+        if (user.level >= 100) {
+          addNotification('Max Level Reached', 'You are already at peak power!', 'level', <Zap className="text-theme" />);
+        } else {
+          const multiplier = boosts.reduce((acc, b) => acc + (b.multiplier - 1), 1);
+          const finalReward = Math.floor(quest.reward * multiplier);
+          setUser(prev => ({ ...prev, exp: prev.exp + finalReward }));
+          addNotification('Reward Claimed!', `+${finalReward} EXP Added`, 'level', <Zap className="text-theme" />);
+        }
       } else if (quest.type === 'rare') {
         setUser(prev => ({ ...prev, score: prev.score + 1000 }));
         addNotification('Rare Reward!', 'Score Boost Activated', 'badge', <Star className="text-amber-400" />);
@@ -1604,6 +1636,8 @@ const App = () => {
       ws.current.send(JSON.stringify({ type: 'GAME_START', gameId: game.id, gameName: game.title }));
     }
     setUser(prev => {
+      if (prev.level >= 100) return prev;
+
       const multiplier = boosts.reduce((acc, b) => acc + (b.multiplier - 1), 1);
       const baseExp = 50;
       const bonusExp = Math.floor(Math.random() * 25);
@@ -1628,10 +1662,14 @@ const App = () => {
         15: 'viper', 30: 'ghost', 50: 'phantom', 75: 'titan', 90: 'nova', 100: 'overlord'
       };
 
-      // Handle multiple level ups if enough EXP is earned
-      while (updatedExp >= newLevel * LEVEL_UP_BASE && newLevel < 999) {
+      // Handle multiple level ups if enough EXP is earned, but cap at 100
+      while (updatedExp >= newLevel * LEVEL_UP_BASE && newLevel < 100) {
         updatedExp -= (newLevel * LEVEL_UP_BASE);
         newLevel += 1;
+        
+        if (newLevel === 100) {
+          updatedExp = 0; // Reset EXP at max level
+        }
         
         if (themeUnlocks[newLevel] && !unlockedThemes.includes(themeUnlocks[newLevel])) {
           unlockedThemes.push(themeUnlocks[newLevel]);
@@ -2242,14 +2280,24 @@ const App = () => {
                 <div className="flex items-center gap-6 relative z-10">
                   <div className="relative shrink-0">
                     <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden">
-                      <img 
-                        src={CHARACTERS.find(c => c.id === adminAnnouncement.sender.characterId)?.img || "https://1key.lol/images/characters/default.png"} 
-                        alt="" 
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
+                      {(() => {
+                        const character = CHARACTERS.find(c => c.id === adminAnnouncement.sender.characterId);
+                        if (character?.img) {
+                          return (
+                            <img 
+                              src={character.img} 
+                              alt="" 
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          );
+                        } else {
+                          const Icon = character?.icon || User;
+                          return <Icon size={24} className="text-white/40" />;
+                        }
+                      })()}
                     </div>
-                    <div className={`absolute -inset-1 frame-${adminAnnouncement.sender.frameId || 'default'} pointer-events-none`} />
+                    <div className={`absolute -inset-1 frame-${adminAnnouncement.sender.frameId || 'default'} pointer-events-none`} style={{ borderRadius: '1rem' }} />
                   </div>
                   <div className="flex-1">
                      <div className="flex items-center gap-3 mb-1">
@@ -2486,6 +2534,7 @@ const App = () => {
           <ProfileModal 
             user={user} 
             firebaseUser={firebaseUser}
+            isSuperAdmin={(firebaseUser?.email || '').toLowerCase() === 'softball_chik_007@yahoo.com'}
             onUpdateUser={setUser}
             onClose={() => setIsProfileModalOpen(false)} 
             onLogout={() => {
@@ -2515,42 +2564,6 @@ const App = () => {
             addNotification('EXP COLLECTED', `+${amount} EXP!`, 'success', <Zap size={14} className="text-cyan-400" />);
           }} />
         )}
-
-        <AnimatePresence>
-          {adminAnnouncement && (
-            <motion.div 
-              initial={{ opacity: 0, y: -120, x: '-50%', scale: 0.9 }}
-              animate={{ opacity: 1, y: 30, x: '-50%', scale: 1 }}
-              exit={{ opacity: 0, y: -120, x: '-50%', scale: 0.9 }}
-              transition={{ type: "spring", damping: 15 }}
-              className="fixed top-0 left-1/2 z-[2000] w-full max-w-3xl px-4 pointer-events-none"
-            >
-              <div className="relative group overflow-hidden rounded-[2.5rem] bg-black/90 backdrop-blur-3xl border-2 border-white/20 p-6 shadow-2xl pointer-events-auto transition-colors duration-500">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-20 animate-pulse"></div>
-                
-                <div className="relative flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center border border-white/20 bg-black text-white shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                    <img 
-                      src="https://1key.lol/images/ui/key-turning.gif" 
-                      alt="Announcement Icon" 
-                      className="w-full h-full object-cover" 
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <p className="text-[11px] font-black uppercase tracking-[0.4em] text-white/40">
-                        GLOBAL MESSAGE FROM: <span className="text-white italic">{adminAnnouncement.sender?.username || 'SYSTEM'}</span>
-                      </p>
-                      <div className="h-px flex-1 bg-white/10"></div>
-                    </div>
-                    <p className="text-2xl font-black text-white leading-tight italic uppercase tracking-tight">{adminAnnouncement.text}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {isFireStorm && (
           <div className="fixed inset-0 z-[2000] pointer-events-none overflow-hidden">

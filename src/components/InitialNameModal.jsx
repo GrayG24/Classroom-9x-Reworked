@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { User, ChevronRight } from 'lucide-react';
+import { filterProfanity } from '../lib/profanity';
 
 export const InitialNameModal = ({ onSubmit, error }) => {
   const [name, setName] = useState('');
@@ -9,7 +10,7 @@ export const InitialNameModal = ({ onSubmit, error }) => {
     if (e) e.preventDefault();
     const trimmedName = name.trim();
     if (trimmedName.length >= 2) {
-      onSubmit(trimmedName);
+      onSubmit(filterProfanity(trimmedName));
     }
   };
 

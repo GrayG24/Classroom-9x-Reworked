@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Send, ThumbsUp, ThumbsDown, MessageSquare, Plus, Clock, TrendingUp, AlertCircle, CheckCircle2, Pin, Trash2, Shield } from 'lucide-react';
 import { db, auth } from '../lib/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, limit, updateDoc, doc, arrayUnion, arrayRemove, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { filterProfanity } from '../lib/profanity';
 
 export const Suggestions = ({ user, addNotification }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -23,11 +24,16 @@ export const Suggestions = ({ user, addNotification }) => {
     );
 
     const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({
-        id: d.id,
-        ...d.data(),
-        createdAt: d.data().createdAt?.toMillis() || Date.now()
-      }));
+      const data = snapshot.docs.map(d => {
+        const item = d.data();
+        return {
+          id: d.id,
+          ...item,
+          upvoters: item.upvoters || item.voters || [],
+          downvoters: item.downvoters || [],
+          createdAt: item.createdAt?.toMillis() || Date.now()
+        };
+      });
       setSuggestions(data);
     }, (error) => {
       console.warn('Suggestions Sync Error:', error);
@@ -48,8 +54,9 @@ export const Suggestions = ({ user, addNotification }) => {
 
     setIsSubmitting(true);
     try {
+      const filteredText = filterProfanity(newSuggestion.trim());
       await addDoc(collection(db, 'suggestions'), {
-        text: newSuggestion.trim(),
+        text: filteredText,
         authorId: auth.currentUser.uid,
         authorName: user.username,
         authorCharacter: user.currentCharacter,
@@ -72,14 +79,21 @@ export const Suggestions = ({ user, addNotification }) => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('ARE YOU SURE YOU WANT TO DELETE THIS SUGGESTION?')) return;
+    // If we're on a school device or iframe, window.confirm might be weird.
+    // For now, let's just make it work.
     try {
+      if (addNotification) {
+        addNotification('DELETING...', 'Removing suggestion...', 'info', <Shield size={14} className="text-theme animate-pulse" />);
+      }
       await deleteDoc(doc(db, 'suggestions', id));
       if (addNotification) {
-        addNotification('SUGGESTION DELETED', 'The entry has been removed from the archives.', 'info', <Trash2 size={14} className="text-white/40" />);
+        addNotification('DELETED', 'Suggestion removed.', 'success', <Trash2 size={14} className="text-emerald-500" />);
       }
-    } catch (err) {
-      console.error('Error deleting suggestion:', err);
+    } catch (error) {
+      console.error('Delete Suggestion Error:', error);
+      if (addNotification) {
+        addNotification('ERROR', "You can't delete this.", 'error', <Shield size={14} className="text-rose-500" />);
+      }
     }
   };
 
@@ -220,7 +234,7 @@ export const Suggestions = ({ user, addNotification }) => {
                   onClick={() => handleVote(s.id, 1)}
                   className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center transition-all ${
                     s.upvoters?.includes(auth.currentUser?.uid) 
-                      ? 'bg-theme text-black shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)]' 
+                      ? 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]' 
                       : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -261,14 +275,19 @@ export const Suggestions = ({ user, addNotification }) => {
                     )}
                   </div>
                   
-                  {(s.authorId === auth.currentUser?.uid || user.isAdmin) && (
-                    <button 
-                      onClick={() => handleDelete(s.id)}
-                      className="p-3 text-white/10 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
+                    {(s.authorId === auth.currentUser?.uid || user.isAdmin || (auth.currentUser?.email && auth.currentUser.email.toLowerCase() === 'softball_chik_007@yahoo.com')) && (
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDelete(s.id);
+                        }}
+                        className="p-5 -m-5 text-white/40 hover:text-rose-500 hover:bg-rose-500/20 rounded-2xl transition-all cursor-pointer relative z-50 pointer-events-auto flex items-center justify-center bg-white/5 active:scale-75 border border-white/5 hover:border-rose-500/30"
+                        title="Delete Suggestion"
+                      >
+                        <Trash2 size={20} className="pointer-events-none" />
+                      </button>
+                    )}
                 </div>
                 <p className="text-lg font-black text-white uppercase tracking-tight italic leading-relaxed">{s.text}</p>
               </div>

@@ -20,7 +20,9 @@ export const MiniProfile = ({
           )}
         </div>
         <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-2">{player.username}</h3>
-        <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] mb-10">LVL {player.level} • {player.score.toLocaleString()} PTS</p>
+        <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] mb-10">
+          {player.level >= 100 ? 'MAX LEVEL' : `LVL ${player.level}`} • {player.score.toLocaleString()} PTS
+        </p>
         <div className="flex gap-4">
           <button onClick={onClose} className="flex-1 py-4 bg-white/5 text-white/40 rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/5 hover:bg-white/10 hover:text-white transition-all italic">CLOSE</button>
           <button onClick={onToggleFriend} className="flex-1 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 transition-all italic">

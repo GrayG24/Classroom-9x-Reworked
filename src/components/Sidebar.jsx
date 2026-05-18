@@ -59,13 +59,13 @@ export const Sidebar = ({
       onMouseEnter={() => user.settings.sidebarAutoHide && onToggleExpand(true)}
       onMouseLeave={() => user.settings.sidebarAutoHide && onToggleExpand(false)}
       initial={false}
-      animate={isPotatoMode ? { opacity: 1, width: isExpanded ? 280 : 88 } : { 
+      animate={{ 
         width: isExpanded ? 280 : 88,
         opacity: 1
       }}
-      transition={isPotatoMode ? { duration: 0 } : { 
-        width: { type: "spring", stiffness: 25, damping: 14, mass: 1 },
-        opacity: { duration: 1.2 }
+      transition={{ 
+        width: { type: "spring", stiffness: 120, damping: 22, mass: 1 },
+        opacity: { duration: 0.4 }
       }}
       className="fixed left-6 top-6 bottom-6 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 rounded-[2.5rem]"
       style={{ willChange: 'transform, width' }}
@@ -109,7 +109,7 @@ export const Sidebar = ({
       </div>
 
       {/* Navigation */}
-      <nav className={`flex-1 space-y-2 mt-6 ${isExpanded ? 'px-4 items-start' : 'px-0 items-center'} flex flex-col w-full overflow-y-auto overflow-x-hidden scrollbar-hide`}>
+      <nav className={`flex-1 space-y-2 mt-6 ${isExpanded ? 'px-4 items-start' : 'px-0 items-center'} flex flex-col w-full overflow-y-auto overflow-x-hidden scrollbar-hide scroll-smooth`}>
         {menuItems.map((item) => {
           const isActive = currentView === item.id;
           const isRed = 'color' in item && item.color === 'text-rose-500';
@@ -139,7 +139,7 @@ export const Sidebar = ({
                   onViewChange(item.id);
                 }
               }}
-              className={`h-14 flex items-center relative overflow-hidden transition-all duration-500 ${
+              className={`h-14 flex items-center relative overflow-hidden transition-all duration-300 ${
                 isActive 
                   ? `${isRed ? 'bg-rose-500 text-white shadow-[0_0_30px_rgba(244,63,94,0.3)]' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-300 shadow-[0_10px_30px_rgba(34,211,238,0.4)] border-b-2 border-yellow-300' : 'bg-white/20 text-white shadow-[0_0_40px_rgba(255,255,255,0.1)] border border-white/20'} font-black italic` 
                   : `${isRed ? 'text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10' : item.beachBonus ? 'bg-gradient-to-br from-blue-400 via-blue-500 to-cyan-400 text-yellow-100 shadow-lg border border-white/20' : 'text-white/40 hover:text-white hover:bg-white/5'}`

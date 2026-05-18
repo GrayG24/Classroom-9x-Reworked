@@ -52,50 +52,77 @@ const CompactLeaderboard = ({ leaderboardData, onLeaderboardClick }) => {
 
 const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isPotatoMode, delay = 0 }) => {
   const tiltOptions = useMemo(() => ({ 
-    max: 25, 
-    scale: 1.05, 
+    max: 35, 
+    scale: 1.08, 
     speed: 1000, 
     glare: true, 
-    "max-glare": 0.2, 
-    transition: true, 
+    "max-glare": 0.5, 
+    perspective: 1000,
     easing: "cubic-bezier(.03,.98,.52,.99)" 
   }), []);
 
   return (
     <motion.div 
-      initial={isPotatoMode ? { opacity: 0 } : { opacity: 0, y: 20 }}
+      initial={isPotatoMode ? { opacity: 0 } : { opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className={`relative ${rank === 1 ? 'md:order-2' : rank === 2 ? 'md:order-1' : 'md:order-3'}`}
+      transition={{ 
+        delay,
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1]
+      }}
+      className={`relative z-10 ${rank === 1 ? 'md:order-2 md:-translate-y-8' : rank === 2 ? 'md:order-1 md:-translate-y-3' : 'md:order-3 md:translate-y-2'}`}
     >
       <Tilt 
         disabled={isPotatoMode}
         options={tiltOptions}
+        className="cursor-pointer"
       >
         <button 
-          className={`proto-tilt-card group relative block h-[398px] w-[252px] sm:h-[424px] sm:w-[268px] rounded-3xl border bg-card/78 text-left ${colorClass} ${shadowClass}`}
+          className="group relative block h-[420px] w-[280px] rounded-[2.5rem] bg-black/60 shadow-2xl active:scale-95 lg:h-[480px] lg:w-[320px]"
           onClick={onClick}
           style={{ transformStyle: 'preserve-3d' }}
         >
-          <img 
-            alt={game.title} 
-            loading="lazy" 
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03] absolute inset-0 h-full w-full rounded-3xl" 
-            src={game.thumbnail} 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/72 via-background/22 to-transparent"></div>
-          <div className="proto-tilt-shine"></div>
-          <div className="absolute left-3 top-3 rounded-full border border-border/80 bg-background/75 px-2.5 py-1 text-[11px] font-semibold tracking-[0.12em] text-foreground/85 transition-transform" style={{ transform: 'translateZ(30px)' }}>
-            #{rank}
+          {/* Clipped Base Layer */}
+          <div className={`absolute inset-0 rounded-[2.5rem] overflow-hidden border ${colorClass} ${shadowClass} transition-colors duration-500`}>
+            <img 
+              alt={game.title} 
+              loading="lazy" 
+              className="object-cover transition-transform duration-700 group-hover:scale-110 absolute inset-0 h-full w-full pointer-events-none opacity-80" 
+              src={game.thumbnail || null} 
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
-          <div className="absolute inset-x-0 bottom-0 p-4 transition-transform" style={{ transform: 'translateZ(50px)' }}>
-            <p className="text-xl font-semibold leading-tight text-foreground">{game.title}</p>
-            <p className="mt-1 text-xs text-foreground/62">{rankLabel}</p>
+          
+          {/* Pop-out Content */}
+          <div className="absolute inset-0 pointer-events-none" style={{ transformStyle: 'preserve-3d' }}>
+            <div 
+              className="absolute left-6 top-6 w-12 h-12 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md shadow-2xl flex items-center justify-center transition-all duration-500 group-hover:bg-theme group-hover:border-theme/50"
+              style={{ transform: 'translateZ(50px)' }}
+            >
+              <span className="text-xl font-black italic text-white">{rank}</span>
+            </div>
+
+            <div 
+              className="absolute inset-x-0 bottom-0 p-10 text-left transition-all duration-500" 
+              style={{ transform: 'translateZ(80px)' }}
+            >
+              <div className="flex flex-col gap-2">
+                <p className="text-4xl font-black italic text-white uppercase tracking-tighter leading-[0.8] drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
+                  {game.title}
+                </p>
+                <div className="w-12 h-1.5 bg-white/40 rounded-full mt-4 group-hover:w-24 group-hover:bg-theme transition-all duration-500" />
+              </div>
+            </div>
           </div>
+          
+          <div className="absolute -inset-2 border-2 border-white/0 group-hover:border-white/10 rounded-[2.8rem] transition-colors pointer-events-none"></div>
         </button>
       </Tilt>
+      
       {rank === 1 && !isPotatoMode && (
-        <div className="pointer-events-none absolute inset-0 -z-10 rounded-[28px] bg-[radial-gradient(circle_at_50%_18%,color-mix(in_srgb,var(--accent)_28%,transparent),transparent_58%)] blur-[1px]"></div>
+        <div className="pointer-events-none absolute -inset-10 -z-10 bg-[radial-gradient(circle_at_50%_20%,rgba(var(--primary-rgb),0.2),transparent_70%)] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
       )}
     </motion.div>
   );
@@ -191,7 +218,7 @@ export const Home = ({
       const game = games.find(g => g.id === gameOfTheWeek.id);
       if (game) return game;
     }
-    return games.find(g => g.id === 'ovo-classic') || (games && games.length > 0 ? games[0] : { title: 'Unknown', thumbnail: '', description: '' });
+    return games.find(g => g.id === 'ovo-classic') || (games && games.length > 0 ? games[0] : { title: 'Unknown', thumbnail: null, description: '' });
   }, [games, gameOfTheWeek]);
 
   const pinnedGamesList = useMemo(() => {
@@ -199,33 +226,20 @@ export const Home = ({
   }, [pinnedGames, games]);
 
   const popularGames = useMemo(() => {
-    // Sort games by rating to get "actually" most popular
-    const sorted = [...games].sort((a, b) => b.rating - a.rating);
-    const top3 = sorted.slice(0, 3);
+    // Specifically ordered: Minecraft, Cookie Clicker, OvO
+    const gameOrder = ['minecraft-classic-edition', 'cookie-clicker-new', 'ovo-classic'];
+    const orderedGames = gameOrder.map((id, i) => {
+      const g = games.find(game => game.id === id) || { title: id.replace(/-/g, ' ').toUpperCase(), thumbnail: null, description: '', id };
+      return {
+        game: g,
+        rank: i + 1,
+        label: "", // Removed small text as requested
+        color: "border-white/10", // Removed yellow outline, used consistent neutral
+        shadow: i === 0 ? "shadow-[0_20px_50px_rgba(255,255,255,0.1)]" : i === 1 ? "shadow-[0_20px_50px_rgba(255,255,255,0.08)]" : "shadow-[0_20px_50px_rgba(255,255,255,0.05)]"
+      };
+    });
     
-    return [
-      { 
-        game: top3[0] || { title: 'Unknown', thumbnail: '', description: '', id: 'unknown-1' }, 
-        rank: 1, 
-        label: "",
-        color: "border-white/50",
-        shadow: "shadow-[0_26px_56px_rgba(255,255,255,0.1)]"
-      },
-      { 
-        game: top3[1] || { title: 'Unknown', thumbnail: '', description: '', id: 'unknown-2' }, 
-        rank: 2, 
-        label: "",
-        color: "border-white/30",
-        shadow: "shadow-[0_20px_38px_rgba(255,255,255,0.05)]"
-      },
-      { 
-        game: top3[2] || { title: 'Unknown', thumbnail: '', description: '', id: 'unknown-3' }, 
-        rank: 3, 
-        label: "",
-        color: "border-white/10",
-        shadow: "shadow-[0_18px_34px_rgba(255,255,255,0.02)]"
-      }
-    ];
+    return orderedGames;
   }, [games]);
 
   const isPotatoMode = user?.settings?.performanceMode;
@@ -256,6 +270,11 @@ export const Home = ({
       } 
     },
   };
+
+  const [isLeaderboardExpanded, setIsLeaderboardExpanded] = useState(false);
+  const displayLeaderboardData = useMemo(() => {
+    return isLeaderboardExpanded ? leaderboardData.slice(0, 25) : leaderboardData.slice(0, 5);
+  }, [leaderboardData, isLeaderboardExpanded]);
 
   return (
     <motion.div 
@@ -291,7 +310,7 @@ export const Home = ({
             <div className="absolute -inset-4 bg-gradient-to-r from-theme/20 via-white/5 to-theme/20 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition-all duration-1000"></div>
             <div className={`relative h-[400px] md:h-[600px] lg:h-[700px] rounded-[32px] md:rounded-[48px] overflow-hidden border border-white/10 backdrop-blur-3xl shadow-2xl group ${isPotatoMode ? '' : 'hover:shadow-[0_0_80px_rgba(255,255,255,0.1)]'}`}>
               <img 
-                src={featuredGame.thumbnail} 
+                src={featuredGame.thumbnail || null} 
                 alt="Featured Game" 
                 className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
                 referrerPolicy="no-referrer"
@@ -325,21 +344,19 @@ export const Home = ({
                 <div className="max-w-4xl relative">
                   {/* Removed duplicate holographic decoration that might look like an outline */}
 
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    whileInView={{ y: 0, opacity: 1 }}
-                    className="flex flex-col gap-4 mb-8"
-                  >
-                    <div className="relative">
-                      <h2 className="text-5xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tighter italic leading-[0.85] group-hover:text-theme transition-colors duration-500 relative z-10">
-                        {featuredGame.title}
-                      </h2>
+                  <div className="flex-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="flex flex-col gap-4 mb-8">
+                      <div className="relative">
+                        <h2 className="text-5xl md:text-8xl lg:text-9xl font-black text-white uppercase tracking-tighter italic leading-[0.85] group-hover:text-theme transition-colors duration-500 relative z-10">
+                          {featuredGame.title}
+                        </h2>
+                      </div>
                     </div>
-                  </motion.div>
 
-                  <p className="max-w-2xl text-white/60 text-lg md:text-xl leading-relaxed mb-12 font-medium italic line-clamp-2 md:line-clamp-none border-l-2 border-white/10 pl-8">
-                    {featuredGame.description}
-                  </p>
+                    <p className="max-w-2xl text-white/60 text-lg md:text-xl leading-relaxed mb-12 font-medium italic line-clamp-2 md:line-clamp-none border-l-2 border-white/10 pl-8">
+                      {featuredGame.description}
+                    </p>
+                  </div>
 
                   <div className="flex flex-wrap items-center gap-6">
                     <button 
@@ -391,11 +408,19 @@ export const Home = ({
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-6">
               <FullLeaderboardWidget 
-                leaderboardData={leaderboardData} 
+                leaderboardData={displayLeaderboardData} 
                 onPlayerClick={onProfileClick}
               />
+              <div className="flex justify-center">
+                <button 
+                  onClick={() => setIsLeaderboardExpanded(!isLeaderboardExpanded)}
+                  className="px-10 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all italic"
+                >
+                  {isLeaderboardExpanded ? 'MINIMIZE LEADERBOARD' : 'EXPAND TO TOP 25'}
+                </button>
+              </div>
             </div>
             
             <div className="flex flex-col gap-6">
@@ -433,28 +458,23 @@ export const Home = ({
       {/* Popular Games Section */}
       <motion.section variants={itemVariants} className="pb-32 relative z-10">
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="flex flex-col items-center text-center mb-16 relative z-10">
-            <h2 
-              className="text-6xl font-black text-white uppercase tracking-tighter italic leading-none"
-            >
-              POPULAR <span className="text-white/40">GAMES</span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 items-end justify-items-center gap-12 md:grid-cols-3 relative z-10">
-            {popularGames.map((pg, i) => (
-              <TiltCard 
-                key={pg.game.id}
-                game={pg.game}
-                rank={pg.rank}
-                rankLabel={pg.label}
-                colorClass={pg.color}
-                shadowClass={pg.shadow}
-                onClick={() => onPlayGame(pg.game)}
-                isPotatoMode={isPotatoMode}
-                delay={i * 0.15}
-              />
-            ))}
+          <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-7 sm:p-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_16px_42px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+            <h2 className="mb-8 text-center text-3xl sm:text-4xl font-black italic tracking-tight text-white uppercase">Popular Games</h2>
+            <div className="mt-14 grid grid-cols-1 items-end justify-items-center gap-7 md:grid-cols-3 lg:gap-10">
+              {popularGames.map((pg, i) => (
+                <TiltCard 
+                  key={pg.game.id}
+                  game={pg.game}
+                  rank={pg.rank}
+                  rankLabel={pg.label}
+                  colorClass={pg.color}
+                  shadowClass={pg.shadow}
+                  onClick={() => onPlayGame(pg.game)}
+                  isPotatoMode={isPotatoMode}
+                  delay={i * 0.15}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </motion.section>

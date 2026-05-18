@@ -18,7 +18,7 @@ const LEVEL_DATA = [
   { level: 100, unlock: 'Overlord & Interstellar' }
 ];
 
-export const ProfileModal = ({ user, firebaseUser, onClose }) => {
+export const ProfileModal = ({ user, firebaseUser, onClose, isSuperAdmin }) => {
   const [view, setView] = useState('stats'); // 'stats' or 'road'
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
   const unlockedBadges = BADGES.filter(b => (user.unlockedBadges || []).includes(b.id));
@@ -33,11 +33,11 @@ export const ProfileModal = ({ user, firebaseUser, onClose }) => {
   // Robust admin access check
   const SUPER_ADMIN_EMAIL = 'softball_chik_007@yahoo.com';
   const currentUserEmail = (firebaseUser?.email || user.email || '').toLowerCase();
-  const isSuperAdmin = currentUserEmail === SUPER_ADMIN_EMAIL || user.username === 'SoftballChik';
+  const superAdminStatus = isSuperAdmin || currentUserEmail === SUPER_ADMIN_EMAIL || user.username === 'SoftballChik';
   
   // Admin Panel shows for: Account detected + (Owner Role OR Moderator/Admin Role OR Super Admin OR isAdmin flag)
   const hasAdminAccess = !!firebaseUser && (
-    isSuperAdmin || 
+    superAdminStatus || 
     user.role === 'OWNER' || 
     user.role === 'MODERATOR' || 
     user.role === 'ADMIN' ||
@@ -64,6 +64,12 @@ export const ProfileModal = ({ user, firebaseUser, onClose }) => {
         >
           {/* Left Side - Fixed Profile Card */}
           <div className="lg:w-[380px] bg-white/[0.03] p-10 flex flex-col items-center text-center border-r border-white/5 shrink-0 relative overflow-y-auto custom-scrollbar">
+            <button 
+              onClick={onClose}
+              className="absolute top-8 right-8 p-4 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all z-[60] group"
+            >
+              <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+            </button>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05),transparent)] pointer-events-none" />
             
               <div className="relative mb-8 pt-4">
@@ -98,18 +104,19 @@ export const ProfileModal = ({ user, firebaseUser, onClose }) => {
             <div className="w-full bg-black/40 rounded-[2rem] p-6 border border-white/5 mb-6">
               <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.2em] mb-3">
                 <span className="text-white/30 italic">LEVEL</span>
-                <span className="text-white font-mono italic">LVL {user.level}</span>
+                <span className="text-white font-mono italic">{user.level >= 100 ? 'MAX LEVEL' : `LVL ${user.level}`}</span>
               </div>
               <div className="h-2 bg-white/5 rounded-full overflow-hidden p-0.5">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, (user.exp / (user.level * LEVEL_UP_BASE)) * 100)}%` }}
+                  animate={{ width: user.level >= 100 ? '100%' : `${Math.min(100, (user.exp / ((user.level || 1) * LEVEL_UP_BASE)) * 100)}%` }}
                   transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-full bg-gradient-to-r from-theme via-theme/80 to-theme shadow-[0_0_15px_var(--primary-glow)] rounded-full"
+                  className={`h-full shadow-[0_0_15px_var(--primary-glow)] rounded-full ${(user.level >= 100 || superAdminStatus) ? 'bg-gradient-to-r from-red-500 via-orange-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 animate-rainbow-bg' : 'bg-theme'}`}
+                  style={{ backgroundSize: '1000% 100%' }}
                 />
               </div>
               <p className="text-[7px] font-bold text-white/20 uppercase tracking-[0.1em] mt-3 italic text-left">
-                {user.level >= 999 ? 'MAX LEVEL REACHED • YOU ARE A LEGEND' : `PATH TO LVL ${user.level + 1} • ${user.level * LEVEL_UP_BASE} EXP NEEDED`}
+                {user.level >= 100 ? 'MAX LEVEL REACHED • YOU ARE A LEGEND' : `PATH TO LVL ${user.level + 1} • ${user.level * LEVEL_UP_BASE} EXP NEEDED`}
               </p>
             </div>
 
@@ -141,9 +148,9 @@ export const ProfileModal = ({ user, firebaseUser, onClose }) => {
 
             <button 
               onClick={onClose}
-              className="mt-auto pt-8 text-[9px] font-black text-white/10 uppercase tracking-[0.4em] hover:text-white/40 transition-all italic"
+              className="mt-auto px-10 py-4 rounded-2xl bg-white/5 border border-white/10 text-[9px] font-black text-white/40 hover:text-white hover:bg-white/10 transition-all uppercase tracking-[0.3em] italic"
             >
-              EXIT INTERFACE
+              EXIT
             </button>
           </div>
 
