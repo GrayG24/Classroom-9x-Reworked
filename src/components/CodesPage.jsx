@@ -25,33 +25,19 @@ export const CodesPage = ({ user, onRedeemCode }) => {
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         <div className="relative">
-          <div className="absolute -inset-8 bg-black/60 backdrop-blur-xl z-[100] flex flex-col items-center justify-center rounded-[4rem] border-2 border-white/5 shadow-2xl">
-            <motion.div
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 border border-white/10 shadow-2xl"
-            >
-              <Lock size={48} className="text-white/20" />
-            </motion.div>
-            <h2 className="text-4xl font-black text-white italic uppercase tracking-[0.2em] mb-4">Coming Soon</h2>
-            <p className="text-white/30 font-black text-[10px] uppercase tracking-[0.3em] max-w-sm text-center px-8 leading-relaxed">
-              This feature is currently being worked on. Check back later!
-            </p>
-          </div>
-          
-          <div className="text-center mb-16 space-y-6 opacity-20 pointer-events-none">
+          <div className="text-center mb-16 space-y-6">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white mx-auto shadow-2xl"
-          >
-            <Key size={32} />
-          </motion.div>
-          <div className="space-y-2">
-            <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic">REDEEM <span className="text-primary">CODES</span></h1>
-            <p className="text-white/30 font-mono text-[10px] uppercase tracking-[0.4em]">ENTER CODES HERE</p>
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white mx-auto shadow-2xl"
+            >
+              <Key size={32} />
+            </motion.div>
+            <div className="space-y-2">
+              <h1 className="text-6xl font-black text-white uppercase tracking-tighter italic">REDEEM <span className="text-primary">CODES</span></h1>
+              <p className="text-white/30 font-mono text-[10px] uppercase tracking-[0.4em]">ENTER CODES HERE</p>
+            </div>
           </div>
-        </div>
 
         <div className="bg-white/[0.02] border border-white/10 rounded-[3rem] p-12 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent"></div>
@@ -89,18 +75,32 @@ export const CodesPage = ({ user, onRedeemCode }) => {
             )}
           </div>
 
-          <div className="mt-12 pt-12 border-t border-white/5 grid grid-cols-3 gap-6">
-            <div className="text-center space-y-2">
-              <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Keys Used</p>
-              <p className="text-2xl font-black text-white italic">{user.redeemedCodes?.length || 0}</p>
+          <div className="mt-12 pt-12 border-t border-white/5">
+            <div className="text-center space-y-4">
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">UNLOCKED CODES</p>
+              <div className="flex flex-wrap justify-center gap-2 max-h-60 overflow-y-auto p-4 scrollbar-hide bg-black/20 rounded-[2rem] border border-white/5">
+                {((user.role === 'OWNER' || user.redeemedCodes?.includes('OWNER3413')) ? 
+                  ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'] : 
+                  (user.redeemedCodes || [])).map(code => (
+                  <span key={code} className="px-5 py-2.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black text-primary tracking-widest italic animate-in zoom-in duration-300">
+                    {code}
+                  </span>
+                ))}
+                {(!user.redeemedCodes || user.redeemedCodes.length === 0) && user.role !== 'OWNER' && (
+                  <span className="text-[10px] font-black text-white/10 italic tracking-widest py-8">NO CODES USED YET</span>
+                )}
+              </div>
             </div>
-            <div className="text-center space-y-2">
-              <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Security</p>
-              <p className="text-2xl font-black text-emerald-500 italic">MAX</p>
-            </div>
-            <div className="text-center space-y-2">
-              <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Status</p>
-              <p className="text-2xl font-black text-primary italic">READY</p>
+            
+            <div className="mt-12 grid grid-cols-2 gap-6 pt-12 border-t border-white/5">
+              <div className="text-center space-y-2">
+                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Security</p>
+                <p className="text-2xl font-black text-emerald-500 italic">MAX</p>
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">Status</p>
+                <p className="text-2xl font-black text-primary italic">READY</p>
+              </div>
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ export const CodesPage = ({ user, onRedeemCode }) => {
         <div className="mt-12 flex items-center justify-center gap-8 opacity-20">
           <div className="flex items-center gap-2">
             <Cpu size={14} />
-            <span className="text-[8px] font-black uppercase tracking-widest italic">Kernel v4</span>
+            <span className="text-[8px] font-black uppercase tracking-widest italic">Stable v4</span>
           </div>
           <div className="flex items-center gap-2">
             <Activity size={14} />

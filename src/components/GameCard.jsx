@@ -6,9 +6,9 @@ export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
   return (
     <motion.div 
       whileHover={{ y: -12, scale: 1.02 }}
-      className="group relative bg-black/40 border border-white/10 rounded-[2rem] overflow-hidden cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)] will-change-transform"
+      className="group relative bg-black/40 border border-white/10 rounded-[2rem] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)] will-change-transform"
     >
-      <div className="aspect-[3/4] relative overflow-hidden" onClick={() => onClick(game)}>
+      <div className="aspect-[3/4] relative overflow-hidden rounded-t-[2rem]" onClick={() => onClick(game)}>
         <img 
           src={game.thumbnail} 
           alt={game.title} 
@@ -33,7 +33,7 @@ export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
         </div>
       </div>
 
-      <div className="p-6 bg-black/40 border-t border-white/5" onClick={() => onClick(game)}>
+      <div className="p-6 bg-black/40 border-t border-white/5 rounded-b-[2rem]" onClick={() => onClick(game)}>
         <h3 className="font-black text-lg text-white uppercase tracking-tighter italic leading-none mb-2 truncate group-hover:text-white transition-colors">{game.title}</h3>
         <div className="flex items-center justify-between">
           <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] italic">{game.category || 'ACTION'}</span>

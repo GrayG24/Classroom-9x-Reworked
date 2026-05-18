@@ -12,8 +12,12 @@ export const MiniProfile = ({
   return (
     <div className="fixed inset-0 z-[1100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-black border border-white/10 rounded-[2.5rem] p-10 max-w-md w-full text-center shadow-[0_0_100px_rgba(255,255,255,0.05)]">
-        <div className="w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 mx-auto mb-8 flex items-center justify-center text-white shadow-[0_0_40px_rgba(255,255,255,0.1)]">
-          <User size={48} />
+        <div className="w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 mx-auto mb-8 flex items-center justify-center text-white shadow-[0_0_40px_rgba(255,255,255,0.1)] overflow-hidden">
+          {player.img ? (
+            <img src={player.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+          ) : (
+            <User size={48} />
+          )}
         </div>
         <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic mb-2">{player.username}</h3>
         <p className="text-white/40 font-black uppercase tracking-[0.3em] text-[10px] mb-10">LVL {player.level} • {player.score.toLocaleString()} PTS</p>

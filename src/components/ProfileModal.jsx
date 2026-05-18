@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, User, Shield, Star, Award, Zap, Crown, Activity, Flame, ChevronRight, Lock, CheckCircle2 } from 'lucide-react';
+import { X, User, Shield, Star, Award, Zap, Crown, Activity, Flame, ChevronRight, Lock, CheckCircle2, Hammer } from 'lucide-react';
 import { CHARACTERS, BADGES } from '../constants';
 
 const LEVEL_UP_BASE = 200;
 const LEVEL_DATA = [
-  { level: 1, title: 'NEWBIE', unlock: 'Standard Access' },
-  { level: 5, title: 'ROOKIE', unlock: 'Neon Frame' },
-  { level: 10, title: 'GUARDIAN', unlock: 'Emerald Theme' },
-  { level: 15, title: 'SCOUT', unlock: 'Viper & Emerald Frame' },
-  { level: 25, title: 'ELITE', unlock: 'Rose Theme' },
-  { level: 30, title: 'PHANTOM', unlock: 'Ghost & Gold Frame' },
-  { level: 50, title: 'LEGEND', unlock: 'Phantom Character' },
-  { level: 60, title: 'SOLARIS', unlock: 'Solar Frame' },
-  { level: 75, title: 'TITAN', unlock: 'Titan Character' },
-  { level: 90, title: 'NOVA', unlock: 'Nova Character' },
-  { level: 100, title: 'OVERLORD', unlock: 'Overlord & Interstellar' }
+  { level: 1, unlock: 'Standard Access' },
+  { level: 5, unlock: 'Neon Frame' },
+  { level: 10, unlock: 'Emerald Theme' },
+  { level: 15, unlock: 'Viper & Emerald Frame' },
+  { level: 25, unlock: 'Rose Theme' },
+  { level: 30, unlock: 'Ghost & Gold Frame' },
+  { level: 50, unlock: 'Phantom Character' },
+  { level: 60, unlock: 'Solar Frame' },
+  { level: 75, unlock: 'Titan Character' },
+  { level: 90, unlock: 'Nova Character' },
+  { level: 100, unlock: 'Overlord & Interstellar' }
 ];
 
-export const ProfileModal = ({ user, onClose }) => {
+export const ProfileModal = ({ user, firebaseUser, onClose }) => {
   const [view, setView] = useState('stats'); // 'stats' or 'road'
   const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
   const unlockedBadges = BADGES.filter(b => (user.unlockedBadges || []).includes(b.id));
@@ -29,6 +29,21 @@ export const ProfileModal = ({ user, onClose }) => {
     { label: 'BADGES', value: unlockedBadges.length, icon: Award, color: 'text-emerald-400' },
     { label: 'PLAYS', value: user.gamesPlayed || 0, icon: Activity, color: 'text-rose-500' }
   ];
+
+  // Robust admin access check
+  const SUPER_ADMIN_EMAIL = 'softball_chik_007@yahoo.com';
+  const currentUserEmail = (firebaseUser?.email || user.email || '').toLowerCase();
+  const isSuperAdmin = currentUserEmail === SUPER_ADMIN_EMAIL || user.username === 'SoftballChik';
+  
+  // Admin Panel shows for: Account detected + (Owner Role OR Moderator/Admin Role OR Super Admin OR isAdmin flag)
+  const hasAdminAccess = !!firebaseUser && (
+    isSuperAdmin || 
+    user.role === 'OWNER' || 
+    user.role === 'MODERATOR' || 
+    user.role === 'ADMIN' ||
+    user.isAdmin === true ||
+    (user.redeemedCodes || []).some(c => ['ADMIN6', 'OWNER3413'].includes(c.toUpperCase()))
+  );
 
   return (
     <AnimatePresence>
@@ -48,32 +63,39 @@ export const ProfileModal = ({ user, onClose }) => {
           className="relative w-full max-w-5xl bg-black border border-white/10 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row max-h-[90vh]"
         >
           {/* Left Side - Fixed Profile Card */}
-          <div className="lg:w-[380px] bg-white/[0.03] p-10 flex flex-col items-center text-center border-r border-white/5 shrink-0 relative overflow-hidden">
+          <div className="lg:w-[380px] bg-white/[0.03] p-10 flex flex-col items-center text-center border-r border-white/5 shrink-0 relative overflow-y-auto custom-scrollbar">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05),transparent)] pointer-events-none" />
             
-            <div className="relative mb-8 pt-4">
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                className="w-44 h-44 rounded-[3rem] bg-black border border-white/10 overflow-hidden flex items-center justify-center text-white relative z-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]"
-              >
-                {character.img ? (
-                  <img src={character.img} alt={character.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <character.icon size={60} />
-                )}
-              </motion.div>
-              <div className={`absolute -inset-6 frame-${user.currentFrame || 'obsidian'} scale-110 pointer-events-none z-20`}></div>
-            </div>
+              <div className="relative mb-8 pt-4">
+                <motion.div 
+                   whileHover={{ scale: 1.02 }}
+                  className="w-44 h-44 rounded-full bg-black border border-white/10 flex items-center justify-center text-white relative z-10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]"
+                >
+                  <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center bg-black border-2 border-white/20">
+                    {character.img ? (
+                      <img src={character.img} alt={character.name} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                    ) : (
+                      <character.icon size={60} />
+                    )}
+                  </div>
+                  <div className={`absolute -inset-1 frame-${user.currentFrame || (isSuperAdmin ? 'owner' : 'obsidian')} pointer-events-none z-20`} />
+                </motion.div>
+                
+                {/* Special Frame Icons */}
+                <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+                  {(user.currentFrame === 'owner' || isSuperAdmin || user.role === 'OWNER') && <Crown size={40} className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" fill="currentColor" />}
+                  {(user.currentFrame === 'moderator' || user.role === 'MODERATOR') && <Hammer size={40} className="text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.6)]" fill="currentColor" />}
+                </div>
+              </div>
 
             <div className="space-y-1 mb-8">
-              <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">{user.username}</h2>
               <div className="flex items-center justify-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">{user.currentTitle || 'PLAYER'}</p>
+                <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">{user.username}</h2>
+                {hasAdminAccess && <Shield size={16} className="text-rose-500 animate-pulse" />}
               </div>
             </div>
 
-            <div className="w-full bg-black/40 rounded-[2rem] p-6 border border-white/5 mb-8">
+            <div className="w-full bg-black/40 rounded-[2rem] p-6 border border-white/5 mb-6">
               <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.2em] mb-3">
                 <span className="text-white/30 italic">LEVEL</span>
                 <span className="text-white font-mono italic">LVL {user.level}</span>
@@ -86,20 +108,35 @@ export const ProfileModal = ({ user, onClose }) => {
                   className="h-full bg-gradient-to-r from-theme via-theme/80 to-theme shadow-[0_0_15px_var(--primary-glow)] rounded-full"
                 />
               </div>
-              <p className="text-[7px] font-bold text-white/20 uppercase tracking-[0.1em] mt-3 italic text-left">PATH TO LVL {user.level + 1} • {user.level * LEVEL_UP_BASE} EXP NEEDED</p>
+              <p className="text-[7px] font-bold text-white/20 uppercase tracking-[0.1em] mt-3 italic text-left">
+                {user.level >= 999 ? 'MAX LEVEL REACHED • YOU ARE A LEGEND' : `PATH TO LVL ${user.level + 1} • ${user.level * LEVEL_UP_BASE} EXP NEEDED`}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 w-full gap-3 relative group">
-              <button 
-                disabled={true}
-                className="w-full py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all italic flex items-center justify-center gap-3 border bg-black/40 text-white/20 border-white/5 cursor-not-allowed opacity-50 overflow-hidden relative"
-              >
-                <Lock size={14} className="text-white/20" />
-                LEVEL ROAD
-                <div className="absolute inset-0 bg-rose-500/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[7px] font-black text-rose-500 uppercase tracking-[0.4em] italic">COMING SOON</span>
-                </div>
-              </button>
+                {hasAdminAccess ? (
+                  <button 
+                    onClick={() => {
+                      onClose();
+                      window.dispatchEvent(new CustomEvent('open-admin-panel'));
+                    }}
+                    className="w-full py-5 rounded-[1.5rem] text-xs font-black uppercase tracking-widest transition-all italic flex items-center justify-center gap-3 border border-rose-500 bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white shadow-[0_0_30px_rgba(244,63,94,0.3)] group-hover:shadow-[0_0_50px_rgba(244,63,94,0.5)] cursor-pointer"
+                  >
+                    <Shield size={16} />
+                    ADMIN PANEL
+                  </button>
+                ) : (
+                <button 
+                  disabled={true}
+                  className="w-full py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all italic flex items-center justify-center gap-3 border bg-black/40 text-white/20 border-white/5 cursor-not-allowed opacity-50 overflow-hidden relative"
+                >
+                  <Lock size={14} className="text-white/20" />
+                  LEVEL ROAD
+                  <div className="absolute inset-0 bg-rose-500/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[7px] font-black text-rose-500 uppercase tracking-[0.4em] italic">COMING SOON</span>
+                  </div>
+                </button>
+              )}
             </div>
 
             <button 
@@ -145,12 +182,22 @@ export const ProfileModal = ({ user, onClose }) => {
                             whileHover={{ y: -4, scale: 1.02 }}
                             className="p-6 rounded-[2.5rem] bg-white/[0.02] border border-white/5 flex flex-col items-center text-center hover:bg-white/[0.05] transition-all"
                           >
-                            <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center mb-4 shadow-xl">
+                            <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center mb-4 shadow-xl relative overflow-hidden">
                               <badge.icon 
                                 size={28} 
-                                className={badge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} 
-                                style={{ color: badge.color !== 'rainbow' ? badge.color : undefined }} 
+                                style={{ 
+                                  stroke: (badge.rarity === 'Mythic') ? 'url(#mythic-gradient)' : 
+                                          (badge.rarity === 'Transcendent') ? 'url(#transcendent-gradient)' : badge.color,
+                                  fill: (badge.rarity === 'Mythic') ? 'url(#mythic-gradient)' : 
+                                        (badge.rarity === 'Transcendent') ? 'url(#transcendent-gradient)' : 'none'
+                                }} 
+                                strokeWidth={3}
                               />
+                              
+                              {/* Overlay for even more polish */}
+                              {(badge.rarity === 'Mythic' || badge.rarity === 'Transcendent') && (
+                                <div className="absolute inset-0 bg-white/5 pointer-events-none mix-blend-overlay"></div>
+                              )}
                             </div>
                             <span className="text-[11px] font-black text-white uppercase tracking-tight italic mb-1.5">{badge.name}</span>
                             <span className="text-[8px] font-medium text-white/30 uppercase tracking-widest">{badge.rarity}</span>
@@ -213,9 +260,6 @@ export const ProfileModal = ({ user, onClose }) => {
                               {item.level}
                             </div>
                             <div className="flex flex-col gap-1">
-                              <span className={`text-[12px] font-black uppercase tracking-widest italic ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
-                                {item.title}
-                              </span>
                               <div className="flex items-center gap-3">
                                 <Shield size={10} className={isUnlocked ? 'text-emerald-500' : 'text-white/20'} />
                                 <span className={`text-[9px] font-black uppercase tracking-tight ${isUnlocked ? 'text-white/60' : 'text-white/20'}`}>

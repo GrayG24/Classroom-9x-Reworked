@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown, LayoutGrid, MessageSquare } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown, LayoutGrid, MessageSquare, Lightbulb } from 'lucide-react';
+import { Suggestions } from './Suggestions';
 
-export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onResetProgress, onUpdateUsername }) => {
+export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onResetProgress, onUpdateUsername, addNotification }) => {
   const [redeemInput, setRedeemInput] = useState('');
   const [activeTab, setActiveTab] = useState('general');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -28,7 +29,9 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
         { id: 'performanceMode', label: 'Potato Mode', description: 'Disable heavy animations and background effects for low-end devices.', type: 'toggle' },
         { id: 'backgroundEffects', label: 'Ambient Particles', description: 'Subtle floating effects in the background.', type: 'toggle' },
         { id: 'disableGlow', label: 'Reduce Glow', description: 'Decrease intense neon and blooming effects.', type: 'toggle' },
-        { id: 'showFPS', label: 'Show FPS Tracker', description: 'Toggle the real-time performance counter.', type: 'toggle' }
+        { id: 'showFPS', label: 'Show FPS Tracker', description: 'Toggle the real-time performance counter.', type: 'toggle' },
+        { id: 'highContrast', label: 'High Contrast Mode', description: 'Makes text and UI elements easier to read.', type: 'toggle' },
+        { id: 'reduceMotion', label: 'Reduce Motion', description: 'Scales down animation intensity throughout the app.', type: 'toggle' }
       ]
     },
     {
@@ -170,8 +173,25 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
               </div>
               
               <div className="p-3 bg-white/[0.03] rounded-[2.5rem] border border-white/10 backdrop-blur-3xl">
-                 <button
-                    onClick={() => setActiveTab('upcoming')}
+                <button
+                  onClick={() => setActiveTab('suggestions')}
+                  className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all relative overflow-hidden group ${
+                    activeTab === 'suggestions' 
+                      ? 'text-black' 
+                      : 'text-white/30 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {activeTab === 'suggestions' && (
+                    <motion.div 
+                      layoutId="active-settings-tab"
+                      className="absolute inset-0 bg-white"
+                    />
+                  )}
+                  <Lightbulb size={18} className="relative z-10" />
+                  <span className="text-[10px] uppercase tracking-[0.2em] relative z-10 italic font-black">SUGGESTIONS</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('upcoming')}
                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all relative overflow-hidden group ${
                       activeTab === 'upcoming' 
                         ? 'text-black' 
@@ -224,7 +244,9 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  {activeTab === 'upcoming' ? (
+                  {activeTab === 'suggestions' ? (
+                    <Suggestions user={user} addNotification={addNotification} />
+                  ) : activeTab === 'upcoming' ? (
                     <div className="p-12 rounded-[3.5rem] bg-black/40 border border-white/10 shadow-2xl space-y-12 overflow-hidden relative group">
                       <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity">
                         <Rocket size={120} />

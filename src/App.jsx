@@ -24,11 +24,47 @@ import { Footer } from './components/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
 import { InteractiveBackground } from './components/InteractiveBackground';
 import { GameView } from './components/GameView';
-import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play, Waves, ChevronRight } from 'lucide-react';
+import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff, ShieldAlert, MessageSquare, Users, Send, Trash2, Megaphone, Settings as SettingsIcon, Activity, Sparkles, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, AlertTriangle, Lock, Play, Waves, ChevronRight, Pin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+import { auth, db } from './lib/firebase';
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc, collection, query, orderBy, limit, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 
 const EXP_PER_PLAY = 25;
 const LEVEL_UP_BASE = 200;
+
+const OperationType = {
+  CREATE: 'create',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  LIST: 'list',
+  GET: 'get',
+  WRITE: 'write',
+};
+
+function handleFirestoreError(error, operationType, path) {
+  const errorMsg = error instanceof Error ? error.message : String(error);
+  
+  if (errorMsg.includes('resource-exhausted') || errorMsg.includes('Quota exceeded')) {
+    window.isFirestoreQuotaExceeded = true;
+    window.dispatchEvent(new CustomEvent('firestore-quota-exceeded'));
+  }
+
+  const errInfo = {
+    error: errorMsg,
+    authInfo: {
+      userId: auth.currentUser?.uid || 'none',
+      email: auth.currentUser?.email || 'none',
+      emailVerified: auth.currentUser?.emailVerified || false,
+      isAnonymous: auth.currentUser?.isAnonymous || false,
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 const LockedPage = ({ title, onReturn }) => (
   <div className="min-h-[70vh] flex flex-col items-center justify-center p-12 text-center space-y-8">
@@ -81,8 +117,6 @@ const DEFAULT_USER = {
   redeemedCodes: [],
   favorites: [],
   pinnedGames: [],
-  titles: [],
-  currentTitle: 'Gamer',
   featuredBadgeId: null,
   score: 0,
   uid: 'user-' + Math.random().toString(36).substr(2, 9),
@@ -507,9 +541,8 @@ const WaveTransition = ({ isVisible, onComplete }) => {
           animate={{ y: '-100%' }}
           exit={{ opacity: 0 }}
           transition={{ 
-            duration: 4, 
-            ease: [0.75, 0, 0.25, 1],
-            opacity: { duration: 0.6, delay: 3.4 }
+            duration: 2, 
+            ease: [0.75, 0, 0.25, 1]
           }}
           onAnimationComplete={onComplete}
           className="fixed inset-0 z-[10000] pointer-events-none"
@@ -611,6 +644,51 @@ const App = () => {
 
   const [currentView, setCurrentView] = useState(AppRoute.HOME);
   const [showWaveTransition, setShowWaveTransition] = useState(false);
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const isLoggingIn = useRef(false);
+
+  // Authentication Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setFirebaseUser(u);
+      setIsAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Global Site Settings Listener (Maintenance, Game of the Week, Announcements)
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setIsMaintenanceMode(data.isMaintenanceMode || false);
+        if (data.gameOfTheWeekId) {
+          setGameOfTheWeek({ id: data.gameOfTheWeekId, name: data.gameOfTheWeekName });
+        }
+      }
+    }, (error) => {
+      console.warn('Settings Snapshot Error:', error);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleLogin = async () => {
+    if (isLoggingIn.current) return;
+    isLoggingIn.current = true;
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      if (err.code !== 'auth/cancelled-popup-request' && err.code !== 'auth/popup-closed-by-user') {
+        console.error('Login Error:', err);
+      }
+    } finally {
+      isLoggingIn.current = false;
+    }
+  };
+
+  const handleLogout = () => signOut(auth);
 
   const handleViewChange = (newView, param = null) => {
     if (newView === AppRoute.ADMIN) {
@@ -624,8 +702,8 @@ const App = () => {
     if (newView === AppRoute.SUMMER && currentView !== AppRoute.SUMMER) {
       if (showWaveTransition) return;
       setShowWaveTransition(true);
-      // Wait for the wave to cover the screen (middle of 4s transition)
-      setTimeout(() => setCurrentView(newView), 1800);
+      // Wait for the wave to cover the screen (middle of 2s transition)
+      setTimeout(() => setCurrentView(newView), 1000);
     } else {
       setCurrentView(newView);
       if (isAdminPanelOpen) setIsAdminPanelOpen(false);
@@ -755,6 +833,14 @@ const App = () => {
     }
   }, [user.settings.showChat]);
   const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [isQuotaExceeded, setIsQuotaExceeded] = useState(false);
+
+  useEffect(() => {
+    const handleQuota = () => setIsQuotaExceeded(true);
+    window.addEventListener('firestore-quota-exceeded', handleQuota);
+    return () => window.removeEventListener('firestore-quota-exceeded', handleQuota);
+  }, []);
+
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [adminAnnouncement, setAdminAnnouncement] = useState(null);
@@ -777,6 +863,12 @@ const App = () => {
   const [showBoss, setShowBoss] = useState(false);
   const [showBadgeRain, setShowBadgeRain] = useState(false);
   const [showExpRain, setShowExpRain] = useState(false);
+  useEffect(() => {
+    const handleOpenAdmin = () => setIsAdminPanelOpen(true);
+    window.addEventListener('open-admin-panel', handleOpenAdmin);
+    return () => window.removeEventListener('open-admin-panel', handleOpenAdmin);
+  }, []);
+
   const [notifications, setNotifications] = useState([]);
   const [quests, setQuests] = useState([]);
   const [boosts, setBoosts] = useState([]);
@@ -790,273 +882,173 @@ const App = () => {
     isMaintenanceMode
   );
 
+  // Global Events Listener
+  useEffect(() => {
+    if (!firebaseUser || window.isFirestoreQuotaExceeded) return;
+    const q = query(collection(db, 'events'), orderBy('timestamp', 'desc'), limit(1));
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) return;
+      const eventData = snapshot.docs[0].data();
+      
+      // Ignore if older than 5 seconds
+      if (eventData.timestamp) {
+        const eventTime = eventData.timestamp.toMillis ? eventData.timestamp.toMillis() : 0;
+        if (Date.now() - eventTime > 5000) return;
+      }
+
+      const { type, senderName } = eventData;
+      setAdminAnnouncement({
+        text: `${senderName.toUpperCase()} STARTED ${type.replace(/_/g, ' ').toUpperCase()} EVENT!`,
+        sender: { username: senderName, characterId: 'agent-x', frameId: 'obsidian' },
+        announcementType: 'event',
+        timestamp: new Date().toISOString()
+      });
+      setTimeout(() => setAdminAnnouncement(null), 8000);
+
+      // Trigger effects
+      if (type === 'RAINBOW_CHAOS') {
+        setIsRainbowChaos(true);
+        setTimeout(() => setIsRainbowChaos(false), 30000);
+      } else if (type === 'SYSTEM_GLITCH') {
+        setIsGlitched(true);
+        setTimeout(() => setIsGlitched(false), 10000);
+      } else if (type === 'PARTY_MODE') {
+        setIsPartyMode(true);
+        setTimeout(() => setIsPartyMode(false), 30000);
+      } else if (type === 'MATRIX_RAIN') {
+        setIsMatrixRain(true);
+        setTimeout(() => setIsMatrixRain(false), 15000);
+      } else if (type === 'GRAVITY_CHAOS') {
+        setIsGravityChaos(true);
+        setTimeout(() => setIsGravityChaos(false), 15000);
+      } else if (type === 'FIRE_STORM') {
+        setIsFireStorm(true);
+        setTimeout(() => setIsFireStorm(false), 15000);
+      } else if (type === 'VOID_STORM') {
+        setIsVoidStorm(true);
+        setTimeout(() => setIsVoidStorm(false), 20000);
+      } else if (type === 'GOLDEN_HOUR') {
+        setIsGoldenHour(true);
+        setTimeout(() => setIsGoldenHour(false), 60000);
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'events');
+    });
+    return () => unsub();
+  }, [firebaseUser]);
+
+
+
+  // Global Announcements Listener
+  useEffect(() => {
+    if (!firebaseUser || window.isFirestoreQuotaExceeded) return;
+    const q = query(collection(db, 'announcements'), orderBy('timestamp', 'desc'), limit(1));
+    const unsub = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) return;
+      const data = snapshot.docs[0].data();
+      
+      // Ignore if older than 10 seconds
+      if (data.timestamp) {
+        const announcementTime = data.timestamp.toMillis ? data.timestamp.toMillis() : 0;
+        if (Date.now() - announcementTime > 10000) return;
+      }
+
+      setAdminAnnouncement({
+        text: data.text,
+        sender: { username: data.senderName, characterId: data.character, frameId: data.frame },
+        announcementType: data.type || 'system',
+        timestamp: new Date().toISOString()
+      });
+      setTimeout(() => setAdminAnnouncement(null), 12000);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'announcements');
+    });
+    return () => unsub();
+  }, [firebaseUser]);
+
   const lastNotifiedLevel = useRef(user?.level || 1);
   const lastNotifiedThemesCount = useRef(user?.unlockedThemes?.length || 0);
   const lastNotifiedFramesCount = useRef(user?.unlockedFrames?.length || 0);
   const lastNotifiedCharsCount = useRef(user?.unlockedCharacters?.length || 0);
+  const lastCompletedQuestsCount = useRef(0);
   const fpsHistory = useRef([]);
   const lastLagNotification = useRef(0);
 
+  // Leaderboard Real-time Sync
   useEffect(() => {
-    const fetchLeaderboard = () => {
-      const url = '/api/leaderboard';
-      console.log('App: Fetching leaderboard from:', url);
-      fetch(url)
-        .then(async res => {
-          if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`HTTP ${res.status}: ${text.substring(0, 100)}`);
-          }
-          const contentType = res.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Response is not JSON');
-          }
-          return res.json();
-        })
-        .then(data => {
-          console.log('App: Leaderboard data received:', data.length, 'entries');
-          setLeaderboardData(data);
-        })
-        .catch(err => {
-          console.error('Leaderboard fetch error details:', {
-            message: err.message,
-            name: err.name,
-            stack: err.stack,
-            url
-          });
-          if (err instanceof Error && (err.message === 'Failed to fetch' || err.name === 'TypeError')) {
-            console.warn('Network error or server unreachable. Retrying in 5s...');
-            setTimeout(fetchLeaderboard, 5000);
-          }
-        });
-    };
-    fetchLeaderboard();
-    const interval = setInterval(fetchLeaderboard, 30000);
-    return () => clearInterval(interval);
+    if (!firebaseUser || window.isFirestoreQuotaExceeded) {
+      if (!firebaseUser) setLeaderboardData([]);
+      return;
+    }
+    const q = query(collection(db, 'users'), orderBy('score', 'desc'), limit(50));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(d => ({ ...d.data(), uid: d.id }));
+      setLeaderboardData(data);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'users');
+    });
+    return () => unsub();
+  }, [firebaseUser]);
+
+  // Global Chat Real-time Sync
+  useEffect(() => {
+    if (!firebaseUser || window.isFirestoreQuotaExceeded) {
+      if (!firebaseUser) setChatMessages([]);
+      return;
+    }
+    const q = query(collection(db, 'chat'), orderBy('timestamp', 'desc'), limit(50));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const messages = snapshot.docs.map(d => ({ ...d.data(), id: d.id })).reverse();
+      setChatMessages(messages);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'chat');
+    });
+    return () => unsub();
+  }, [firebaseUser]);
+
+  useEffect(() => {
+    // WebSocket removed in favor of Firestore real-time listeners
   }, []);
 
-  useEffect(() => {
-    let wsInstance = null;
-    let reconnectTimeout = null;
+  const sendChatMessage = async (text) => {
+    if (!text.trim() || !firebaseUser) return;
 
-    const connect = () => {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const newWs = new WebSocket(`${protocol}//${window.location.host}`);
-      ws.current = newWs;
-      wsInstance = newWs;
+    const now = Date.now();
+    if (now - lastChatTime.current < 2000) {
+      setNotifications(prev => [...prev, {
+        id: Date.now(),
+        title: 'RATE LIMIT',
+        message: 'Wait 2 seconds between messages.',
+        type: 'warning',
+        icon: 'Zap',
+        color: 'text-amber-500'
+      }]);
+      return;
+    }
+    lastChatTime.current = now;
 
-      newWs.onopen = () => {
-        console.log('WS Connection Established');
-      };
-
-      newWs.onerror = (error) => {
-        console.log('WS Connection Error (expected in dev):', error);
-      };
-
-      newWs.onclose = () => {
-        console.log('WS Connection Closed');
-        reconnectTimeout = setTimeout(connect, 3000);
-      };
-
-      newWs.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('WS Message Received:', data.type, data);
-          if (data.type === 'CHAT_MESSAGE') {
-            setChatMessages((prev) => [...prev, data].slice(-50));
-          } else if (data.type === 'DELETE_MESSAGE') {
-            setChatMessages((prev) => prev.filter(msg => msg.id !== data.messageId));
-          } else if (data.type === 'ADMIN_ANNOUNCEMENT') {
-            setAdminAnnouncement({ 
-              text: data.text, 
-              sender: data.sender,
-              announcementType: data.announcementType || 'system'
-            });
-            setTimeout(() => setAdminAnnouncement(null), 12000);
-          } else if (data.type === 'SYSTEM_MAINTENANCE') {
-            setIsMaintenanceMode(data.enabled);
-          } else if (data.type === 'GAME_OF_THE_WEEK') {
-            setGameOfTheWeek({ id: data.gameId, name: data.gameName });
-            addNotification('GAME OF THE WEEK', `NEW FEATURED TITLE: ${data.gameName.toUpperCase()}!`, 'success', <Star className="text-amber-400" />);
-          } else if (data.type === 'CLEAR_CHAT') {
-            setChatMessages([]);
-            addNotification('System', 'Chat history has been cleared by an administrator.', 'system', <MessageSquare size={14} />);
-          } else if (data.type === 'LEADERBOARD_WIPED') {
-            setLeaderboardData([]);
-            addNotification('System', 'The global leaderboard has been wiped by an administrator.', 'system', <Trophy size={14} />);
-          } else if (data.type === 'ADMIN_ACTION') {
-            const { actionType, target, abuseType, sender } = data;
-            console.log('WS Admin Action Received:', actionType, target, abuseType);
-
-            // Handle Global Events or Admin Action
-            if (target === 'GLOBAL' || actionType === 'ADMIN_ACTION') {
-              if (abuseType) {
-                const eventName = abuseType.replace(/_/g, ' ').toLowerCase();
-                setAdminAnnouncement({
-                  text: `${sender?.username || 'SYSTEM'} STARTED ${eventName.toUpperCase()} EVENT!`,
-                  sender: sender || { username: 'SYSTEM', characterId: 'agent-x', frameId: 'obsidian' },
-                  announcementType: 'event',
-                  timestamp: new Date().toISOString()
-                });
-                setTimeout(() => setAdminAnnouncement(null), 8000);
-              }
-
-              if (abuseType === 'RAINBOW_CHAOS') {
-                setIsRainbowChaos(true);
-                addNotification('ADMIN EVENT', 'RAINBOW CHAOS ENABLED! RAINBOW THEME UNLOCKED!', 'system', <Palette className="text-indigo-400" />);
-                setUser(prev => ({
-                  ...prev,
-              unlockedThemes: Array.from(new Set([...(prev.unlockedThemes || []), 'rainbow']))
-            }));
-            setTimeout(() => setIsRainbowChaos(false), 30000);
-          } else if (abuseType === 'GIVE_ALL_BADGE') {
-            setShowBadgeRain(true);
-            addNotification('ADMIN EVENT', 'ALL BADGES GRANTED!', 'system', <Award className="text-amber-400" />);
-            setUser(prev => ({
-              ...prev,
-              unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), 'tester', 'owner', 'early_adopter', 'bug_hunter', 'top_player', 'social_butterfly', 'wealthy', 'legendary']))
-            }));
-            setTimeout(() => setShowBadgeRain(false), 30000);
-          } else if (abuseType === 'EXP_EXPLOSION') {
-            setShowExpRain(true);
-            addNotification('ADMIN EVENT', 'EXP EXPLOSION! COLLECT THE ORBS!', 'system', <Zap className="text-cyan-400" />);
-            setTimeout(() => setShowExpRain(false), 20000);
-          } else if (abuseType === 'SYSTEM_GLITCH') {
-            setIsGlitched(true);
-            addNotification('ADMIN EVENT', 'CRITICAL SYSTEM FAILURE DETECTED!', 'error', <ShieldAlert className="text-rose-500" />);
-            setTimeout(() => setIsGlitched(false), 10000);
-          } else if (abuseType === 'PARTY_MODE') {
-            setIsPartyMode(true);
-            setIsRainbowChaos(true);
-            addNotification('ADMIN EVENT', 'PARTY MODE ACTIVATED! ENJOY THE CHAOS!', 'success', <Sparkles className="text-yellow-400" />);
-            setTimeout(() => {
-              setIsPartyMode(false);
-              setIsRainbowChaos(false);
-            }, 30000);
-          } else if (abuseType === 'NUKE_CHAT') {
-            setIsChatOnFire(true);
-            addNotification('ADMIN EVENT', 'CHAT IS ON FIRE!', 'system', <ZapOff className="text-rose-600" />);
-            setTimeout(() => setIsChatOnFire(false), 20000);
-          } else if (abuseType === 'BOOST_ALL') {
-            setBoosts(prev => [...prev, { id: 'admin-boost-' + Date.now(), name: 'ADMIN BOOST', multiplier: 5, expiresAt: Date.now() + 600000 }]);
-            addNotification('ADMIN EVENT', 'GLOBAL 5x EXP BOOST GRANTED!', 'system', <Zap className="text-amber-500" />);
-          } else if (abuseType === 'BOSS_SPAWN') {
-            setShowBoss(true);
-            setChatMessages(prev => [...prev, {
-              id: 'boss-' + Date.now() + '-' + Math.random(),
-              username: 'VOID ENTITY',
-              text: 'I HAVE ARRIVED TO CONSUME YOUR DATA. DEFEAT ME IF YOU CAN.',
-              character: 'glitch',
-              frame: 'glitch',
-              timestamp: new Date().toISOString(),
-              isBoss: true
-            }]);
-            addNotification('BOSS SPAWNED', 'A VOID ENTITY HAS ENTERED THE CHAT!', 'error', <Ghost className="text-white" />);
-          } else if (abuseType === 'MATRIX_RAIN') {
-            setIsMatrixRain(true);
-            addNotification('ADMIN EVENT', 'MATRIX OVERRIDE INITIATED!', 'system', <BrainCircuit className="text-emerald-500" />);
-            setTimeout(() => setIsMatrixRain(false), 15000);
-          } else if (abuseType === 'GRAVITY_CHAOS') {
-            setIsGravityChaos(true);
-            addNotification('ADMIN EVENT', 'GRAVITY SYSTEM OFFLINE!', 'system', <Rocket className="text-cyan-400" />);
-            setTimeout(() => setIsGravityChaos(false), 15000);
-          } else if (abuseType === 'FIRE_STORM') {
-            setIsFireStorm(true);
-            addNotification('ADMIN EVENT', 'FIRE STORM INITIATED! FIRE THEME UNLOCKED!', 'system', <Zap className="text-orange-500" />);
-            setUser(prev => ({
-              ...prev,
-              unlockedThemes: Array.from(new Set([...(prev.unlockedThemes || []), 'fire']))
-            }));
-            setTimeout(() => setIsFireStorm(false), 15000);
-          } else if (abuseType === 'VOID_STORM') {
-            setIsVoidStorm(true);
-            addNotification('ADMIN EVENT', 'VOID STORM INCOMING! REALITY COLLAPSING!', 'system', <Ghost className="text-purple-500" />);
-            setTimeout(() => setIsVoidStorm(false), 20000);
-          } else if (abuseType === 'SYSTEM_OVERLOAD') {
-            setIsSystemOverload(true);
-            addNotification('ADMIN EVENT', 'SYSTEM OVERLOAD! ENERGY SURGE DETECTED!', 'system', <Zap className="text-amber-500" />);
-            setTimeout(() => setIsSystemOverload(false), 15000);
-          } else if (abuseType === 'GOLDEN_HOUR') {
-            setIsGoldenHour(true);
-            addNotification('ADMIN EVENT', 'GOLDEN HOUR! ALL REWARDS TRIPLED!', 'system', <Star className="text-yellow-400" />);
-            setTimeout(() => setIsGoldenHour(false), 60000);
-          }
-
-        }
-
-        // Handle Targeted Actions
-        if (target === user.username) {
-          if (actionType === 'GIVE_EXP') {
-            setUser(prev => ({ ...prev, score: prev.score + (data.amount || 0) }));
-          } else if (actionType === 'GIVE_LEVEL') {
-            setUser(prev => ({ ...prev, level: prev.level + (data.amount || 0) }));
-          } else if (actionType === 'GIVE_BADGE') {
-            setUser(prev => ({ 
-              ...prev, 
-              unlockedBadges: prev.unlockedBadges.includes(data.badgeId) 
-                ? prev.unlockedBadges 
-                : [...prev.unlockedBadges, data.badgeId] 
-            }));
-          } else if (actionType === 'RESET_STATS') {
-            setUser(prev => ({ ...prev, score: 0, level: 1 }));
-            addNotification('System Reset', 'Your stats have been reset by an administrator.', 'system', <Shield className="text-rose-500" />);
-          } else if (actionType === 'TOGGLE_ADMIN') {
-            setUser(prev => ({ ...prev, isAdmin: !prev.isAdmin }));
-            addNotification('Security Update', 'Your administrative privileges have been updated.', 'system', <Shield className="text-theme" />);
-          } else if (actionType === 'BAN_PLAYER') {
-            setUser(prev => ({ ...prev, isBanned: true }));
-          } else if (actionType === 'GIVE_ITEM') {
-            const { itemType, itemId } = data;
-            setUser(prev => {
-              const key = itemType === 'theme' ? 'unlockedThemes' : itemType === 'frame' ? 'unlockedFrames' : 'unlockedCharacters';
-              return {
-                ...prev,
-                [key]: Array.from(new Set([...(prev[key] || []), itemId]))
-              };
-            });
-            addNotification('Item Received', `Admin granted you a new ${itemType}: ${itemId}`, 'system', <Star className="text-theme" />);
-          } else if (actionType === 'GIFT_BOOST') {
-            addNotification('2x EXP Boost!', 'An administrator granted you a temporary 2x Experience Boost!', 'system', <Zap className="text-amber-500" />);
-          }
-        }
-      }
+    try {
+      await addDoc(collection(db, 'chat'), {
+        text: text,
+        senderUid: firebaseUser.uid,
+        username: user.username,
+        timestamp: serverTimestamp(),
+        character: user.currentCharacter,
+        frame: user.currentFrame,
+        isAdmin: user.isAdmin
+      });
     } catch (err) {
-      console.error('Error parsing WS message:', err);
+      handleFirestoreError(err, OperationType.CREATE, 'chat');
     }
   };
-};
 
-    connect();
-
-    return () => {
-      if (wsInstance) {
-        wsInstance.onclose = null;
-        if (wsInstance.readyState === WebSocket.OPEN || wsInstance.readyState === WebSocket.CONNECTING) {
-          wsInstance.close();
-        }
-      }
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-    };
-  }, []);
-
-  const sendChatMessage = (text) => {
-    if (!text.trim() || !ws.current || ws.current.readyState !== WebSocket.OPEN) return;
-    ws.current.send(JSON.stringify({
-      type: 'CHAT_MESSAGE',
-      id: Math.random().toString(36).substr(2, 9),
-      username: user.username,
-      text: text,
-      character: user.currentCharacter,
-      frame: user.currentFrame
-    }));
-  };
-
-  const deleteChatMessage = (messageId) => {
-    if (!ws.current || ws.current.readyState !== WebSocket.OPEN || !user.isAdmin) return;
-    ws.current.send(JSON.stringify({
-      type: 'DELETE_MESSAGE',
-      messageId
-    }));
+  const deleteChatMessage = async (messageId) => {
+    if (!user.isAdmin) return;
+    try {
+      await deleteDoc(doc(db, 'chat', messageId));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, `chat/${messageId}`);
+    }
   };
 
   useEffect(() => {
@@ -1076,7 +1068,7 @@ const App = () => {
 
         const avgFps = fpsHistory.current.reduce((a, b) => a + b, 0) / fpsHistory.current.length;
         
-        if (avgFps < 30 && Date.now() - lastLagNotification.current > 60000) {
+        if (avgFps < 30 && Date.now() - lastLagNotification.current > 60000 && !isAuthLoading && user.hasSetProfile) {
           addNotification('Lag Detected', 'The experience could be laggy. Try closing other tabs.', 'system', <ZapOff className="text-rose-500" />);
           lastLagNotification.current = Date.now();
         }
@@ -1091,25 +1083,33 @@ const App = () => {
     return () => cancelAnimationFrame(animId);
   }, [user.settings.lagNotifications]);
 
+  const initialLoadCompleted = useRef(false);
+
   useEffect(() => {
     if (user.level > lastNotifiedLevel.current) {
-      addNotification('Level Up!', `You reached Level ${user.level}`, 'level', <Zap className="text-theme" />);
+      if (initialLoadCompleted.current && lastNotifiedLevel.current > 0) {
+        addNotification('Level Up!', `You reached Level ${user.level}`, 'level', <Zap className="text-theme" />);
+      }
       lastNotifiedLevel.current = user.level;
     }
   }, [user.level]);
 
   useEffect(() => {
     if (user.unlockedThemes.length > lastNotifiedThemesCount.current) {
-      const newTheme = user.unlockedThemes[user.unlockedThemes.length - 1];
-      addNotification('Theme Unlocked!', `New theme: ${newTheme}`, 'system', <Star className="text-theme" />);
+      if (initialLoadCompleted.current && lastNotifiedThemesCount.current > 0) {
+        const newTheme = user.unlockedThemes[user.unlockedThemes.length - 1];
+        addNotification('Theme Unlocked!', `New theme: ${newTheme}`, 'system', <Star className="text-theme" />);
+      }
       lastNotifiedThemesCount.current = user.unlockedThemes.length;
     }
   }, [user.unlockedThemes]);
 
   useEffect(() => {
     if (user.unlockedFrames.length > lastNotifiedFramesCount.current) {
-      const newFrame = user.unlockedFrames[user.unlockedFrames.length - 1];
-      addNotification('Frame Unlocked!', `New frame: ${newFrame}`, 'system', <Shield className="text-theme" />);
+      if (initialLoadCompleted.current && lastNotifiedFramesCount.current > 0) {
+        const newFrame = user.unlockedFrames[user.unlockedFrames.length - 1];
+        addNotification('Frame Unlocked!', `New frame: ${newFrame}`, 'system', <Shield className="text-theme" />);
+      }
       lastNotifiedFramesCount.current = user.unlockedFrames.length;
     }
   }, [user.unlockedFrames]);
@@ -1125,23 +1125,43 @@ const App = () => {
 
   useEffect(() => {
     if (user.unlockedCharacters.length > lastNotifiedCharsCount.current) {
-      const newChar = user.unlockedCharacters[user.unlockedCharacters.length - 1];
-      addNotification('Avatar Unlocked!', `New character: ${newChar}`, 'system', <Zap className="text-theme" />);
+      if (initialLoadCompleted.current && lastNotifiedCharsCount.current > 0) {
+        const newChar = user.unlockedCharacters[user.unlockedCharacters.length - 1];
+        addNotification('Avatar Unlocked!', `New character: ${newChar}`, 'system', <Zap className="text-theme" />);
+      }
       lastNotifiedCharsCount.current = user.unlockedCharacters.length;
     }
   }, [user.unlockedCharacters]);
-
-  const lastCompletedQuestsCount = useRef(0);
 
   useEffect(() => {
     const qArray = Array.isArray(quests) ? quests : [];
     const completedQuests = qArray.filter(q => q.isCompleted);
     if (completedQuests.length > lastCompletedQuestsCount.current) {
-      const latestQuest = completedQuests[completedQuests.length - 1];
-      addNotification('Quest Completed!', latestQuest.title, 'system', <Trophy className="text-theme" />);
+      if (initialLoadCompleted.current && lastCompletedQuestsCount.current > 0) {
+        const latestQuest = completedQuests[completedQuests.length - 1];
+        addNotification('Quest Completed!', latestQuest.title, 'system', <Trophy className="text-theme" />);
+      }
       lastCompletedQuestsCount.current = completedQuests.length;
     }
   }, [quests]);
+
+  useEffect(() => {
+    if (!isAuthLoading && user.hasSetProfile && firebaseUser) {
+      // Sync last notified values to current state without firing notifications
+      lastNotifiedLevel.current = user.level;
+      lastNotifiedThemesCount.current = user.unlockedThemes.length;
+      lastNotifiedFramesCount.current = user.unlockedFrames.length;
+      lastNotifiedCharsCount.current = user.unlockedCharacters.length;
+      const qArray = Array.isArray(quests) ? quests : [];
+      lastCompletedQuestsCount.current = qArray.filter(q => q.isCompleted).length;
+
+      // Small delay after first data load to prevent rapid fire notifications
+      const timer = setTimeout(() => {
+        initialLoadCompleted.current = true;
+      }, 10000); // 10s delay to be sure
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthLoading, user.hasSetProfile, firebaseUser]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1173,7 +1193,7 @@ const App = () => {
 
   useEffect(() => {
     if (user.username !== 'Player' && user.hasSetProfile) {
-      const url = `${window.location.origin}/api/leaderboard/update`;
+      const url = '/api/leaderboard/update';
       fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1189,8 +1209,16 @@ const App = () => {
           unlockedBadges: user.unlockedBadges,
           currentTheme: user.currentTheme
         })
-      }).catch(err => {
-        console.error('Leaderboard sync error:', err);
+      })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .catch(err => {
+        // Silently skip if it's just a network failure on initial load/sleep
+        if (err.name !== 'TypeError') {
+          console.error('Leaderboard sync error:', err.message);
+        }
       });
     }
   }, [user.score, user.level, user.username, user.hasSetProfile, user.currentCharacter, user.featuredBadgeId, user.gamesPlayed, user.currentFrame, user.unlockedBadges, user.currentTheme]);
@@ -1266,59 +1294,182 @@ const App = () => {
     document.documentElement.style.setProperty('--ui-opacity', user.settings.uiOpacity.toString());
   }, [user.settings.uiOpacity]);
 
+  // Sync User Profile with Firestore
   useEffect(() => {
-    const savedStats = localStorage.getItem('classroom9x_local_profile_v4');
-    if (savedStats) {
-      try {
-        const parsed = JSON.parse(savedStats);
-        if (!parsed.uid) {
-          parsed.uid = 'user-' + Math.random().toString(36).substr(2, 9);
+    if (!firebaseUser) {
+      setUser(DEFAULT_USER);
+      return;
+    }
+
+    const userRef = doc(db, 'users', firebaseUser.uid);
+    
+    // Initial fetch and real-time sync
+    const unsub = onSnapshot(userRef, async (snapshot) => {
+      // 1. Fetch admin status (always check this regardless of profile existence)
+      const adminDoc = await getDoc(doc(db, 'admins', firebaseUser.uid));
+      const currentUserEmail = (firebaseUser.email || '').toLowerCase();
+      const isSuperAdmin = currentUserEmail === 'softball_chik_007@yahoo.com';
+      const isAdminFlag = adminDoc.exists() || isSuperAdmin;
+      const role = adminDoc.exists() ? adminDoc.data().role : (isSuperAdmin ? 'OWNER' : null);
+
+      if (snapshot.exists()) {
+        const userData = snapshot.data();
+        
+        // Final verification for admin status (Collection check OR Super Admin OR redeemed codes)
+        const redeemedCodes = userData.redeemedCodes || [];
+        const hasLegacyAdminCode = redeemedCodes.some(c => c.toUpperCase() === 'ADMIN6');
+        const hasLegacyOwnerCode = redeemedCodes.some(c => c.toUpperCase() === 'OWNER3413');
+        
+        const finalIsAdmin = isAdminFlag || hasLegacyAdminCode || hasLegacyOwnerCode;
+        const finalRole = role || (hasLegacyOwnerCode ? 'OWNER' : (hasLegacyAdminCode ? 'MODERATOR' : null));
+
+        console.log('Admin Check (Existing User):', { 
+          uid: firebaseUser.uid, 
+          email: firebaseUser.email, 
+          finalIsAdmin,
+          finalRole
+        });
+
+        if ((isSuperAdmin || hasLegacyAdminCode || hasLegacyOwnerCode) && !adminDoc.exists() && firebaseUser.email) {
+          const enrollRole = (hasLegacyOwnerCode || isSuperAdmin) ? 'OWNER' : 'MODERATOR';
+          console.log('Auto-enrolling admin role:', enrollRole, 'for', firebaseUser.email);
+          setDoc(doc(db, 'admins', firebaseUser.uid), { 
+            email: firebaseUser.email,
+            role: enrollRole,
+            addedAt: serverTimestamp()
+          }, { merge: true }).catch(err => console.warn('Admin enrollment failed:', err));
         }
+
+        setUser(prev => ({ 
+          ...prev, 
+          ...userData, 
+          uid: firebaseUser.uid, 
+          email: firebaseUser.email,
+          isAdmin: finalIsAdmin,
+          role: finalRole
+        }));
         
-        // Streak Logic
-        const today = new Date().toISOString().split('T')[0];
-        const lastLogin = parsed.lastLoginDate;
-        let newStreak = parsed.streak || 1;
-        
-        if (lastLogin && lastLogin !== today) {
-          const lastDate = new Date(lastLogin);
-          const currentDate = new Date(today);
-          const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
-          const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-          
-          if (diffDays === 1) {
-            newStreak += 1;
-          } else if (diffDays > 1) {
-            newStreak = 1;
-          }
-        }
-        
-        const mergedUser = { 
-          ...DEFAULT_USER, 
-          ...parsed, 
-          settings: { 
-            ...DEFAULT_USER.settings, 
-            ...(parsed.settings || {}),
-            betaFeatures: { 
-              ...DEFAULT_USER.settings.betaFeatures, 
-              ...(parsed.settings?.betaFeatures || {}) 
-            }
-          },
-          streak: newStreak, 
-          lastLoginDate: today 
-        };
-        setUser(mergedUser);
-        if (!mergedUser.hasSetProfile) {
+        if (!userData.hasSetProfile) {
           setShowInitialModal(true);
         }
-      } catch (e) {
-        console.error("Failed to load profile", e);
-        setShowInitialModal(true);
+      } else {
+        // Create initial profile
+        const initialProfile = {
+          ...DEFAULT_USER,
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          username: firebaseUser.displayName || 'Player',
+          hasSetProfile: false,
+          lastLoginDate: new Date().toISOString().split('T')[0],
+          isAdmin: isAdminFlag,
+          role: role
+        };
+
+        console.log('Admin Check (New User):', { 
+          uid: firebaseUser.uid, 
+          isAdminFlag,
+          role
+        });
+
+        try {
+          await setDoc(userRef, initialProfile);
+          setUser(initialProfile);
+          setShowInitialModal(true);
+        } catch (error) {
+          handleFirestoreError(error, OperationType.CREATE, `users/${firebaseUser.uid}`);
+        }
       }
-    } else {
-      setShowInitialModal(true);
-    }
-  }, []);
+    }, (error) => {
+      console.warn('User Sync Error:', error);
+    });
+
+    return () => unsub();
+  }, [firebaseUser]);
+
+  const lastSyncedData = useRef(null);
+  const lastSyncTime = useRef(0);
+  const lastChatTime = useRef(0);
+  const errCount = useRef(0);
+
+  // Sync user data to Firestore whenever local 'user' state changes
+  useEffect(() => {
+    if (!firebaseUser || !user || user.username === 'Player' || !user.hasSetProfile) return;
+
+    const syncUser = async () => {
+      // Robust auth check before syncing
+      if (!auth.currentUser || auth.currentUser.uid !== firebaseUser.uid) {
+        return;
+      }
+
+      // Check if data actually changed significantly
+      const currentData = {
+        level: user.level,
+        score: user.score,
+        exp: user.exp,
+        gamesPlayed: user.gamesPlayed,
+        unlockedBadges: user.unlockedBadges?.length,
+        username: user.username,
+        currentCharacter: user.currentCharacter,
+        currentFrame: user.currentFrame,
+        featuredBadgeId: user.featuredBadgeId,
+        pinnedGames: user.pinnedGames?.length,
+        favorites: user.favorites?.length
+      };
+
+      const hasChanged = !lastSyncedData.current || JSON.stringify(currentData) !== JSON.stringify(lastSyncedData.current);
+      const timeSinceSync = Date.now() - lastSyncTime.current;
+      
+      // Stop syncing if quota exceeded or consecutive errors
+      if (window.isFirestoreQuotaExceeded || errCount.current >= 3) {
+        if (errCount.current === 3) {
+          console.error("Firestore sync SUSPENDED due to resource limits.");
+          errCount.current = 4; // Stop logging after first time
+        }
+        return;
+      }
+
+      // Only sync if changed OR forced periodic sync (every 10 mins)
+      if (!hasChanged && timeSinceSync < 600000) {
+        return;
+      }
+
+      try {
+        const userRef = doc(db, 'users', firebaseUser.uid);
+        await updateDoc(userRef, {
+          uid: user.uid,
+          username: user.username,
+          level: user.level,
+          score: user.score,
+          exp: user.exp,
+          gamesPlayed: user.gamesPlayed,
+          currentCharacter: user.currentCharacter,
+          currentFrame: user.currentFrame,
+          currentTheme: user.currentTheme,
+          unlockedThemes: user.unlockedThemes,
+          unlockedFrames: user.unlockedFrames,
+          unlockedCharacters: user.unlockedCharacters,
+          unlockedBadges: user.unlockedBadges,
+          redeemedCodes: user.redeemedCodes || [],
+          featuredBadgeId: user.featuredBadgeId,
+          favorites: user.favorites,
+          pinnedGames: user.pinnedGames || [],
+          settings: user.settings,
+          hasSetProfile: user.hasSetProfile,
+          lastSeen: serverTimestamp()
+        });
+        
+        lastSyncedData.current = currentData;
+        lastSyncTime.current = Date.now();
+        errCount.current = 0; // Reset error count on success
+      } catch (err) {
+        errCount.current++;
+        handleFirestoreError(err, OperationType.UPDATE, `users/${firebaseUser.uid}`);
+      }
+    };
+
+    const timeout = setTimeout(syncUser, 60000); // 60s debounce + change detection
+    return () => clearTimeout(timeout);
+  }, [user.score, user.level, user.exp, user.username, user.hasSetProfile, user.currentCharacter, user.featuredBadgeId, user.gamesPlayed, user.currentFrame, user.unlockedBadges, user.currentTheme, user.settings, user.redeemedCodes, user.pinnedGames, user.favorites]);
 
   useEffect(() => {
     localStorage.setItem('classroom9x_local_profile_v4', JSON.stringify(user));
@@ -1414,7 +1565,11 @@ const App = () => {
             ...prev,
             unlockedBadges: [...prev.unlockedBadges, id]
           }));
-          addNotification('Badge Unlocked!', badge.name, 'badge', <badge.icon className={badge.color === 'rainbow' ? 'mythic-rainbow-text' : ''} style={{ color: badge.color !== 'rainbow' ? badge.color : undefined }} />, badge.color);
+          const className = 
+            badge.color === 'rainbow' ? 'mythic-rainbow-text' : 
+            badge.color === 'galaxy' ? 'transcendent-galaxy-text' : '';
+          
+          addNotification('Badge Unlocked!', badge.name, 'badge', <badge.icon className={className} style={{ color: (badge.color !== 'rainbow' && badge.color !== 'galaxy') ? badge.color : undefined }} />, badge.color);
         }
       }
     };
@@ -1454,7 +1609,7 @@ const App = () => {
       const bonusExp = Math.floor(Math.random() * 25);
       const earnedExp = Math.floor((baseExp + bonusExp) * multiplier);
       
-      const newExp = prev.exp + earnedExp;
+      let updatedExp = prev.exp + earnedExp;
       const requiredForNext = prev.level * LEVEL_UP_BASE;
       const newGamesPlayed = (prev.gamesPlayed || 0) + 1;
 
@@ -1474,7 +1629,8 @@ const App = () => {
       };
 
       // Handle multiple level ups if enough EXP is earned
-      while (newExp >= newLevel * LEVEL_UP_BASE && newLevel < 999) {
+      while (updatedExp >= newLevel * LEVEL_UP_BASE && newLevel < 999) {
+        updatedExp -= (newLevel * LEVEL_UP_BASE);
         newLevel += 1;
         
         if (themeUnlocks[newLevel] && !unlockedThemes.includes(themeUnlocks[newLevel])) {
@@ -1492,7 +1648,7 @@ const App = () => {
 
       return { 
         ...prev, 
-        exp: newLevel >= 999 ? 0 : newExp, 
+        exp: newLevel >= 999 ? 0 : updatedExp, 
         level: newLevel, 
         score: prev.score + (earnedExp * 5),
         unlockedThemes,
@@ -1521,11 +1677,6 @@ const App = () => {
       ...prev, 
       featuredBadgeId: prev.featuredBadgeId === badgeId ? null : badgeId 
     }));
-  };
-
-  const setProfileTitle = (title) => {
-    setUser(prev => ({ ...prev, currentTitle: title }));
-    addNotification('Title Updated', `Current title: ${title}`, 'system', <Star size={14} />);
   };
 
   const handleCosmicEvent = () => {
@@ -1601,24 +1752,48 @@ const App = () => {
   };
 
   const redeemCode = (code) => {
-    const cleanCode = code.trim().toLowerCase();
-    const alreadyRedeemed = user.redeemedCodes?.includes(cleanCode);
+    const cleanCode = code.trim().toUpperCase();
+    const alreadyRedeemed = (user.redeemedCodes || []).some(c => c.toUpperCase() === cleanCode);
 
-    if (alreadyRedeemed && cleanCode !== 'codes211') {
+    if (alreadyRedeemed && cleanCode !== 'CODES211') {
       return { success: false, message: 'DECRYPTION KEY ALREADY USED' };
     }
 
-    if (cleanCode === 'admin6' || cleanCode === 'owner') {
-      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa', 'interstellar'];
-      const allFrames = ['obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
+    if (cleanCode === 'ADMIN6') {
+      const role = 'MODERATOR';
+      setUser(prev => ({
+        ...prev,
+        isAdmin: true,
+        role: role,
+        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'moderator'])),
+        currentFrame: 'moderator',
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'ADMIN6']))
+      }));
+      // Persist admin status in Firestore
+      if (firebaseUser) {
+        setDoc(doc(db, 'admins', firebaseUser.uid), {
+          email: firebaseUser.email,
+          role: role,
+          addedAt: serverTimestamp()
+        }, { merge: true }).catch(err => console.error('Admin enrollment failed:', err));
+      }
+      addNotification('MODERATOR ACCESS GRANTED', 'WELCOME, MODERATOR', 'system', <Hammer className="text-blue-500" />);
+      return { success: true, message: 'MODERATOR PROTOCOL ACTIVATED: ACCESS GRANTED TO ANNOUNCEMENTS & EVENTS' };
+    }
+
+    if (cleanCode === 'OWNER3413') {
+      const role = 'OWNER';
+      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'fire', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa', 'interstellar'];
+      const allFrames = ['moderator', 'obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
       const allChars = CHARACTERS.map(c => c.id);
       const allBadges = Array.from(new Set([...BADGES.map(b => b.id), 'stargazer']));
-      const allCodes = ['glitch', 'rainbow', 'spongebob', 'hologram', 'jarvis', '9xisback', 'admin6', 'imagenius', 'tester9832', 'owner', 'codes211', 'merica', 'classroom9x'];
+      const allCodes = ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'];
       
       setUser(prev => ({
         ...prev,
         level: 999,
         isAdmin: true,
+        role: role,
         redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), ...allCodes])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
@@ -1628,20 +1803,28 @@ const App = () => {
         currentFrame: 'owner',
         score: Math.max(prev.score, 999999)
       }));
+      // Persist admin status in Firestore
+      if (firebaseUser) {
+        setDoc(doc(db, 'admins', firebaseUser.uid), {
+          email: firebaseUser.email,
+          role: role,
+          addedAt: serverTimestamp()
+        }, { merge: true }).catch(err => console.error('Admin enrollment failed:', err));
+      }
       addNotification('ADMIN ACCESS GRANTED', 'WELCOME BACK, OWNER', 'system', <Crown className="text-theme" />);
-      return { success: true, message: 'ADMIN PROTOCOL ACTIVATED: EVERYTHING UNLOCKED' };
+      return { success: true, message: 'OWNER PROTOCOL ACTIVATED: EVERYTHING UNLOCKED' };
     }
 
-    if (cleanCode === 'codes211') {
+    if (cleanCode === 'CODES211') {
       setQuests(prev => prev.map(q => ({ ...q, progress: q.target, isCompleted: true })));
       addNotification('Daily Override', 'ALL DAILY OBJECTIVES COMPLETED', 'system', <Zap className="text-theme" />);
       return { success: true, message: 'OVERRIDE SUCCESSFUL: DAILY QUESTS COMPLETED' };
     }
 
-    if (cleanCode === 'glitch') {
+    if (cleanCode === 'GLITCH') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'glitch'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'GLITCH'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'glitch'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'glitch']))
       }));
@@ -1649,20 +1832,20 @@ const App = () => {
       return { success: true, message: 'PROTOCOL BREACH: GLITCH CHARACTER ACQUIRED' };
     }
 
-    if (cleanCode === 'rainbow') {
+    if (cleanCode === 'RAINBOW') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'rainbow'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'RAINBOW'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'rainbow']))
       }));
       addNotification('Connection Established', 'PROTOCOL: SPECTRUM MODE ACTIVE', 'system', <Palette className="text-theme" />);
       return { success: true, message: 'PROTOCOL INITIATED: SPECTRUM MODE UNLOCKED' };
     }
 
-    if (cleanCode === 'spongebob') {
+    if (cleanCode === 'SPONGEBOB') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'spongebob'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'SPONGEBOB'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'spongebob'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'spongebob']))
       }));
@@ -1670,10 +1853,10 @@ const App = () => {
       return { success: true, message: 'WHO LIVES IN A PINEAPPLE UNDER THE SEA? SPONGEBOB THEME & AVATAR UNLOCKED!' };
     }
 
-    if (cleanCode === 'hologram') {
+    if (cleanCode === 'HOLOGRAM') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'hologram'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'HOLOGRAM'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'hologram'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'hologram']))
       }));
@@ -1681,10 +1864,10 @@ const App = () => {
       return { success: true, message: 'VIRTUAL DEPLOYMENT: HOLOGRAM MODULE & FRAME ACTIVATED' };
     }
 
-    if (cleanCode === 'jarvis') {
+    if (cleanCode === 'JARVIS') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'jarvis'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'JARVIS'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'ironman'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'stark']))
       }));
@@ -1692,10 +1875,10 @@ const App = () => {
       return { success: true, message: 'WELCOME HOME, SIR: STARK AVATAR UNLOCKED' };
     }
 
-    if (cleanCode === 'merica') {
+    if (cleanCode === 'MERICA') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'merica'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'MERICA'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'usa'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'usa'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'patriot']))
@@ -1704,20 +1887,20 @@ const App = () => {
       return { success: true, message: 'PROTOCOL INITIATED: USA THEME, FRAME & PATRIOT AVATAR UNLOCKED' };
     }
 
-    if (cleanCode === '9xisback') {
+    if (cleanCode === '9XISBACK') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), '9xisback'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), '9XISBACK'])),
         level: prev.level + 10
       }));
       addNotification('Code Redeemed!', 'PROFILE CLEARANCE GRANTED', 'system', <Shield className="text-theme" />);
       return { success: true, message: 'PROFILE CLEARANCE GRANTED: +10 LEVELS' };
     }
 
-    if (cleanCode === 'classroom9x') {
+    if (cleanCode === 'CLASSROOM9X') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'classroom9x'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'CLASSROOM9X'])),
         score: prev.score + 100000,
         level: prev.level + 5
       }));
@@ -1725,12 +1908,12 @@ const App = () => {
       return { success: true, message: '9X PROTOCOL: +100,000 EXP & +5 LEVELS' };
     }
 
-    if (cleanCode === 'imagenius') {
+    if (cleanCode === 'IMAGENIUS') {
       const kanyeThemes = ['kanye'];
       const kanyeChars = ['kanye', 'ye-mask'];
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'imagenius'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'IMAGENIUS'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...kanyeThemes])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...kanyeChars])),
       }));
@@ -1738,10 +1921,10 @@ const App = () => {
       return { success: true, message: 'KANYE EXCLUSIVES UNLOCKED: GRADUATION THEME, YE, YE MASK' };
     }
 
-    if (cleanCode === 'tester9832') {
+    if (cleanCode === 'TESTER9832') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'tester9832'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'TESTER9832'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'tester'])),
         unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'tester'])),
         unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), 'tester-badge'])),
@@ -1752,41 +1935,42 @@ const App = () => {
     return { success: false, message: 'INVALID DECRYPTION KEY' };
   };
 
-  const toggleFavorite = (gameId) => {
+  const togglePin = (gameId) => {
     if (typeof gameId !== 'string') return;
-    const isAdding = !(user.favorites || []).includes(gameId);
     
-    if (isAdding && (user.favorites || []).length >= 7) {
-      addNotification('Limit Reached', 'You can only have 7 favorites. Unfavorite something first!', 'error', <ShieldAlert className="text-rose-500" />);
+    if (!firebaseUser) {
+      addNotification('Access Locked', 'Sign in to pin your favorite games!', 'error', <Lock className="text-rose-500" />);
+      return;
+    }
+
+    const currentPinned = user.pinnedGames || [];
+    const isAdding = !currentPinned.includes(gameId);
+    
+    if (isAdding && currentPinned.length >= 7) {
+      addNotification('LIMIT REACHED', 'MAX PINNED GAMES REACHED!', 'error', <ShieldAlert className="text-rose-500" />);
       return;
     }
     
+    // Perform state update
     setUser(prev => {
-      const newFavorites = isAdding 
-        ? [...(prev.favorites || []), gameId]
-        : (prev.favorites || []).filter(id => id !== gameId);
-      
-      // Also pin/unpin when favoriting
-      const newPinned = isAdding
+      const newPinned = isAdding 
         ? [...new Set([...(prev.pinnedGames || []), gameId])]
         : (prev.pinnedGames || []).filter(id => id !== gameId);
         
+      const newFavorites = isAdding
+        ? [...new Set([...(prev.favorites || []), gameId])]
+        : (prev.favorites || []).filter(id => id !== gameId);
+
       return { ...prev, favorites: newFavorites, pinnedGames: newPinned };
     });
 
-    if (isAdding) {
-      addNotification('Game Pinned', 'Added to your quick access.', 'system', <Star size={14} className="text-primary" />);
-    }
-  };
-
-  const togglePin = (gameId) => {
-    if (typeof gameId !== 'string') return;
-    const isAdding = !(user.pinnedGames || []).includes(gameId);
-    const newPinned = isAdding 
-      ? [...(user.pinnedGames || []), gameId]
-      : (user.pinnedGames || []).filter(id => id !== gameId);
-    setUser({ ...user, pinnedGames: newPinned });
-    addNotification(isAdding ? 'Game Pinned' : 'Game Unpinned', isAdding ? 'Added to your quick access.' : 'Removed from quick access.', 'system', <Star size={14} className="text-primary" />);
+    // Notify outside of state updater to avoid double triggers in strict mode
+    addNotification(
+      isAdding ? 'PINNED' : 'UNPINNED',
+      isAdding ? 'Added to your quick access.' : 'Removed from your quick access.',
+      'success',
+      <Pin size={14} className={isAdding ? 'fill-primary text-primary' : 'text-primary'} />
+    );
   };
 
   const handleGameSelect = (game) => {
@@ -1797,6 +1981,11 @@ const App = () => {
   };
 
   const handleUpdateUsername = (newName) => {
+    if (!firebaseUser) {
+      addNotification('Access Locked', 'this feature is locked! Create an account to change your username', 'error', <Lock className="text-rose-500" />);
+      return;
+    }
+
     const FORBIDDEN_WORDS = [
       'fuck', 'shit', 'ass', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'faggot', 'bastard',
       'slut', 'whore', 'cock', 'cum', 'penis', 'vagina', 'porn', 'sex', 'hitler', 'nazi'
@@ -1869,10 +2058,10 @@ const App = () => {
   };
 
   const renderContent = () => {
-    if (searchQuery) return <Library games={filteredGames} favorites={user.favorites} pinnedGames={user.pinnedGames} onToggleFavorite={toggleFavorite} onTogglePin={togglePin} onPlayGame={handleGameSelect} />;
+    if (searchQuery) return <Library games={filteredGames} favorites={user.favorites} pinnedGames={user.pinnedGames} onToggleFavorite={togglePin} onTogglePin={togglePin} onPlayGame={handleGameSelect} />;
     switch (currentView) {
-      case AppRoute.CATEGORY: return <CategoryPage categoryId={selectedCategoryId || ''} games={GAMES_DATA} favorites={user.favorites} pinnedGames={user.pinnedGames} onToggleFavorite={toggleFavorite} onTogglePin={togglePin} onPlayGame={handleGameSelect} />;
-      case AppRoute.LIBRARY: return <Library games={GAMES_DATA} favorites={user.favorites} pinnedGames={user.pinnedGames} onToggleFavorite={toggleFavorite} onTogglePin={togglePin} onPlayGame={handleGameSelect} />;
+      case AppRoute.CATEGORY: return <CategoryPage categoryId={selectedCategoryId || ''} games={GAMES_DATA} favorites={user.favorites} pinnedGames={user.pinnedGames} onToggleFavorite={togglePin} onTogglePin={togglePin} onPlayGame={handleGameSelect} />;
+      case AppRoute.LIBRARY: return <Library games={GAMES_DATA} favorites={user.favorites} pinnedGames={user.pinnedGames} onToggleFavorite={togglePin} onTogglePin={togglePin} onPlayGame={handleGameSelect} />;
       case AppRoute.APPS: 
         if (!user.isAdmin) return <LockedPage title="Apps" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return (
@@ -1896,11 +2085,9 @@ const App = () => {
             onUpdateUsername={handleUpdateUsername}
           />
         );
-      case AppRoute.SETTINGS: return <Settings user={user} onUpdateSettings={updateSettings} onSetTheme={setTheme} onRedeemCode={redeemCode} onResetProgress={handleResetProgress} onUpdateUsername={handleUpdateUsername} />;
+      case AppRoute.SETTINGS: return <Settings user={user} onUpdateSettings={updateSettings} onSetTheme={setTheme} onRedeemCode={redeemCode} onResetProgress={handleResetProgress} onUpdateUsername={handleUpdateUsername} addNotification={addNotification} />;
       case AppRoute.SUMMER: return <SummerCountdown user={user} />;
-      case AppRoute.SPOTIFY: return <MusicPage />;
       case AppRoute.LEADERBOARD: 
-        if (!user.isAdmin) return <LockedPage title="Leaderboard" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return <Leaderboard user={user} onPlayerClick={setSelectedPlayer} leaderboardData={leaderboardData} />;
       default: return (
         <Home 
@@ -1909,9 +2096,10 @@ const App = () => {
           dailyPicks={dailyPicks} 
           favorites={user.favorites}
           pinnedGames={user.pinnedGames}
+          leaderboardData={leaderboardData}
           boosts={boosts} 
           gameOfTheWeek={gameOfTheWeek}
-          onToggleFavorite={toggleFavorite}
+          onToggleFavorite={togglePin}
           onTogglePin={togglePin}
           onPlayGame={handleGameSelect}
           onSwitchToLibrary={() => setCurrentView(AppRoute.LIBRARY)}
@@ -1983,48 +2171,152 @@ const App = () => {
   }, [selectedPlayer, user, toggleFriend]);
 
   const renderCurrentView = () => {
-    if (isMaintenanceMode && !user.isAdmin) {
-      return (
-        <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center p-8 text-center">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-md space-y-8"
-          >
-            <div className="w-24 h-24 bg-amber-500/20 rounded-3xl flex items-center justify-center text-amber-500 border border-amber-500/20 mx-auto shadow-[0_0_50px_rgba(245,158,11,0.3)]">
-              <SettingsIcon size={48} className="animate-spin-slow" />
-            </div>
-            <div className="space-y-4">
-              <h1 className="text-4xl font-orbitron font-black text-white uppercase tracking-tighter">System <span className="text-amber-500">Maintenance</span></h1>
-              <div className="text-white/40 font-medium leading-relaxed space-y-4">
-                <p>Uh oh! Classroom 9x is currently undergoing maintenance to improve performance and add new features.</p>
-                <p>Some games or features may be temporarily unavailable while we work behind the scenes.</p>
-                <p>Thanks for your patience — we’ll be back up and running soon.</p>
-              </div>
-            </div>
-            <div className="pt-8 border-t border-white/5">
-              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Status: Offline for Calibration</p>
-            </div>
-          </motion.div>
-        </div>
-      );
-    }
-
-    if (isInitialLoading || isExitingCloak) {
-      return <LoadingScreen onComplete={handleLoadingComplete} onCosmicEvent={handleCosmicEvent} />;
-    }
-
-    if (isCloaked) {
-      return <EducationalCloak onToggleCloak={handleToggleCloak} />;
-    }
+    if (isAuthLoading) return <LoadingScreen />;
 
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className={`proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}
-      >
-        <div className={`proto-backdrop transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
+      <div id="app-body" className="min-h-screen">
+        {/* Global Banners Layer */}
+        <div className="fixed top-0 left-0 right-0 z-[10000] pointer-events-none space-y-2 p-4">
+          {/* Quota Exhausted Banner */}
+          <AnimatePresence>
+            {isQuotaExceeded && (
+              <motion.div 
+                initial={{ y: -100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="max-w-4xl mx-auto bg-rose-500/90 backdrop-blur-3xl border border-rose-400/50 rounded-2xl p-4 flex items-center justify-between shadow-2xl pointer-events-auto overflow-hidden relative group"
+              >
+                <div className="flex items-center gap-4 relative z-10 text-white">
+                  <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                    <AlertTriangle size={24} className="animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black uppercase tracking-tighter italic leading-none">DATABASE QUOTA EXCEEDED</h4>
+                    <p className="text-[10px] font-black text-white/70 uppercase tracking-widest mt-1 italic">Site state syncing is currently restricted. Normal service resumes at Midnight PT.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsQuotaExceeded(false)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/50 hover:text-white relative z-10"
+                >
+                  <X size={18} />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Maintenance Banner */}
+          {isMaintenanceMode && (
+            <motion.div 
+              initial={{ y: -100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="max-w-4xl mx-auto bg-amber-500/90 backdrop-blur-3xl border border-amber-400/50 rounded-2xl p-4 flex items-center justify-between shadow-2xl pointer-events-auto overflow-hidden relative group"
+            >
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:250px_250px] animate-[slide_3s_linear_infinite]" />
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="w-10 h-10 bg-black/10 rounded-xl flex items-center justify-center text-black">
+                  <AlertTriangle size={24} className="animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-black uppercase tracking-tighter italic leading-none">SYSTEM MAINTENANCE</h4>
+                  <p className="text-[10px] font-black text-black/60 uppercase tracking-widest mt-1 italic">The site is currently in restricted access mode</p>
+                </div>
+              </div>
+              {user?.isAdmin && (
+                <div className="bg-black/10 px-4 py-2 rounded-xl backdrop-blur-md relative z-10">
+                  <span className="text-[10px] font-black text-black uppercase tracking-[0.2em] italic">ADMIN BYPASS ACTIVE</span>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Global Announcement Banner */}
+          <AnimatePresence>
+            {adminAnnouncement && (
+              <motion.div 
+                initial={{ y: -100, opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: -50, opacity: 0, scale: 0.95 }}
+                className="max-w-4xl mx-auto bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[2.5rem] p-6 shadow-2xl pointer-events-auto relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-theme/20 via-transparent to-theme/20 opacity-30" />
+                <div className="flex items-center gap-6 relative z-10">
+                  <div className="relative shrink-0">
+                    <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center overflow-hidden">
+                      <img 
+                        src={CHARACTERS.find(c => c.id === adminAnnouncement.sender.characterId)?.img || "https://1key.lol/images/characters/default.png"} 
+                        alt="" 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div className={`absolute -inset-1 frame-${adminAnnouncement.sender.frameId || 'default'} pointer-events-none`} />
+                  </div>
+                  <div className="flex-1">
+                     <div className="flex items-center gap-3 mb-1">
+                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] italic">{adminAnnouncement.sender.username}</span>
+                        <div className="w-1 h-1 rounded-full bg-white/20" />
+                        <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] italic">{adminAnnouncement.announcementType} BROADCAST</span>
+                     </div>
+                     <p className="text-lg font-black text-white tracking-tight italic leading-tight">{adminAnnouncement.text}</p>
+                  </div>
+                  <button 
+                    onClick={() => setAdminAnnouncement(null)}
+                    className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-white/20 hover:text-white"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {user.isBanned ? (
+            <div key="banned" className="fixed inset-0 z-[10000] bg-black flex items-center justify-center p-6">
+              <div className="text-center font-black text-rose-500 uppercase tracking-widest">
+                <h1 className="text-6xl mb-4 italic">ACCESS DENIED</h1>
+                <p className="text-white/40">You have been permanently banned from Classroom 9X.</p>
+              </div>
+            </div>
+          ) : isMaintenanceMode && !user.isAdmin ? (
+            <motion.div 
+              key="maintenance"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[10000] bg-[#020617] flex items-center justify-center p-6 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-rose-500/5 blur-[100px] animate-pulse"></div>
+              <div className="max-w-xl w-full p-12 rounded-[3.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl text-center relative">
+                <div className="w-24 h-24 bg-rose-500/20 rounded-[2rem] flex items-center justify-center text-rose-500 mx-auto mb-8 border border-rose-500/20 shadow-[0_0_50px_rgba(244,63,94,0.2)]">
+                  <ShieldAlert size={48} />
+                </div>
+                <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase mb-4">SITE UNDER <br /><span className="text-rose-500">MAINTENANCE</span></h2>
+                <p className="text-white/40 font-bold uppercase tracking-[0.2em] text-[10px] mb-12 italic leading-relaxed">
+                  Classroom 9X is currently undergoing scheduled updates. <br />The site will be back up soon. Come back later!
+                </p>
+                <button 
+                   onClick={handleLogin}
+                   className="px-10 py-5 bg-white text-black font-black text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-rose-500 hover:text-white transition-all italic shadow-2xl"
+                >
+                  ADMIN LOGIN
+                </button>
+              </div>
+            </motion.div>
+          ) : isInitialLoading || isExitingCloak ? (
+            <LoadingScreen key="loading" onComplete={handleLoadingComplete} onCosmicEvent={handleCosmicEvent} />
+          ) : isCloaked ? (
+            <EducationalCloak key="cloak" onToggleCloak={handleToggleCloak} />
+          ) : (
+            <motion.div 
+              key="main-app"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className={`w-full min-h-screen proto-shell theme-${user.currentTheme} ${isModalOpen ? 'modal-active' : ''} ${user.settings.customCursor ? 'custom-cursor-active' : ''}`}
+            >
+              <div className={`proto-backdrop transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
         <div className={`proto-grid transition-opacity duration-1000 ${currentView === AppRoute.SUMMER ? 'opacity-0' : 'opacity-100'}`} />
         
         {/* Pinned Games Global Overlay */}
@@ -2036,7 +2328,7 @@ const App = () => {
               onClick={() => setIsPinnedMinimized(!isPinnedMinimized)}
               className="flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-3xl rounded-2xl border border-white/10 shadow-2xl pointer-events-auto cursor-pointer hover:bg-white/10 transition-all group"
             >
-              <Star size={14} className="text-white fill-white group-hover:scale-110 transition-transform" />
+              <Pin size={14} className="text-white fill-white group-hover:scale-110 transition-transform" />
               <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] italic">PINNED ACCESS</span>
               {isPinnedMinimized ? <ChevronRight size={14} className="text-white/40" /> : <X size={14} className="text-white/40" />}
             </motion.div>
@@ -2085,6 +2377,9 @@ const App = () => {
                 selectedCategoryId={selectedCategoryId}
                 onViewChange={handleViewChange}
                 onProfileClick={() => setIsProfileModalOpen(true)}
+                onLogin={handleLogin}
+                onLogout={handleLogout}
+                firebaseUser={firebaseUser}
               >
                 <>
                   <AnimatePresence>
@@ -2124,71 +2419,73 @@ const App = () => {
                   {renderContent()}
 
                   <Footer key="footer" />
-                               <div key="notifications-container" className="fixed bottom-8 right-8 z-[200] flex flex-col-reverse gap-3 pointer-events-none w-80">
-                    <AnimatePresence mode="popLayout">
-                      {notifications.map(n => (
-                        <motion.div 
-                          key={n.id} 
-                          layout
-                          initial={{ opacity: 0, y: 50, scale: 0.9, filter: 'blur(10px)' }}
-                          animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-                          className="group relative flex flex-col p-5 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden transition-all hover:bg-black/80 hover:border-white/20"
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent"></div>
-                          <div className="flex items-start gap-4 relative z-10">
-                            <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 shrink-0 ${
-                              n.type === 'error' ? 'text-rose-500 bg-rose-500/10' : 
-                              n.type === 'success' ? 'text-emerald-500 bg-emerald-500/10' : 
-                              'text-cyan-500 bg-cyan-500/10'
-                            }`}>
-                              {n.icon || <Zap size={18} />}
-                            </div>
-                            <div className="flex-1 min-w-0 flex flex-col gap-1">
-                              <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] truncate italic">{n.title || 'SYSTEM'}</p>
-                              <p className="text-xs font-black text-white tracking-tight uppercase italic leading-tight">{n.message}</p>
-                            </div>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeNotification(n.id);
-                              }}
-                              className="p-1 text-white/20 hover:text-white transition-all"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                          
-                          <div className="absolute bottom-0 left-0 h-1 bg-white/[0.02] w-full">
-                            <motion.div 
-                              initial={{ width: "100%" }}
-                              animate={{ width: "0%" }}
-                              transition={{ duration: 5, ease: "linear" }}
-                              className={`h-full ${
-                                n.type === 'error' ? 'bg-rose-500' : 
-                                n.type === 'success' ? 'bg-emerald-500' : 
-                                'bg-cyan-500'
-                              } shadow-[0_0_15px_currentColor]`}
-                            />
-                          </div>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
                 </>
               </Layout>
             </div>
           </div>
         </div>
 
+        <div key="notifications-container" className="fixed bottom-8 right-8 z-[2000] flex flex-col-reverse gap-3 pointer-events-none w-80">
+          <AnimatePresence mode="popLayout">
+            {notifications.map(n => (
+              <motion.div 
+                key={n.id} 
+                layout
+                initial={{ opacity: 0, x: 50, scale: 0.9, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
+                className="group relative flex flex-col p-5 bg-black/60 backdrop-blur-3xl border border-white/10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto overflow-hidden transition-all hover:bg-black/80 hover:border-white/20"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent"></div>
+                <div className="flex items-start gap-4 relative z-10">
+                  <div className={`p-2.5 rounded-xl bg-white/5 border border-white/5 shrink-0 ${
+                    n.type === 'error' ? 'text-rose-500 bg-rose-500/10' : 
+                    n.type === 'success' ? 'text-emerald-500 bg-emerald-500/10' : 
+                    'text-cyan-500 bg-cyan-500/10'
+                  }`}>
+                    {n.icon || <Zap size={18} />}
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] truncate italic">{n.title || 'SYSTEM'}</p>
+                    <p className="text-xs font-black text-white tracking-tight uppercase italic leading-tight">{n.message}</p>
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeNotification(n.id);
+                    }}
+                    className="p-1 text-white/20 hover:text-white transition-all"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                
+                <div className="absolute bottom-0 left-0 h-1 bg-white/[0.02] w-full">
+                  <motion.div 
+                    initial={{ width: "100%" }}
+                    animate={{ width: "0%" }}
+                    transition={{ duration: 5, ease: "linear" }}
+                    className={`h-full ${
+                      n.type === 'error' ? 'bg-rose-500' : 
+                      n.type === 'success' ? 'bg-emerald-500' : 
+                      'bg-cyan-500'
+                    } shadow-[0_0_15px_currentColor]`}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
         <WaveTransition isVisible={showWaveTransition} onComplete={() => setShowWaveTransition(false)} />
 
         {/* Modals outside effect containers */}
-        {activeGame && <GameModal game={activeGame} isFavorite={user.favorites.includes(activeGame.id)} onToggleFavorite={toggleFavorite} onClose={() => setActiveGame(null)} />}
+        {activeGame && <GameModal game={activeGame} isFavorite={(user.pinnedGames || []).includes(activeGame.id)} onTogglePin={togglePin} onClose={() => setActiveGame(null)} />}
         {playingGame && <GameView game={playingGame} onClose={() => setPlayingGame(null)} />}
         {isProfileModalOpen && (
           <ProfileModal 
             user={user} 
+            firebaseUser={firebaseUser}
             onUpdateUser={setUser}
             onClose={() => setIsProfileModalOpen(false)} 
             onLogout={() => {
@@ -2203,7 +2500,7 @@ const App = () => {
           <BossEvent onDefeat={() => {
             setShowBoss(false);
             setUser(prev => ({ ...prev, score: prev.score + 500000 }));
-            addNotification('VICTORY', 'VOID ENTITY DEFEATED! +500,000 EXP FOR EVERYONE!', 'success', <Trophy className="text-amber-400" />);
+            addNotification('VICTORY', 'VOID BOSS DEFEATED! +1,000,000 EXP FOR EVERYONE!', 'success', <Trophy className="text-amber-400" />);
           }} />
         )}
         {showBadgeRain && user.settings.backgroundEffects && (
@@ -2457,7 +2754,32 @@ const App = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+
+        {/* Global SVG Gradients for Badges */}
+        <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden="true" style={{ position: 'absolute', visibility: 'hidden' }}>
+          <defs>
+            <linearGradient id="mythic-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{ stopColor: '#ff0000' }} />
+              <stop offset="14%" style={{ stopColor: '#ff7f00' }} />
+              <stop offset="28%" style={{ stopColor: '#ffff00' }} />
+              <stop offset="42%" style={{ stopColor: '#00ff00' }} />
+              <stop offset="57%" style={{ stopColor: '#0000ff' }} />
+              <stop offset="71%" style={{ stopColor: '#4b0082' }} />
+              <stop offset="85%" style={{ stopColor: '#9400d3' }} />
+              <stop offset="100%" style={{ stopColor: '#ff0000' }} />
+            </linearGradient>
+            <radialGradient id="transcendent-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+              <stop offset="0%" style={{ stopColor: '#ffd700' }} />
+              <stop offset="30%" style={{ stopColor: '#ff8c00' }} />
+              <stop offset="60%" style={{ stopColor: '#4b0082' }} />
+              <stop offset="100%" style={{ stopColor: '#000000' }} />
+            </radialGradient>
+          </defs>
+        </svg>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     );
   };
 

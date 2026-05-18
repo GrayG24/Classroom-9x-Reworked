@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Play, Star, LayoutGrid, Filter, Activity, Bot, Zap } from 'lucide-react';
+import { Search, Play, Pin, LayoutGrid, Filter, Activity, Bot, Zap } from 'lucide-react';
 
 export const Library = ({ 
   games, 
@@ -138,7 +138,7 @@ const SimpleGameCard = ({ game, isFavorite, isPinned, onToggleFavorite, onToggle
               : 'bg-black/40 border-white/10 text-white/40 hover:text-white hover:border-white/30'
           }`}
         >
-          <Star size={20} fill={isFavorite ? "currentColor" : "none"} />
+          <Pin size={20} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
       

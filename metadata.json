@@ -1,5 +1,8 @@
 {
   "name": "Classroom 9x Games",
   "description": "The elite unblocked library for high-performance browser gaming. Features zero lag, zero blocks, and a highly customizable UI with themes, frames, and character avatars.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

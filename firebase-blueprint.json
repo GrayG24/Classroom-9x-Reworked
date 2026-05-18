@@ -1,0 +1,111 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User statistics, settings, and unlocks",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "username": { "type": "string" },
+        "level": { "type": "number" },
+        "exp": { "type": "number" },
+        "score": { "type": "number" },
+        "gamesPlayed": { "type": "number" },
+        "currentCharacter": { "type": "string" },
+        "currentFrame": { "type": "string" },
+        "currentTheme": { "type": "string" },
+        "unlockedThemes": { "type": "array" },
+        "unlockedFrames": { "type": "array" },
+        "unlockedCharacters": { "type": "array" },
+        "unlockedBadges": { "type": "array" },
+        "favorites": { "type": "array" },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "isAdmin": { "type": "boolean" },
+        "isBanned": { "type": "boolean" },
+        "settings": { "type": "object" }
+      },
+      "required": ["uid", "username"]
+    },
+    "ChatMessage": {
+      "title": "Chat Message",
+      "description": "Global chat message",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "character": { "type": "string" },
+        "frame": { "type": "string" },
+        "isAdmin": { "type": "boolean" }
+      },
+      "required": ["text", "senderUid", "senderName", "timestamp"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Global announcement or event",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "type": { "type": "string" },
+        "senderUid": { "type": "string" },
+        "senderName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["text", "timestamp"]
+    },
+    "GlobalSettings": {
+      "title": "Global Settings",
+      "description": "Site-wide configuration",
+      "type": "object",
+      "properties": {
+        "isMaintenanceMode": { "type": "boolean" },
+        "gameOfTheWeekId": { "type": "string" },
+        "gameOfTheWeekName": { "type": "string" }
+      }
+    },
+    "Suggestion": {
+      "title": "Player Suggestion",
+      "description": "Player feature suggestion with voting",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorCharacter": { "type": "string" },
+        "votes": { "type": "number" },
+        "voters": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      },
+      "required": ["text", "authorId", "authorName", "votes"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user document indexed by UID"
+    },
+    "/chat/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Global chat messages"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Global announcements"
+    },
+    "/suggestions/{suggestionId}": {
+      "schema": "Suggestion",
+      "description": "Player suggestions"
+    },
+    "/settings/global": {
+      "schema": "GlobalSettings",
+      "description": "Global site settings"
+    },
+    "/admins/{userId}": {
+      "schema": "object",
+      "description": "Admin allowlist"
+    }
+  }
+}

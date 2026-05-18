@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    
+    function isSuperAdmin() {
+      return isSignedIn() && 
+             (request.auth.token.email == 'softball_chik_007@yahoo.com' || 
+              request.auth.token.email == 'softball_chik_007@yahoo.com'.lower());
+    }
+
+    function getAdminData() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data;
+    }
+
+    function isOwnerRole() {
+      return isSuperAdmin() || 
+             (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && getAdminData().role == 'OWNER') ||
+             (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('redeemedCodes', []).hasAny(['OWNER3413']));
+    }
+
+    function isModeratorRole() {
+       return (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && getAdminData().role == 'MODERATOR') ||
+              (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('redeemedCodes', []).hasAny(['ADMIN6']));
+    }
+
+    function isAdmin() { 
+      return isOwnerRole() || isModeratorRole();
+    }
+    
+    function hasAdminCode(data) {
+      return data.get('redeemedCodes', []).hasAny(['ADMIN6', 'OWNER3413']);
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      function isValidUser(data) {
+        return (data.get('uid', '') is string) && 
+               (data.get('username', '') is string) && 
+               data.get('username', '').size() <= 64;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if isSignedIn(); 
+      
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if (isOwner(userId) && isValidUser(incoming()) && (
+        incoming().get('isAdmin', false) == existing().get('isAdmin', false) || 
+        isSuperAdmin() || 
+        hasAdminCode(incoming())
+      )) || isOwnerRole();
+      allow delete: if isOwnerRole();
+    }
+
+    // --- Chat Collection ---
+    match /chat/{messageId} {
+      function isValidMessage(data) {
+        return data.text is string && data.text.size() <= 500 &&
+               data.senderUid == request.auth.uid &&
+               data.senderName is string;
+      }
+
+      allow list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow create: if isSignedIn() && isValidMessage(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // --- Suggestions Collection ---
+    match /suggestions/{suggestionId} {
+      function isValidSuggestion(data) {
+        return data.text is string && data.text.size() <= 300 &&
+               data.authorId == request.auth.uid &&
+               data.authorName is string &&
+               data.votes is number;
+      }
+
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidSuggestion(incoming()) && incoming().votes == 0;
+      allow update: if isSignedIn() && (
+        (incoming().diff(existing()).affectedKeys().hasOnly(['votes', 'voters', 'upvoters', 'downvoters']) && 
+         math.abs(incoming().votes - existing().votes) <= 2) ||
+        isAdmin()
+      );
+      allow delete: if (isSignedIn() && resource.data.authorId == request.auth.uid) || isAdmin();
+    }
+
+    // --- Announcements Collection ---
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Events Collection ---
+    match /events/{eventId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // --- Global Settings ---
+    match /settings/global {
+      allow read: if true;
+      allow write: if isOwnerRole();
+    }
+
+    // --- Admin Allowlist ---
+    match /admins/{userId} {
+      function isValidAdmin(data) {
+        return data.email is string && 
+               data.role in ['OWNER', 'MODERATOR'];
+      }
+      allow read: if isSignedIn();
+      allow write: if (isSuperAdmin() || (isOwner(userId) && hasAdminCode(get(/databases/$(database)/documents/users/$(userId)).data))) && isValidAdmin(incoming());
+    }
+  }
+}

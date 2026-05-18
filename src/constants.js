@@ -11,8 +11,17 @@ export const AppRoute = {
   CATEGORY: 'category',
   ADMIN: 'admin',
   CODES: 'codes',
-  SUMMER: 'summer',
-  SPOTIFY: 'spotify'
+  SUMMER: 'summer'
+};
+
+export const RARITY_ORDER = {
+  'Common': 1,
+  'Uncommon': 2,
+  'Rare': 3,
+  'Epic': 4,
+  'Legendary': 5,
+  'Mythic': 6,
+  'Transcendent': 7
 };
 
 export const CATEGORIES = [
@@ -43,20 +52,20 @@ export const CHARACTERS = [
 export const BADGES = [
   { id: 'first-contact', name: 'First Contact', requirement: 'Launch 1 Game', icon: Zap, color: '#64748b', rarity: 'Common' },
   { id: 'sentinel', name: 'Guardian', requirement: 'Reach Level 10', icon: Award, color: '#22c55e', rarity: 'Uncommon' },
-  { id: 'elite-squad', name: 'Elite Player', requirement: 'Reach Level 50', icon: Star, color: '#3b82f6', rarity: 'Rare' },
-  { id: 'overlord-badge', name: 'The Boss', requirement: 'Reach Level 100', icon: Crown, color: '#f59e0b', rarity: 'Legendary' },
   { id: 'archivist', name: 'Collector', requirement: '5 Favorites', icon: Heart, color: '#22c55e', rarity: 'Uncommon' },
+  { id: 'elite-squad', name: 'Elite Player', requirement: 'Reach Level 50', icon: Star, color: '#3b82f6', rarity: 'Rare' },
   { id: 'data-hoarder', name: 'Big Collector', requirement: '10 Favorites', icon: Layers, color: '#3b82f6', rarity: 'Rare' },
   { id: 'warlord', name: 'Gamer', requirement: '50 Games Played', icon: Target, color: '#3b82f6', rarity: 'Rare' },
   { id: 'chameleon', name: 'Style King', requirement: '8 Themes Unlocked', icon: Palette, color: '#a855f7', rarity: 'Epic' },
   { id: 'aesthetician', name: 'Frame Master', requirement: '4 Frames Unlocked', icon: PanelsTopLeft, color: '#a855f7', rarity: 'Epic' },
   { id: 'recruiter', name: 'Character Fan', requirement: '4 Characters Unlocked', icon: User, color: '#a855f7', rarity: 'Epic' },
-  { id: 'the-glitch', name: 'The Secret', requirement: 'Found a secret!', icon: Binary, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'overlord-badge', name: 'The Boss', requirement: 'Reach Level 100', icon: Crown, color: '#f59e0b', rarity: 'Legendary' },
   { id: 'endurance', name: 'Pro Gamer', requirement: '100 Games Played', icon: Activity, color: '#f59e0b', rarity: 'Legendary' },
-  { id: 'owner-badge', name: 'Owner', requirement: 'Owner of the site', icon: Hammer, color: '#ef4444', rarity: 'Mythic' },
-  { id: 'tester-badge', name: 'Beta Tester', requirement: 'Tested the site early', icon: Search, color: 'rainbow', rarity: 'Mythic' },
-  { id: 'stargazer', name: 'Stargazer', requirement: 'Witnessed a cosmic event', icon: Star, color: '#f0f9ff', rarity: 'Mythic' },
-];
+  { id: 'the-glitch', name: 'The Secret', requirement: 'Found a secret!', icon: Binary, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'owner-badge', name: 'Owner', requirement: 'Owner of the site', icon: Hammer, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'tester-badge', name: 'Beta Tester', requirement: 'Tested the site early', icon: ShieldCheck, color: 'rainbow', rarity: 'Mythic' },
+  { id: 'stargazer', name: 'Stargazer', requirement: 'Witnessed a cosmic event', icon: Star, color: 'galaxy', rarity: 'Transcendent' },
+].sort((a, b) => RARITY_ORDER[b.rarity] - RARITY_ORDER[a.rarity]);
 
 export const QUEST_POOL = [
   { id: 'play-50', title: 'Grand Master', description: 'Play 50 games to prove your absolute dedication.', reward: 2500, progress: 0, target: 50, isCompleted: false, rarity: 'common', type: 'exp', questType: 'play' },

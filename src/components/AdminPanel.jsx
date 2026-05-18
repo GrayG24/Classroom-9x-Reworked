@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, X, Users, MessageSquare, Activity, Settings, Trash2, Send, Megaphone, Zap, Star, Trophy, Crown, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, ShieldAlert, AlertTriangle, RefreshCw, Power, Terminal, Clock, Palette, Sparkles, Filter, Search, ChevronRight, Binary, Fingerprint, Database, Cpu, Globe } from 'lucide-react';
 
+import { db, auth } from '../lib/firebase';
+import { collection, doc, updateDoc, deleteDoc, addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, getDocs, setDoc } from 'firebase/firestore';
+
 const ConfirmModal = ({ title, message, onConfirm, onCancel, isLoading }) => (
   <motion.div 
     initial={{ opacity: 0 }}
@@ -22,7 +25,6 @@ const ConfirmModal = ({ title, message, onConfirm, onCancel, isLoading }) => (
       <div className="flex gap-4">
         <button 
           onClick={onCancel}
-          disabled={isLoading}
           className="flex-1 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-white font-black text-[10px] uppercase tracking-[0.3em] italic transition-all"
         >
           CANCEL
@@ -40,7 +42,7 @@ const ConfirmModal = ({ title, message, onConfirm, onCancel, isLoading }) => (
 );
 
 export const AdminPanel = ({ user, onClose }) => {
-  const [activeTab, setActiveTab] = useState('summary');
+  const [activeTab, setActiveTab] = useState(user.role === 'OWNER' ? 'summary' : 'events');
   const [announcement, setAnnouncement] = useState('');
   const [announcementType, setAnnouncementType] = useState('system');
   const [systemStats, setSystemStats] = useState(null);
@@ -53,45 +55,54 @@ export const AdminPanel = ({ user, onClose }) => {
   // Confirmation state
   const [confirmConfig, setConfirmConfig] = useState(null);
 
-  const fetchStats = useCallback(async () => {
-    try {
-      const res = await fetch('/api/system/status');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setSystemStats(data);
-      setIsMaintenance(data.maintenance);
-      setStatsLoading(false);
-    } catch (err) {
-      console.error('Admin: Failed to fetch system stats:', err);
-      setStatsLoading(false);
-    }
-  }, []);
-
-  const fetchPlayers = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/admin/users');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        setPlayers(data);
-      } else {
-        console.warn('Admin: API returned non-array players data:', data);
-        setPlayers([]);
-      }
-    } catch (err) {
-      console.error('Admin: Failed to fetch players:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchStats();
-    fetchPlayers();
-    const interval = setInterval(fetchStats, 5000);
-    return () => clearInterval(interval);
-  }, [fetchStats, fetchPlayers]);
+    // Players listener
+    const q = query(collection(db, 'users'), orderBy('username'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const users = snapshot.docs.map(d => ({ ...d.data(), uid: d.id }));
+      setPlayers(users);
+      
+      // Calculate real-time stats
+      const fiveMinsAgo = Date.now() - 5 * 60 * 1000;
+      const activeCount = users.filter(u => {
+        const lastSeen = u.lastSeen?.toMillis ? u.lastSeen.toMillis() : 0;
+        return lastSeen > fiveMinsAgo;
+      }).length;
+
+      setSystemStats(prev => ({
+        ...prev,
+        activeUsers: activeCount,
+        totalPlayers: users.length,
+        uptime: Math.floor((Date.now() - (window.performance?.timing?.navigationStart || Date.now())) / 1000)
+      }));
+      
+      setIsLoading(false);
+    }, (error) => {
+      console.warn('Admin: Players Snapshot Error:', error);
+      setIsLoading(false);
+    });
+
+    // Global settings listener (for Maintenance toggle state)
+    const unsubSettings = onSnapshot(doc(db, 'settings', 'global'), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setIsMaintenance(data.isMaintenanceMode || false);
+        setSystemStats(prev => ({
+          ...prev,
+          maintenance: data.isMaintenanceMode,
+        }));
+      }
+      setStatsLoading(false);
+    }, (error) => {
+      console.warn('Admin: Settings Snapshot Error:', error);
+      setStatsLoading(false);
+    });
+
+    return () => {
+      unsub();
+      unsubSettings();
+    };
+  }, []);
 
   const handleSendAnnouncement = async () => {
     if (!announcement.trim()) return;
@@ -100,27 +111,36 @@ export const AdminPanel = ({ user, onClose }) => {
       title: "SEND ANNOUNCEMENT",
       message: "Send this global announcement to all active users?",
       action: async () => {
+        if (window.isFirestoreQuotaExceeded) {
+          setConfirmConfig(null);
+          return;
+        }
         setIsLoading(true);
+        const timeout = setTimeout(() => {
+          setIsLoading(false);
+          setConfirmConfig(null);
+          alert("Action timed out. The server may be under heavy load or quota limit reached.");
+        }, 10000);
+
         try {
-          const res = await fetch('/api/admin/announce', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              text: announcement, 
-              type: announcementType,
-              sender: { 
-                username: user.username,
-                characterId: user.currentCharacter,
-                frameId: user.currentFrame
-              } 
-            })
-          });
-          if (res.ok) {
-            setAnnouncement('');
-          }
+          const msgData = {
+            text: announcement,
+            senderUid: user.uid,
+            senderName: user.username,
+            timestamp: serverTimestamp(),
+            type: announcementType,
+            character: user.currentCharacter,
+            frame: user.currentFrame,
+            isAdmin: true
+          };
+          
+          await addDoc(collection(db, 'announcements'), msgData);
+          await addDoc(collection(db, 'chat'), msgData);
+          setAnnouncement('');
         } catch (err) {
           console.error('Admin: Broadcast failed:', err);
         } finally {
+          clearTimeout(timeout);
           setIsLoading(false);
           setConfirmConfig(null);
         }
@@ -133,24 +153,29 @@ export const AdminPanel = ({ user, onClose }) => {
       title: "TRIGGER EVENT",
       message: `Trigger ${eventId.replace(/_/g, ' ')} for EVERY active player? This will cause major visual effects.`,
       action: async () => {
+        if (window.isFirestoreQuotaExceeded) {
+          setConfirmConfig(null);
+          return;
+        }
         setIsLoading(true);
+        const timeout = setTimeout(() => {
+          setIsLoading(false);
+          setConfirmConfig(null);
+          alert("Action timed out. The server may be under heavy load or quota limit reached.");
+        }, 10000);
+
         try {
-          await fetch('/api/admin/abuse', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              type: eventId, 
-              target: 'GLOBAL', 
-              sender: { 
-                username: user.username,
-                characterId: user.currentCharacter,
-                frameId: user.currentFrame
-              }
-            })
+          await addDoc(collection(db, 'events'), {
+            type: eventId,
+            senderUid: user.uid,
+            senderName: user.username,
+            timestamp: serverTimestamp(),
+            target: 'GLOBAL'
           });
         } catch (err) {
           console.error('Admin: Event execution failed:', err);
         } finally {
+          clearTimeout(timeout);
           setIsLoading(false);
           setConfirmConfig(null);
         }
@@ -165,19 +190,33 @@ export const AdminPanel = ({ user, onClose }) => {
       message: `${newState ? 'Enable' : 'Disable'} access restrictions for all players?`,
       action: async () => {
         setIsLoading(true);
+        const timeout = setTimeout(() => {
+          setIsLoading(false);
+          setConfirmConfig(null);
+          alert("Action timed out. The server may be under heavy load or quota limit reached.");
+        }, 10000);
+
         try {
-          const res = await fetch('/api/admin/maintenance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: newState })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setIsMaintenance(data.enabled);
-          }
+          const globalRef = doc(db, 'settings', 'global');
+          await setDoc(globalRef, {
+            isMaintenanceMode: newState
+          }, { merge: true });
         } catch (err) {
           console.error('Admin: Maintenance toggle failed:', err);
+          // Standardized error context for system diagnostics
+          const errInfo = {
+            error: err.message,
+            code: err.code,
+            path: 'settings/global',
+            operation: 'setDoc',
+            uid: auth.currentUser ? auth.currentUser.uid : 'NO_UID',
+            email: auth.currentUser ? auth.currentUser.email : 'NO_EMAIL',
+            emailVerified: auth.currentUser ? auth.currentUser.emailVerified : 'NO_VERIFIED',
+            tokenEmail: auth.currentUser?.reloadUserInfo?.email || 'N/A'
+          };
+          console.error('Admin: Detailed Error Info:', JSON.stringify(errInfo));
         } finally {
+          clearTimeout(timeout);
           setIsLoading(false);
           setConfirmConfig(null);
         }
@@ -186,25 +225,21 @@ export const AdminPanel = ({ user, onClose }) => {
   };
 
   const handlePlayerAction = async (action, player) => {
-    const actions = {
-      ban: { label: 'PERMANENTLY DISCONNECT', endpoint: '/api/admin/ban-player', color: 'text-rose-500', warning: 'This will prevent the player from accessing the site permanently.' },
-      reset: { label: 'RESET PROGRESS FOR', endpoint: '/api/admin/reset-stats', color: 'text-amber-500', warning: 'This will reset all scores, levels, and progress for this player.' },
-      remove: { label: 'DELETE PLAYER', endpoint: '/api/admin/remove-player', color: 'text-rose-500', warning: 'This will delete the player profile entirely.' }
-    };
+    const playerRef = doc(db, 'users', player.uid);
     
-    const config = actions[action];
     setConfirmConfig({
       title: "CONFIRM ACTION",
-      message: `${config.label} ${player.username.toUpperCase()}? ${config.warning}`,
+      message: `${action.toUpperCase()} ${player.username.toUpperCase()}?`,
       action: async () => {
         setIsLoading(true);
         try {
-          const res = await fetch(config.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: player.uid })
-          });
-          if (res.ok) fetchPlayers();
+          if (action === 'ban') {
+            await updateDoc(playerRef, { isBanned: true });
+          } else if (action === 'reset') {
+            await updateDoc(playerRef, { score: 0, level: 1, exp: 0, gamesPlayed: 0 });
+          } else if (action === 'remove') {
+            await deleteDoc(playerRef);
+          }
         } catch (err) {
           console.error(`Admin: Player action ${action} failed:`, err);
         } finally {
@@ -230,7 +265,7 @@ export const AdminPanel = ({ user, onClose }) => {
       <motion.div 
         initial={{ scale: 0.98, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-[1400px] h-full max-h-[900px] bg-black border border-white/10 overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0,0,0,1)] rounded-none lg:rounded-[3.5rem] relative"
+        className="w-full max-w-[1400px] h-full lg:h-[90vh] bg-black border border-white/10 overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0,0,0,1)] rounded-none lg:rounded-[3.5rem] relative"
       >
         <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
           <div className="flex items-center gap-6">
@@ -261,11 +296,11 @@ export const AdminPanel = ({ user, onClose }) => {
         <div className="flex-1 flex overflow-hidden">
           <div className="w-80 border-r border-white/5 p-8 space-y-3 bg-white/[0.01]">
             {[
-              { id: 'summary', icon: Activity, label: 'Overview' },
-              { id: 'players', icon: Database, label: 'Players' },
-              { id: 'events', icon: Sparkles, label: 'Events' },
-              { id: 'terminal', icon: Megaphone, label: 'Announcement' },
-            ].map(tab => (
+              { id: 'summary', icon: Activity, label: 'Overview', roles: ['OWNER'] },
+              { id: 'players', icon: Database, label: 'Players', roles: ['OWNER'] },
+              { id: 'events', icon: Sparkles, label: 'Events', roles: ['OWNER', 'MODERATOR'] },
+              { id: 'terminal', icon: Megaphone, label: 'Announcement', roles: ['OWNER', 'MODERATOR'] },
+            ].filter(tab => !tab.roles || tab.roles.includes(user.role)).map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -280,28 +315,30 @@ export const AdminPanel = ({ user, onClose }) => {
               </button>
             ))}
             
-            <div className="pt-10 mt-10 border-t border-white/5">
-               <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-6 italic px-2">QUICK ACTIONS</h4>
-               <button 
-                onClick={handleToggleMaintenance}
-                className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all border ${
-                  isMaintenance 
-                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
-                    : 'bg-white/5 border-white/10 text-white/40 hover:text-rose-500 hover:border-rose-500/20 hover:bg-rose-500/5'
-                }`}
-               >
-                 <div className="flex items-center gap-4">
-                    <Power size={18} />
-                    <span className="text-[10px] font-black uppercase tracking-widest italic">MTN MODE</span>
-                 </div>
-                 <div className={`w-8 h-4 rounded-full relative transition-colors ${isMaintenance ? 'bg-amber-500' : 'bg-white/10'}`}>
-                    <motion.div 
-                      animate={{ x: isMaintenance ? 18 : 2 }}
-                      className="absolute top-1 left-1 w-2 h-2 rounded-full bg-white"
-                    />
-                 </div>
-               </button>
-            </div>
+            {user.role === 'OWNER' && (
+              <div className="pt-10 mt-10 border-t border-white/5">
+                 <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-6 italic px-2">QUICK ACTIONS</h4>
+                 <button 
+                  onClick={handleToggleMaintenance}
+                  className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all border ${
+                    isMaintenance 
+                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
+                      : 'bg-white/5 border-white/10 text-white/40 hover:text-rose-500 hover:border-rose-500/20 hover:bg-rose-500/5'
+                  }`}
+                 >
+                   <div className="flex items-center gap-4">
+                      <Power size={18} />
+                      <span className="text-[10px] font-black uppercase tracking-widest italic">MTN MODE</span>
+                   </div>
+                   <div className={`w-8 h-4 rounded-full relative transition-colors ${isMaintenance ? 'bg-amber-500' : 'bg-white/10'}`}>
+                      <motion.div 
+                        animate={{ x: isMaintenance ? 18 : 2 }}
+                        className="absolute top-1 left-1 w-2 h-2 rounded-full bg-white"
+                      />
+                   </div>
+                 </button>
+              </div>
+            )}
           </div>
 
           <div className="flex-1 p-12 overflow-auto scrollbar-hide">
@@ -360,7 +397,7 @@ export const AdminPanel = ({ user, onClose }) => {
                            className="w-full h-14 pl-14 pr-6 rounded-2xl bg-black border border-white/10 text-white font-bold text-xs focus:outline-none focus:border-rose-500/50 transition-all placeholder:text-white/10 italic"
                          />
                        </div>
-                       <button onClick={fetchPlayers} className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:text-rose-500 transition-all border border-white/10">
+                       <button className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-white hover:text-rose-500 transition-all border border-white/10">
                          <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
                        </button>
                     </div>
@@ -381,8 +418,12 @@ export const AdminPanel = ({ user, onClose }) => {
                           <tr key={player.uid} className="group hover:bg-white/[0.02] transition-colors">
                             <td className="px-8 py-6">
                               <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-black border border-white/10 flex items-center justify-center text-[10px] font-black text-rose-500 shadow-lg italic">
-                                   {(player?.username?.[0] || '?').toUpperCase()}
+                                <div className="w-10 h-10 rounded-full bg-black border border-white/10 flex items-center justify-center text-[10px] font-black text-rose-500 shadow-lg italic overflow-hidden">
+                                   {player.img ? (
+                                     <img src={player.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                                   ) : (
+                                     (player?.username?.[0] || '?').toUpperCase()
+                                   )}
                                 </div>
                                 <div className="flex flex-col">
                                    <span className="text-xs font-black text-white uppercase italic">{player?.username || 'Unknown'}</span>

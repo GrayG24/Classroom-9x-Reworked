@@ -193,22 +193,24 @@ const SummerCountdown = ({ user }) => {
 };
 
 const SunBeams = () => (
-  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-20">
-    {[...Array(8)].map((_, i) => (
+  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+    {[...Array(12)].map((_, i) => (
       <motion.div
         key={i}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0.4, 0] }}
-        transition={{ 
-          duration: 5 + Math.random() * 5, 
-          repeat: Infinity, 
-          delay: Math.random() * 10 
+        initial={{ opacity: 0, rotate: 120 + i * 12 }}
+        animate={{ 
+          opacity: [0, 0.5, 0],
+          rotate: [120 + i * 12, 125 + i * 12, 120 + i * 12]
         }}
-        className="absolute top-12 right-12 md:top-24 md:right-24 h-[200vh] w-[1px] bg-white origin-top"
+        transition={{ 
+          duration: 7 + Math.random() * 7, 
+          repeat: Infinity, 
+          delay: Math.random() * 5,
+          ease: "easeInOut"
+        }}
+        className="absolute top-0 right-0 md:top-24 md:right-24 h-[300vh] w-[2px] bg-gradient-to-b from-white via-yellow-200/20 to-transparent origin-top"
         style={{ 
-          transform: `rotate(${120 + i * 15}deg)`,
-          boxShadow: '0 0 40px 10px rgba(255,255,255,0.4)',
-          maskImage: 'linear-gradient(to bottom, white, transparent)'
+          boxShadow: '0 0 60px 20px rgba(255,255,255,0.2)',
         }}
       />
     ))}
@@ -519,66 +521,78 @@ const RealisticLeaf = ({ d, color, delay = 0 }) => {
 
 const Sun = ({ isPotatoMode }) => (
   <>
-    {/* Cinematic Outer Glow */}
+    {/* Deep Atmospheric Glow */}
     {!isPotatoMode && (
       <motion.div
-        animate={{ scale: [1, 1.2, 1], opacity: [0.35, 0.5, 0.35] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-40 -right-40 w-[1000px] h-[1000px] rounded-full bg-yellow-200/20 blur-[200px] pointer-events-none z-0"
+        animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4] }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-[20vh] -right-[20vw] w-[1400px] h-[1400px] rounded-full bg-orange-400/10 blur-[250px] pointer-events-none z-0"
       />
     )}
     
-    {/* Multiple Warm Halos */}
+    {/* Primary Warm Halo */}
     <motion.div
       animate={{ scale: [1, 1.1, 1] }}
-      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      className="absolute top-0 right-0 md:top-10 md:right-10 w-64 h-64 md:w-96 md:h-96 bg-orange-500/15 rounded-full blur-[80px] pointer-events-none z-0"
+      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute top-[-50px] right-[-50px] md:top-0 md:right-0 w-80 h-80 md:w-[600px] md:h-[600px] bg-yellow-400/10 rounded-full blur-[100px] pointer-events-none z-0"
     />
 
     <motion.div
       animate={{ rotate: 360 }}
-      transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-      className="absolute top-12 right-12 md:top-24 md:right-24 w-32 h-32 md:w-40 md:h-40 pointer-events-none z-20"
+      transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+      className="absolute top-8 right-8 md:top-24 md:right-24 w-40 h-40 md:w-56 md:h-56 pointer-events-none z-20"
     >
-      {/* Sun Core with intense glow and glare */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300 via-white to-orange-200 rounded-full shadow-[0_0_120px_rgba(253,224,71,0.8)] md:shadow-[0_0_180px_rgba(253,224,71,1)]">
-         {/* Internal primary glare */}
-         <div className="absolute top-4 left-4 w-16 h-16 bg-white/60 rounded-full blur-lg" />
-         {/* Secondary sparkle core */}
+      {/* Sun Core with intense multi-layer glow */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300 via-white to-orange-100 rounded-full shadow-[0_0_150px_rgba(255,255,255,0.9)] md:shadow-[0_0_220px_rgba(253,224,71,1)]">
+         {/* Hot Core Glare */}
+         <div className="absolute top-6 left-6 w-20 h-20 bg-white/80 rounded-full blur-xl" />
+         {/* Chromatic Aberration Detail */}
+         <div className="absolute inset-0 rounded-full border-[10px] border-orange-500/10 blur-[2px]" />
+         
          {!isPotatoMode && (
            <motion.div 
-             animate={{ opacity: [0.4, 1, 0.4], scale: [1, 1.2, 1] }} 
-             transition={{ duration: 2, repeat: Infinity }}
-             className="absolute inset-4 bg-white rounded-full blur-xl" 
+             animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.3, 1], filter: ['blur(15px)', 'blur(30px)', 'blur(15px)'] }} 
+             transition={{ duration: 3, repeat: Infinity }}
+             className="absolute -inset-4 bg-white/40 rounded-full blur-2xl" 
            />
          )}
       </div>
 
-      {/* Realistic Volumetric Sun Rays */}
-      {!isPotatoMode && [...Array(24)].map((_, i) => (
+      {/* Dynamic Solar Flares */}
+      {!isPotatoMode && [...Array(32)].map((_, i) => (
         <motion.div
           key={i}
           animate={{ 
-            opacity: [0.2, 0.5, 0.2], 
-            scaleY: [1, 1.4, 1],
-            rotate: i * 15
+            opacity: [0.3, 0.7, 0.3], 
+            scaleY: [1, 1.8, 1],
+            x: [0, (Math.random() - 0.5) * 10, 0]
           }}
-          transition={{ duration: 4 + Math.random() * 3, repeat: Infinity, delay: i * 0.1 }}
-          className="absolute top-1/2 left-1/2 w-1.5 h-32 md:w-2 md:h-48 bg-gradient-to-t from-yellow-100/40 via-yellow-300/10 to-transparent rounded-full -translate-x-1/2 origin-top"
-          style={{ transform: `rotate(${i * 15}deg) translateY(4.5rem)` }}
+          transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, delay: i * 0.15 }}
+          className="absolute top-1/2 left-1/2 w-2 h-48 md:w-3 md:h-80 bg-gradient-to-t from-yellow-50/60 via-yellow-200/10 to-transparent rounded-full -translate-x-1/2 origin-top"
+          style={{ transform: `rotate(${i * (360/32)}deg) translateY(5rem)` }}
         />
       ))}
     </motion.div>
     
-    {/* Cinematic Lens Flare Effect */}
-    {!isPotatoMode && <LensFlare />}
-    
-    {/* Distant Light Leaks */}
+    {/* Lens Flare Components */}
     {!isPotatoMode && (
-      <>
-        <div className="absolute top-1/4 right-1/4 w-[2px] h-[300vh] bg-white/20 blur-[5px] -rotate-45 pointer-events-none opacity-40 mix-blend-overlay" />
-        <div className="absolute top-1/3 right-1/2 w-[1px] h-[300vh] bg-white/5 blur-[10px] -rotate-30 pointer-events-none opacity-30" />
-      </>
+      <div className="absolute inset-0 pointer-events-none z-[100]">
+        <motion.div 
+          animate={{ x: [0, 20, 0], y: [0, 10, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[40%] right-[40%] w-12 h-12 rounded-full bg-cyan-400/20 blur-md border border-cyan-400/30"
+        />
+        <motion.div 
+          animate={{ x: [0, -40, 0], y: [0, -20, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[60%] right-[60%] w-8 h-8 rounded-full bg-rose-400/10 blur-sm"
+        />
+        <motion.div 
+          animate={{ x: [0, 60, 0], y: [0, 30, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[80%] right-[80%] w-16 h-16 rounded-full bg-orange-400/10 blur-lg border border-orange-400/20"
+        />
+      </div>
     )}
   </>
 );

@@ -77,10 +77,30 @@ export const Layout = ({
   selectedCategoryId,
   onViewChange, 
   onProfileClick,
+  onLogin,
+  onLogout,
+  firebaseUser,
   user 
 }) => {
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [showWave, setShowWave] = useState(false);
   const [prevView, setPrevView] = useState(currentView);
+
+  // Initialize sidebar state once user settings are available
+  const settingsInitialized = React.useRef(false);
+  useEffect(() => {
+    if (user?.settings && !settingsInitialized.current) {
+      setIsSidebarExpanded(!user.settings.sidebarAutoHide);
+      settingsInitialized.current = true;
+    }
+  }, [user?.settings]);
+
+  useEffect(() => {
+    if (user?.uid && user?.settings) {
+       // Allow dynamic updates if setting changes
+       setIsSidebarExpanded(!user.settings.sidebarAutoHide);
+    }
+  }, [user?.settings?.sidebarAutoHide]);
 
   useEffect(() => {
     if (currentView === AppRoute.SUMMER && prevView !== AppRoute.SUMMER) {
@@ -127,7 +147,6 @@ export const Layout = ({
   const navItems = [
     { id: AppRoute.HOME, icon: House, label: 'Home' },
     { id: AppRoute.LIBRARY, icon: Gamepad2, label: 'Games' },
-    { id: AppRoute.SPOTIFY, icon: Music, label: 'Spotify' },
     { id: AppRoute.APPS, icon: LayoutGrid, label: 'Apps' },
     { id: AppRoute.CODES, icon: Key, label: 'Codes' },
     { id: AppRoute.PROXY, icon: Globe, label: 'Proxy' },
@@ -135,15 +154,29 @@ export const Layout = ({
     { id: AppRoute.SETTINGS, icon: SettingsIcon, label: 'Config' },
   ];
 
-  if (user?.isAdmin) {
-    navItems.push({ id: AppRoute.ADMIN, icon: Shield, label: 'Admin' });
-  }
-
   const isPotatoMode = user?.settings?.performanceMode;
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-white font-sans relative overflow-x-hidden">
       <WaveTransition isVisible={showWave} />
+      
+        {/* Global Sidebar - Stays OUTSIDE scaling wrapper for total stability */}
+      <div className="hidden lg:block fixed top-0 left-0 bottom-0 z-50 pointer-events-none">
+        <div className="pointer-events-auto">
+          <Sidebar 
+            user={user}
+            currentView={currentView}
+            onViewChange={onViewChange}
+            onProfileClick={onProfileClick}
+            onLogin={onLogin}
+            onLogout={onLogout}
+            firebaseUser={firebaseUser}
+            isExpanded={isSidebarExpanded}
+            onToggleExpand={setIsSidebarExpanded}
+          />
+        </div>
+      </div>
+
       {/* Scaling Content Wrapper */}
       <div 
         style={scale !== 1 ? {
@@ -156,7 +189,7 @@ export const Layout = ({
       >
         {/* Global Background Effects */}
         {user?.settings?.backgroundEffects && (
-          <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,rgba(255,255,255,0.02),transparent_70%)]"></div>
             
             {!isPotatoMode && (
@@ -166,7 +199,6 @@ export const Layout = ({
               </>
             )}
             
-            {/* Subtle Scanline Effect - Disabled in Potato Mode */}
             {!isPotatoMode && (
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none opacity-20"></div>
             )}
@@ -174,13 +206,19 @@ export const Layout = ({
         )}
 
         {/* Main Content Shell */}
-        <main className="relative z-10 min-h-screen transition-all duration-700 ease-[0.22,1,0.36,1] pb-24 lg:pb-0 lg:pl-[88px]">
+        <motion.main 
+          initial={false}
+          className="relative z-10 min-h-screen pb-24 lg:pb-0"
+          style={{ 
+            paddingLeft: window.innerWidth >= 1024 ? '136px' : 0 
+          }}
+        >
           <div className="max-w-[140rem] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentView}
                 initial={currentView === AppRoute.SUMMER ? { opacity: 0, scale: 1.05, filter: 'brightness(2) blur(20px)' } : { opacity: 0, y: 15, scale: 0.99, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', brightness: 1 }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
                 exit={currentView === AppRoute.SUMMER ? { opacity: 0, scale: 0.95, filter: 'brightness(0.5) blur(20px)' } : { opacity: 0, y: -15, scale: 0.99, filter: 'blur(10px)' }}
                 transition={{ 
                   duration: currentView === AppRoute.SUMMER ? 1.0 : (isPotatoMode ? 0.2 : 0.5), 
@@ -192,22 +230,10 @@ export const Layout = ({
               </motion.div>
             </AnimatePresence>
           </div>
-        </main>
+        </motion.main>
       </div>
 
       {/* FIXED HUD ELEMENTS - STAY OUTSIDE SCALING WRAPPER */}
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed top-0 left-0 bottom-0 z-50 pointer-events-none">
-        <div className="pointer-events-auto">
-          <Sidebar 
-            user={user}
-            currentView={currentView}
-            onViewChange={onViewChange}
-            onProfileClick={onProfileClick}
-          />
-        </div>
-      </div>
-
       {/* Mobile Bottom Navigation (Dock) */}
       <div className="lg:hidden fixed bottom-6 left-6 right-6 z-50">
         <motion.nav 
@@ -225,6 +251,7 @@ export const Layout = ({
             />
           ))}
           <MobileNavItem 
+            key="profile-mobile"
             icon={<User size={20} />} 
             label="Profile" 
             active={false} 

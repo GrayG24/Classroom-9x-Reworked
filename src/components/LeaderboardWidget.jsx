@@ -6,7 +6,7 @@ export const LeaderboardWidget = ({ leaderboardData, onPlayerClick }) => {
   const topPlayers = (leaderboardData || []).slice(0, 5);
 
   return (
-    <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl shadow-2xl relative overflow-hidden group">
+    <div className="p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/10 backdrop-blur-3xl shadow-2xl relative group">
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/50 to-transparent opacity-20 group-hover:opacity-100 transition-opacity"></div>
       
       <div className="flex items-center justify-between mb-8">
@@ -15,7 +15,7 @@ export const LeaderboardWidget = ({ leaderboardData, onPlayerClick }) => {
             <Trophy size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">TOP <span className="text-white/40">CHAMPIONS</span></h3>
+            <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">TOP <span className="text-white/40">PLAYERS</span></h3>
             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mt-1">Global Rankings</p>
           </div>
         </div>
@@ -39,8 +39,12 @@ export const LeaderboardWidget = ({ leaderboardData, onPlayerClick }) => {
                 i === 2 ? 'text-white/40' : 
                 'text-white/20'
               }`}>#{i + 1}</span>
-              <div className="w-10 h-10 rounded-xl bg-black border border-white/5 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <User size={20} />
+              <div className="w-10 h-10 rounded-full bg-black border border-white/5 flex items-center justify-center text-white group-hover:scale-110 transition-transform overflow-hidden">
+                {player.img ? (
+                  <img src={player.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                ) : (
+                  <User size={20} />
+                )}
               </div>
               <div>
                 <p className="text-sm font-black text-white uppercase tracking-tight italic group-hover:text-white transition-colors">{player.username}</p>
@@ -57,7 +61,7 @@ export const LeaderboardWidget = ({ leaderboardData, onPlayerClick }) => {
       </div>
 
       <div className="mt-8 p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
-        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">Season ends in 4d 12h</p>
+        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">RANKINGS UPDATE REGULARLY</p>
       </div>
     </div>
   );

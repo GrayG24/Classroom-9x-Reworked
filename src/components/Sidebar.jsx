@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { House, Library, Sparkles, Settings, Crown, Shield, Ghost, Bot, Star, Cat, Rocket, Clock, User, Users, Trophy, Zap, ChevronRight, LayoutGrid, Search, Menu, X, ZapOff, MessageSquare, Music, Key, Gamepad2, Globe, Palette, Sun } from 'lucide-react';
+import { House, Library, Sparkles, Settings, Crown, Shield, Ghost, Bot, Star, Cat, Rocket, Clock, User, Users, Trophy, Zap, ChevronRight, LayoutGrid, Search, Menu, X, ZapOff, MessageSquare, Music, Key, Gamepad2, Globe, Palette, Sun, Power, Hammer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppRoute, CHARACTERS } from '../constants';
 
@@ -7,15 +7,15 @@ export const Sidebar = ({
   user, 
   currentView, 
   onViewChange,
-  onProfileClick
+  onProfileClick,
+  onLogin,
+  onLogout,
+  firebaseUser,
+  isExpanded,
+  onToggleExpand
 }) => {
-  const [isExpanded, setIsExpanded] = useState(!user.settings.sidebarAutoHide);
   const [time, setTime] = useState(new Date());
   const [onlineCount, setOnlineCount] = useState(1);
-
-  useEffect(() => {
-    setIsExpanded(!user.settings.sidebarAutoHide);
-  }, [user.settings.sidebarAutoHide]);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -41,7 +41,6 @@ export const Sidebar = ({
   const rawMenuItems = [
     { id: AppRoute.HOME, label: 'Home', icon: House, isReleased: true },
     { id: AppRoute.LIBRARY, label: 'Games', icon: Gamepad2, isReleased: true },
-    { id: AppRoute.SPOTIFY, label: 'Spotify', icon: Music, isReleased: true, isBroken: true },
     { id: AppRoute.SUMMER, label: 'Summer Countdown', icon: Sun, isReleased: true, accentColor: 'text-orange-400', beachBonus: true },
     { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid, isReleased: false },
     { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: false },
@@ -50,43 +49,26 @@ export const Sidebar = ({
 
   const menuItems = rawMenuItems.filter(item => {
     // If Hide Unreleased is enabled, strictly hide items where isReleased is false
-    // Only exception: Admin might want to see them if they haven't explicitly asked to hide them, 
-    // but the user says it's not working, so let's honor the setting even for admins if it's on.
-    if (user.settings.hideUnreleased && item.isReleased === false) return false;
-    
-    if (user.isAdmin) return true;
+    if (user?.settings?.hideUnreleased && item.isReleased === false) return false;
     
     return true;
   });
 
-  if (user.isAdmin) {
-    menuItems.push({ id: AppRoute.ADMIN, label: 'Admin', icon: Shield, color: 'text-rose-500', isReleased: true });
-  }
-
   return (
     <motion.div 
-      onMouseEnter={() => user.settings.sidebarAutoHide && setIsExpanded(true)}
-      onMouseLeave={() => user.settings.sidebarAutoHide && setIsExpanded(false)}
+      onMouseEnter={() => user.settings.sidebarAutoHide && onToggleExpand(true)}
+      onMouseLeave={() => user.settings.sidebarAutoHide && onToggleExpand(false)}
       initial={false}
-      animate={isPotatoMode ? { opacity: 1, width: isExpanded ? 280 : 88, minWidth: isExpanded ? 280 : 88 } : { 
+      animate={isPotatoMode ? { opacity: 1, width: isExpanded ? 280 : 88 } : { 
         width: isExpanded ? 280 : 88,
-        minWidth: isExpanded ? 280 : 88,
-        maxWidth: isExpanded ? 280 : 88,
-        height: isExpanded ? 'calc(100vh - 40px)' : '600px',
-        maxHeight: isExpanded ? 'calc(100vh - 40px)' : '600px',
-        top: isExpanded ? '20px' : 'calc(50% - 300px)',
-        x: 16,
-        borderRadius: isExpanded ? "2rem" : "2.5rem",
         opacity: 1
       }}
       transition={isPotatoMode ? { duration: 0 } : { 
-        type: "spring",
-        stiffness: 220,
-        damping: 28,
-        mass: 1.2
+        width: { type: "spring", stiffness: 25, damping: 14, mass: 1 },
+        opacity: { duration: 1.2 }
       }}
-      className="fixed left-0 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 overflow-hidden"
-      style={{ willChange: 'transform, width, height' }}
+      className="fixed left-6 top-6 bottom-6 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 rounded-[2.5rem]"
+      style={{ willChange: 'transform, width' }}
     >
       {/* Logo Section */}
       <div className={`flex flex-col items-center w-full shrink-0 transition-all duration-500 h-24 ${isExpanded ? 'p-8 pb-4' : 'justify-center'}`}>
@@ -216,9 +198,9 @@ export const Sidebar = ({
           {isExpanded && <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>}
           
           <div className="relative shrink-0 flex items-center justify-center z-10">
-            <div className={`w-9 h-9 rounded-xl bg-black border border-white/20 overflow-hidden flex items-center justify-center text-white group-hover:scale-105 transition-all duration-500 shadow-2xl`}>
+            <div className={`w-9 h-9 rounded-full bg-black border border-white/20 overflow-hidden flex items-center justify-center text-white group-hover:scale-105 transition-all duration-500 shadow-2xl`}>
               {currentChar.img ? (
-                <img src={currentChar.img} alt={currentChar.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img src={currentChar.img} alt={currentChar.name} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
               ) : (
                 <span className="text-lg font-black">{user.username[0]}</span>
               )}
@@ -259,6 +241,34 @@ export const Sidebar = ({
             </motion.div>
           )}
         </motion.button>
+
+        <div className={`mt-4 w-full ${isExpanded ? 'px-4' : 'px-2'}`}>
+          {firebaseUser ? (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onLogout}
+              className={`w-full flex items-center gap-4 h-12 rounded-xl transition-all relative overflow-hidden group ${
+                isExpanded ? 'px-6 bg-white/5 border border-white/5' : 'justify-center bg-white/5'
+              } hover:bg-rose-500/20 hover:border-rose-500/30 text-rose-500`}
+            >
+              <Power size={18} />
+              {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:text-rose-400">LOGOUT</span>}
+            </motion.button>
+          ) : (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onLogin}
+              className={`w-full flex items-center gap-4 h-12 rounded-xl transition-all relative overflow-hidden group ${
+                isExpanded ? 'px-6 bg-primary/20 border border-primary/20' : 'justify-center bg-primary/20'
+              } hover:bg-primary/30 hover:border-primary/40 text-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.1)]`}
+            >
+              <User size={18} />
+              {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest italic">SIGN IN</span>}
+            </motion.button>
+          )}
+        </div>
 
         <div className={`flex flex-col gap-2 w-full ${isExpanded ? 'px-1' : 'items-center'}`}>
           <div 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Play, Star, Shield, Zap, Info } from 'lucide-react';
+import { X, Play, Star, Shield, Zap, Info, Pin } from 'lucide-react';
 
 export const GameModal = ({ game, isFavorite, onToggleFavorite, onClose }) => {
   if (!game) return null;
@@ -68,11 +68,11 @@ export const GameModal = ({ game, isFavorite, onToggleFavorite, onClose }) => {
               onClick={() => onToggleFavorite(game.id)} 
               className={`flex-1 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all italic border ${
                 isFavorite 
-                  ? 'bg-white/10 text-white border-white/20' 
+                  ? 'bg-white/10 text-white border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.2)]' 
                   : 'bg-white/5 text-white/40 border-white/5 hover:border-white/20 hover:text-white'
               } flex items-center justify-center`}
             >
-              <Star size={16} fill={isFavorite ? "currentColor" : "none"} />
+              <Pin size={16} className={isFavorite ? "fill-current" : ""} />
             </button>
           </div>
         </div>

@@ -1,68 +1,66 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, Flame, ChevronRight, Zap, Trophy, MessageSquare, GraduationCap, Star, ChevronDown, User, Shield, Crown, Activity, Target, Award, Rocket, Play, X } from 'lucide-react';
+import { Calendar, Clock, Flame, ChevronRight, Zap, Trophy, MessageSquare, GraduationCap, Star, ChevronDown, User, Shield, Crown, Activity, Target, Award, Rocket, Play, X, Pin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Hero } from './Hero';
 import { GameCard } from './GameCard';
 import { Tilt } from './Tilt';
+import { LeaderboardWidget as FullLeaderboardWidget } from './LeaderboardWidget';
 import { CHARACTERS, BADGES } from '../constants';
 
-const ProfileWidget = ({ user, onProfileClick }) => {
-  const character = CHARACTERS.find(c => c.id === user.currentCharacter) || (CHARACTERS && CHARACTERS.length > 0 ? CHARACTERS[0] : { name: 'Unknown', icon: User, img: null });
-  const isPotatoMode = user?.settings?.performanceMode === true;
+const LEVEL_UP_BASE = 200;
+
+const CompactLeaderboard = ({ leaderboardData, onLeaderboardClick }) => {
+  const topPlayers = (leaderboardData || []).slice(0, 3);
   
   return (
     <motion.div 
-      initial={false}
-      whileHover={isPotatoMode ? {} : { y: -4, scale: 1.01 }}
-      whileTap={isPotatoMode ? {} : { scale: 0.99 }}
-      onClick={onProfileClick}
-      className={`relative w-full rounded-[2.5rem] p-1 border border-white/5 bg-black/40 backdrop-blur-3xl cursor-pointer group shadow-2xl overflow-hidden`}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={onLeaderboardClick}
+      className="relative w-full rounded-[2.5rem] p-6 border border-white/5 bg-black/40 backdrop-blur-3xl group shadow-2xl h-full flex flex-col justify-between"
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-theme/10 via-transparent to-theme/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <Trophy size={20} className="text-yellow-400" />
+          <span className="text-[12px] font-black text-white/40 uppercase tracking-[0.3em] italic">TOP PLAYERS</span>
+        </div>
+      </div>
       
-      <div className="relative z-10 flex items-center p-5 gap-6">
-        <div className="relative shrink-0">
-          <div className="relative w-20 h-20">
-            <div className={`absolute -inset-4 frame-${user.currentFrame || 'obsidian'} z-20 pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity`}></div>
-            <div className="relative w-full h-full rounded-[1.5rem] bg-black border-2 border-white/10 overflow-hidden flex items-center justify-center shadow-2xl z-10">
-              {character.img ? (
-                <img src={character.img} alt={character.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" referrerPolicy="no-referrer" />
-              ) : (
-                <User size={32} className="text-white/20" />
-              )}
+      <div className="space-y-3 flex-1 flex flex-col justify-center">
+        {topPlayers.map((player, i) => (
+          <div key={i} className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:bg-white/10 transition-colors">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black italic ${i === 0 ? 'bg-yellow-400/20 text-yellow-400' : 'bg-white/5 text-white/40'}`}>
+              {i + 1}
             </div>
-            <div className="absolute -bottom-2 -right-2 px-4 py-1.5 bg-white text-black rounded-xl border border-white/20 flex flex-col items-center justify-center font-black z-30 shadow-[0_8px_25px_rgba(0,0,0,0.5)] min-w-[50px] group-hover:scale-110 transition-transform">
-              <span className="text-[7px] leading-none opacity-40 uppercase tracking-widest mb-0.5">LVL</span>
-              <span className="text-[14px] leading-none italic">{user.level}</span>
-            </div>
+            <span className="text-sm font-bold text-white truncate flex-1 uppercase tracking-tight">{player.username}</span>
+            <span className="text-xs font-black text-white/20 italic">{player.level} LVL</span>
           </div>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic leading-tight group-hover:text-theme transition-colors truncate">{user.username}</h4>
-          <div className="flex items-center gap-3 mt-1">
-            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(100, Math.max(0, ((user.exp - (user.level - 1) * 200) / 200) * 100))}%` }}
-                className="h-full bg-theme shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
-              />
-            </div>
-            <span className="text-[7px] font-black text-white/30 uppercase tracking-[0.2em] italic shrink-0">
-              {Math.floor(user.exp - (user.level - 1) * 200)} / 200 XP
-            </span>
-          </div>
-        </div>
-
-        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-white/20 group-hover:bg-theme group-hover:text-black transition-all duration-300">
-          <ChevronRight size={20} />
-        </div>
+        ))}
+        {topPlayers.length === 0 && (
+           <div className="text-center py-10 text-white/10 text-[10px] font-black tracking-[0.4em] uppercase italic">SYNCING_DATA...</div>
+        )}
+      </div>
+      
+      <div className="mt-6 pt-4 border-t border-white/5 text-[8px] font-black text-white/20 uppercase tracking-[0.4em] italic text-center">
+        VIEW GLOBAL RANKINGS
       </div>
     </motion.div>
   );
 };
 
 const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isPotatoMode, delay = 0 }) => {
+  const tiltOptions = useMemo(() => ({ 
+    max: 25, 
+    scale: 1.05, 
+    speed: 1000, 
+    glare: true, 
+    "max-glare": 0.2, 
+    transition: true, 
+    easing: "cubic-bezier(.03,.98,.52,.99)" 
+  }), []);
+
   return (
     <motion.div 
       initial={isPotatoMode ? { opacity: 0 } : { opacity: 0, y: 20 }}
@@ -72,24 +70,25 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isP
     >
       <Tilt 
         disabled={isPotatoMode}
-        options={{ max: 25, scale: 1.05, speed: 1000, glare: true, "max-glare": 0.2, transition: true, easing: "cubic-bezier(.03,.98,.52,.99)" }}
+        options={tiltOptions}
       >
         <button 
-          className={`proto-tilt-card group relative block h-[398px] w-[252px] sm:h-[424px] sm:w-[268px] overflow-hidden rounded-3xl border bg-card/78 text-left ${colorClass} ${shadowClass}`}
+          className={`proto-tilt-card group relative block h-[398px] w-[252px] sm:h-[424px] sm:w-[268px] rounded-3xl border bg-card/78 text-left ${colorClass} ${shadowClass}`}
           onClick={onClick}
+          style={{ transformStyle: 'preserve-3d' }}
         >
           <img 
             alt={game.title} 
             loading="lazy" 
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.03] absolute inset-0 h-full w-full" 
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03] absolute inset-0 h-full w-full rounded-3xl" 
             src={game.thumbnail} 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/72 via-background/22 to-transparent"></div>
           <div className="proto-tilt-shine"></div>
-          <div className="absolute left-3 top-3 rounded-full border border-border/80 bg-background/75 px-2.5 py-1 text-[11px] font-semibold tracking-[0.12em] text-foreground/85">
+          <div className="absolute left-3 top-3 rounded-full border border-border/80 bg-background/75 px-2.5 py-1 text-[11px] font-semibold tracking-[0.12em] text-foreground/85 transition-transform" style={{ transform: 'translateZ(30px)' }}>
             #{rank}
           </div>
-          <div className="absolute inset-x-0 bottom-0 p-4">
+          <div className="absolute inset-x-0 bottom-0 p-4 transition-transform" style={{ transform: 'translateZ(50px)' }}>
             <p className="text-xl font-semibold leading-tight text-foreground">{game.title}</p>
             <p className="mt-1 text-xs text-foreground/62">{rankLabel}</p>
           </div>
@@ -159,6 +158,7 @@ export const Home = ({
   dailyPicks,
   favorites, 
   pinnedGames,
+  leaderboardData,
   boosts,
   gameOfTheWeek,
   onToggleFavorite, 
@@ -169,6 +169,23 @@ export const Home = ({
   onLeaderboardClick
 }) => {
   const [isPinnedMinimized, setIsPinnedMinimized] = useState(false);
+  const [systemStats, setSystemStats] = useState({ activeUsers: 0, totalPlayers: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/system/status');
+        if (res.ok) {
+          const data = await res.json();
+          setSystemStats(data);
+        }
+      } catch (err) {}
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 15000); // More frequent updates
+    return () => clearInterval(interval);
+  }, []);
+
   const featuredGame = useMemo(() => {
     if (gameOfTheWeek) {
       const game = games.find(g => g.id === gameOfTheWeek.id);
@@ -245,13 +262,29 @@ export const Home = ({
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="pb-40"
+      className="pb-40 pt-12"
     >
-      <motion.div variants={itemVariants}>
-        <Hero user={user} onBrowseLibrary={onSwitchToLibrary} />
-      </motion.div>
+      <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12 mb-12">
+        <div className="flex justify-between items-center mb-8 bg-black/20 p-6 rounded-[2.5rem] border border-white/5 backdrop-blur-xl">
+           <div className="flex items-center gap-6">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-theme border border-white/10 shadow-2xl">
+                 <Rocket size={24} />
+              </div>
+              <div>
+                 <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap">DASHBOARD</h2>
+                 <p className="text-white/20 font-black uppercase tracking-[0.4em] text-[8px] mt-0.5">Welcome back, {user.username}</p>
+              </div>
+           </div>
+        </div>
 
-      {/* Featured Game Banner - REWORKED */}
+        <div className="mb-12">
+          <motion.div variants={itemVariants}>
+            <Hero user={user} onBrowseLibrary={onSwitchToLibrary} />
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Featured Game Banner */}
       <motion.section variants={itemVariants} className="pb-20 relative z-10">
         <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="relative group">
@@ -332,7 +365,7 @@ export const Home = ({
                       }}
                       className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all group/star"
                     >
-                      <Star size={28} className={`${favorites.includes(featuredGame.id) ? 'fill-white text-white shadow-[0_0_20px_white]' : ''} group-hover/star:scale-110 transition-transform`} />
+                      <Pin size={28} className={`${favorites.includes(featuredGame.id) ? 'fill-white text-white shadow-[0_0_20px_white]' : ''} group-hover/star:scale-110 transition-transform`} />
                     </button>
                   </div>
                 </div>
@@ -345,32 +378,54 @@ export const Home = ({
         </div>
       </motion.section>
 
-      {/* Community Section */}
-      <motion.section variants={itemVariants} className="pb-32 relative z-10">
-        <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <ProfileWidget user={user} onProfileClick={onProfileClick} />
+      {/* Leaderboard Section */}
+      <motion.section variants={itemVariants} className="pb-32 relative z-10 px-6 sm:px-8 lg:px-12">
+        <div className="max-w-[100rem] mx-auto">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-8 gap-8">
+            <div className="max-w-xl">
+                <h3 className="text-5xl font-black text-white italic tracking-tighter uppercase mb-4">GLOBAL RANKINGS</h3>
+                <p className="text-white/40 font-bold uppercase tracking-[0.1em] text-xs italic border-l-2 border-white/10 pl-6">
+                  Check out the top players in the community. Play games to earn score and climb the ranks.
+                </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <FullLeaderboardWidget 
+                leaderboardData={leaderboardData} 
+                onPlayerClick={onProfileClick}
+              />
+            </div>
             
-            <motion.div 
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="p-8 bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[40px] flex items-center justify-between group grayscale opacity-60 transition-all shadow-2xl relative overflow-hidden cursor-not-allowed"
-            >
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20 backdrop-blur-sm">
-                <div className="px-6 py-2 bg-white text-black font-black text-[10px] uppercase tracking-[0.5em] italic rounded-full shadow-[0_0_30px_rgba(255,255,255,0.5)]">
-                  COMING SOON
+            <div className="flex flex-col gap-6">
+              <div className="p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 flex flex-col justify-center gap-6 group hover:bg-white/[0.05] transition-colors relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
+                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">ONLINE STATUS</span>
+                <div className="flex items-center gap-6">
+                  <div className="w-4 h-4 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_20px_#10b981]" />
+                  <div className="flex flex-col">
+                    <span className="text-5xl font-black text-white italic tracking-tighter">
+                      {systemStats.activeUsers.toLocaleString()}
+                    </span>
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 italic">ACTIVE PLAYERS</span>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-8 relative z-10">
-                <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center text-white border border-white/10">
-                  <Trophy size={48} />
-                </div>
-                <div className="text-left">
-                  <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-2 block italic">COMPETITIVE ARENA</span>
-                  <h4 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">GLOBAL <span className="text-white/40">LEADERBOARD</span></h4>
-                  <p className="text-[10px] font-bold text-white/10 mt-4 uppercase tracking-[0.2em] italic">See who is the best in the world</p>
+              <div className="p-10 rounded-[2.5rem] bg-white/[0.03] border border-white/5 flex flex-col justify-center gap-6 group hover:bg-white/[0.05] transition-colors relative overflow-hidden">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-rose-500/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
+                <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">SITE ACTIVITY</span>
+                <div className="flex items-center gap-6">
+                  <Activity size={32} className="text-rose-500" />
+                  <div className="flex flex-col">
+                    <span className="text-5xl font-black text-white italic tracking-tighter">
+                      {systemStats.totalPlayers > 1000 ? `${(systemStats.totalPlayers / 1000).toFixed(0)}K` : systemStats.totalPlayers}
+                    </span>
+                    <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 italic">TOTAL PLAYERS</span>
+                  </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </motion.section>
