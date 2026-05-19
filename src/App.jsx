@@ -657,6 +657,9 @@ const App = () => {
       setIsAuthLoading(false);
     });
 
+    // Safety timeout: if auth takes more than 5s, continue anyway
+    const timeout = setTimeout(() => setIsAuthLoading(false), 5000);
+
     // Handle redirect result for schools/browsers that block popups
     getRedirectResult(auth).catch((error) => {
       if (error.code !== 'auth/redirect-cancelled-by-user') {
@@ -664,7 +667,10 @@ const App = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   // Global Site Settings Listener (Maintenance, Game of the Week, Announcements)

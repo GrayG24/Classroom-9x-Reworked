@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Stars, PerspectiveCamera } from '@react-three/drei';
-import { StaticDrawUsage, AdditiveBlending, DoubleSide } from 'three';
+import * as THREE from 'three';
 
 const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false }) => {
   const meshRef = useRef();
@@ -39,8 +39,10 @@ const ShootingStar = ({ onWitnessed, onImpact, onProximity, forceTrigger = false
       trailRef.current.scale.set(1, 1, 1 + meshRef.current.position.x * 0.015);
     }
 
-    if (meshRef.current.children[1]) {
-      meshRef.current.children[1].intensity = 800 + Math.sin(elapsedTime * 30) * 300;
+    // Find the point light child
+    const light = meshRef.current.children.find(child => child instanceof THREE.PointLight);
+    if (light) {
+      light.intensity = 800 + Math.sin(elapsedTime * 30) * 300;
     }
 
     // Impact detection
@@ -137,7 +139,7 @@ const Particles = ({ count = 2000 }) => {
           count={positions.length / 3}
           array={positions}
           itemSize={3}
-          usage={StaticDrawUsage}
+          usage={THREE.StaticDrawUsage}
         />
       </bufferGeometry>
       <pointsMaterial 
@@ -146,7 +148,7 @@ const Particles = ({ count = 2000 }) => {
         transparent 
         opacity={0.3} 
         sizeAttenuation 
-        blending={AdditiveBlending}
+        blending={THREE.AdditiveBlending}
       />
     </points>
   );
@@ -166,7 +168,7 @@ const Shockwave = ({ active }) => {
   return (
     <mesh ref={meshRef} rotation={[Math.PI / 2, 0, 0]}>
       <ringGeometry args={[1, 1.2, 64]} />
-      <meshBasicMaterial color="#ffffff" transparent opacity={1} side={DoubleSide} />
+      <meshBasicMaterial color="#ffffff" transparent opacity={1} side={THREE.DoubleSide} />
     </mesh>
   );
 };
