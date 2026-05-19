@@ -28,7 +28,7 @@ import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { auth, db } from './lib/firebase';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc, collection, query, orderBy, limit, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 
 import { filterProfanity } from './lib/profanity';
@@ -690,26 +690,12 @@ const App = () => {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       
-      // Attempt popup first as it's better UX
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (popupErr) {
-        // If popup is blocked, immediately fallback to redirect
-        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/cancelled-popup-request') {
-          if (addNotification) {
-            addNotification('AUTH FALLBACK', 'Popup blocked. Initializing redirect sequence...', 'info', <Shield size={14} className="text-theme" />);
-          }
-          await signInWithRedirect(auth, provider);
-        } else {
-          throw popupErr;
-        }
-      }
+      // Use redirect directly as popups are often blocked in iframe environments
+      await signInWithRedirect(auth, provider);
     } catch (err) {
-      if (err.code !== 'auth/cancelled-popup-request' && err.code !== 'auth/popup-closed-by-user') {
-        console.error('Login Error:', err);
-        if (addNotification) {
-          addNotification('AUTH ERROR', 'Access protocols failed. Please try again.', 'error', <Shield size={14} className="text-rose-500" />);
-        }
+      console.error('Login Error:', err);
+      if (typeof addNotification === 'function') {
+        addNotification('AUTH ERROR', 'Access protocols failed. Please try again.', 'error', <Shield size={14} className="text-rose-500" />);
       }
     } finally {
       isLoggingIn.current = false;
