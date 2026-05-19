@@ -856,7 +856,6 @@ const App = () => {
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [adminAnnouncement, setAdminAnnouncement] = useState(null);
-  const ws = useRef(null);
   const [showInitialModal, setShowInitialModal] = useState(false);
   const [initialModalError, setInitialModalError] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -1618,9 +1617,6 @@ const App = () => {
   ]);
 
   const addExpAndTrackPlay = (game) => {
-    if (ws.current && typeof window !== 'undefined' && window.WebSocket && ws.current.readyState === window.WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ type: 'GAME_START', gameId: game.id, gameName: game.title }));
-    }
     setUser(prev => {
       if (prev.level >= 100) return prev;
 

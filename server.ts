@@ -1,7 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import { createServer } from 'http';
-import { WebSocketServer, WebSocket } from 'ws';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -72,10 +70,6 @@ const PORT = 3000;
 
 async function startServer() {
   const app = express();
-  const server = createServer(app);
-  const wss = new WebSocketServer({ server });
-  const clients = new Set<WebSocket>();
-
   app.use(cors());
   app.use(express.json());
 
@@ -176,20 +170,6 @@ async function startServer() {
 
   app.use('/api', apiRouter);
 
-  // --- WEB SOCKETS ---
-  wss.on('connection', (ws) => {
-    clients.add(ws);
-    ws.on('message', (data) => {
-      const message = data.toString();
-      clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(message);
-        }
-      });
-    });
-    ws.on('close', () => clients.delete(ws));
-  });
-  
   // --- VITE MIDDLEWARE ---
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -210,7 +190,7 @@ async function startServer() {
     }
   }
 
-  server.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${PORT}`);
   });
 }

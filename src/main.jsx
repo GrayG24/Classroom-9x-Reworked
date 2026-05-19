@@ -14,7 +14,9 @@ window.addEventListener('unhandledrejection', (event) => {
     message.includes('failed to connect') ||
     message.includes('sockjs-node') ||
     message.includes('connection refused') ||
-    message.includes('connection closed');
+    message.includes('connection closed') ||
+    message.includes('ws://') ||
+    message.includes('wss://');
 
   if (isWebsocketError) {
     event.stopImmediatePropagation();
@@ -32,7 +34,9 @@ window.addEventListener('error', (event) => {
     message.includes('failed to connect') ||
     message.includes('sockjs-node') ||
     message.includes('connection refused') ||
-    message.includes('connection closed');
+    message.includes('connection closed') ||
+    message.includes('ws://') ||
+    message.includes('wss://');
 
   if (isWebsocketError) {
     event.stopImmediatePropagation();
