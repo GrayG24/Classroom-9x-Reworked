@@ -1,0 +1,338 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  auth, 
+  db 
+} from '../lib/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInAnonymously,
+  signInWithPopup,
+  GoogleAuthProvider
+} from 'firebase/auth';
+import { 
+  Mail, 
+  Lock, 
+  UserPlus, 
+  UserCheck, 
+  ShieldAlert, 
+  Chrome, 
+  Compass, 
+  X, 
+  Loader2, 
+  Sparkles,
+  ChevronRight,
+  Info
+} from 'lucide-react';
+
+const AuthPortal = ({ isOpen, onClose, addNotification }) => {
+  const [activeTab, setActiveTab] = useState('login'); // 'login', 'register', 'guest'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleEmailAuth = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please fill in all core fields.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+
+    try {
+      if (activeTab === 'login') {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        if (addNotification) {
+          addNotification('WELCOME BACK', `Logged in as ${userCred.user.email}`, 'success');
+        }
+        onClose();
+      } else {
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters.');
+        }
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        if (addNotification) {
+          addNotification('ACCOUNT CREATED', 'Welcome to Classroom 9X!', 'success');
+        }
+        onClose();
+      }
+    } catch (err) {
+      console.error('Email Auth Error:', err);
+      const code = err?.code || '';
+      const msg = err?.message || String(err || '');
+      const fullErrorStr = `${code} ${msg}`.toLowerCase();
+
+      let errMsg = msg || 'An unexpected error occurred during authentication.';
+
+      if (fullErrorStr.includes('email-already-in-use')) {
+        errMsg = 'This email is already registered. Try switching to the "Sign In" tab.';
+      } else if (fullErrorStr.includes('user-not-found') || fullErrorStr.includes('invalid-credential')) {
+        errMsg = 'No user account matching this email and password was found. Check your spelling or Create an Account.';
+      } else if (fullErrorStr.includes('wrong-password') || fullErrorStr.includes('invalid-password')) {
+        errMsg = 'Incorrect password. Please try again.';
+      } else if (fullErrorStr.includes('invalid-email')) {
+        errMsg = 'Invalid email address format. Please enter a valid email.';
+      } else if (fullErrorStr.includes('weak-password')) {
+        errMsg = 'The password is too weak. It must be at least 6 characters.';
+      } else if (fullErrorStr.includes('operation-not-allowed')) {
+        errMsg = 'Email/Password logins are not enabled in the Firebase Console yet.';
+      } else if (fullErrorStr.includes('too-many-requests')) {
+        errMsg = 'Too many failed login attempts. This account has been temporarily disabled. Try again later.';
+      }
+      
+      setError(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const userCred = await signInWithPopup(auth, provider);
+      if (addNotification) {
+        addNotification('GOOGLE SIGN IN', `Access granted: ${userCred.user.displayName || userCred.user.email}`, 'success');
+      }
+      onClose();
+    } catch (err) {
+      console.error('Google Popup Auth Error:', err);
+      setError('Google Sign-In failed inside the sandbox. Try signing in on a new page, or register a free online account below.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuestAuth = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const userCred = await signInAnonymously(auth);
+      if (addNotification) {
+        addNotification('GUEST SEQUENCE', 'Access granted as temporary user.', 'success');
+      }
+      onClose();
+    } catch (err) {
+      console.error('Anonymous Auth Error:', err);
+      if (err.code === 'auth/operation-not-allowed') {
+        setError('Anonymous sign-in is not enabled in the Firebase Console. Please register with email or open in a new tab.');
+      } else {
+        setError(err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      {/* Outer Glow */}
+      <div className="absolute inset-0 bg-[#0ea5e9]/5 blur-[150px] pointer-events-none" />
+
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+        className="relative w-full max-w-md bg-zinc-950/90 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl"
+      >
+        {/* Header Section */}
+        <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
+          <div>
+            <span className="text-[9px] font-mono font-black text-primary uppercase tracking-[0.2em] italic">AUTHENTICATION PORTAL</span>
+            <h3 className="text-xl font-bold font-sans text-white tracking-tight mt-1">Classroom State Sync</h3>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-1.5 hover:bg-white/5 rounded-lg transition-all text-white/50 hover:text-white"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Info Helper */}
+        <div className="bg-primary/5 px-6 py-3 border-b border-zinc-800/50 flex gap-3 text-xs leading-relaxed text-zinc-400">
+          <Info size={16} className="text-primary shrink-0 mt-0.5" />
+          <p>
+            Standard social integrations (Google/Discord) may fail when embedded inside custom preview shells. <strong className="text-white">Email and Password</strong> provides 100% reliable inline access.
+          </p>
+        </div>
+
+        {/* Tab Selector */}
+        <div className="flex border-b border-zinc-800">
+          <button
+            onClick={() => { setActiveTab('login'); setError(''); }}
+            className={`flex-1 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors relative ${
+              activeTab === 'login' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Sign In
+            {activeTab === 'login' && (
+              <motion.div layoutId="auth-tab-bar" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('register'); setError(''); }}
+            className={`flex-1 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors relative ${
+              activeTab === 'register' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Create Account
+            {activeTab === 'register' && (
+              <motion.div layoutId="auth-tab-bar" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('guest'); setError(''); }}
+            className={`flex-1 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors relative ${
+              activeTab === 'guest' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Guest Access
+            {activeTab === 'guest' && (
+              <motion.div layoutId="auth-tab-bar" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+            )}
+          </button>
+        </div>
+
+        <div className="p-6">
+          {/* Error Message */}
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 p-3.5 bg-red-500/10 border border-red-500/20 rounded-xl flex gap-3 text-xs leading-relaxed text-red-400 overflow-hidden"
+              >
+                <ShieldAlert size={16} className="text-red-500 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Form Handling (Login & Register) */}
+          {(activeTab === 'login' || activeTab === 'register') && (
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-black text-zinc-500 uppercase tracking-widest">EMAIL ADDRESS</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <input 
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    placeholder="name@school.com"
+                    className="w-full h-11 pl-10 pr-4 bg-zinc-900 border border-zinc-800 focus:border-primary rounded-xl text-xs font-sans text-white placeholder-zinc-600 outline-none transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-black text-zinc-500 uppercase tracking-widest">PASSWORD</label>
+                <div className="relative">
+                  <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <input 
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    placeholder="••••••••"
+                    className="w-full h-11 pl-10 pr-4 bg-zinc-900 border border-zinc-800 focus:border-primary rounded-xl text-xs font-sans text-white placeholder-zinc-600 outline-none transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 bg-primary text-black font-mono font-black text-xs uppercase tracking-widest rounded-xl hover:bg-opacity-90 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_20px_rgba(var(--primary-rgb),0.25)]"
+              >
+                {loading ? (
+                  <Loader2 size={16} className="animate-spin text-black" />
+                ) : activeTab === 'login' ? (
+                  <>
+                    <UserCheck size={16} />
+                    Sign In Inline
+                  </>
+                ) : (
+                  <>
+                    <UserPlus size={16} />
+                    Create Account
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* Tab: guest login */}
+          {activeTab === 'guest' && (
+            <div className="space-y-4 text-center">
+              <p className="text-xs text-zinc-400 font-sans leading-relaxed mb-6">
+                Guest access registers a virtual identity in our synchronized Firebase instance in real-time. No credentials required, but settings are temporary and bind only to this session.
+              </p>
+
+              <button
+                onClick={handleGuestAuth}
+                disabled={loading}
+                className="w-full h-11 border border-zinc-700/50 hover:border-zinc-500/80 bg-zinc-900 hover:bg-zinc-800/85 text-white font-mono font-black text-xs uppercase tracking-widest rounded-xl disabled:bg-zinc-950 disabled:text-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {loading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    <Sparkles size={16} className="text-zinc-400" />
+                    Launch Guest Session
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Social Divider */}
+          <div className="relative my-6 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-zinc-800/70" />
+            </div>
+            <span className="relative px-3 text-[9px] font-mono font-bold text-zinc-600 bg-zinc-950 uppercase tracking-widest">
+              ALTERNATIVE CHANNELS
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {/* Google Authentication */}
+            <button
+              onClick={handleGoogleAuth}
+              disabled={loading}
+              className="h-10 border border-zinc-800 hover:border-zinc-700 bg-[#0c0a09] text-zinc-300 font-mono font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:text-white"
+            >
+              <Chrome size={14} className="text-rose-500" />
+              Google Pop
+            </button>
+
+            {/* Launch In New Tab */}
+            <button
+              onClick={() => window.open(window.location.href, '_blank')}
+              className="h-10 border border-zinc-800 hover:border-zinc-700 bg-[#0c0a09] text-zinc-300 font-mono font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:text-white"
+            >
+              <Compass size={14} className="text-theme" />
+              New Tab Mode
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default AuthPortal;

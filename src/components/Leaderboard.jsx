@@ -87,7 +87,7 @@ export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
 
               return (
                 <motion.div
-                  key={player.username}
+                  key={player.uid || `${player.username}-${index}`}
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
@@ -161,7 +161,7 @@ export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
               <div className="space-y-6">
                 {otherPlayers.map((player, i) => (
                   <motion.div
-                    key={player.username}
+                    key={player.uid || `${player.username}-${i}`}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}

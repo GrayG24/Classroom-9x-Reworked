@@ -13,6 +13,7 @@ import { Leaderboard } from './components/Leaderboard';
 import { LeaderboardWidget } from './components/LeaderboardWidget';
 import { GlobalChat } from './components/GlobalChat';
 import { InitialNameModal } from './components/InitialNameModal';
+import AuthPortal from './components/AuthPortal';
 import { EducationalCloak } from './components/EducationalCloak';
 import { AdminPanel } from './components/AdminPanel';
 import { AppsPage } from './components/AppsPage';
@@ -28,7 +29,7 @@ import { Bell, Star, Zap, Shield, Trophy, Palette, Layers, Bot, X, Crown, ZapOff
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { auth, db } from './lib/firebase';
-import { onAuthStateChanged, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, GoogleAuthProvider, signOut, signInWithRedirect, getRedirectResult, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot, updateDoc, collection, query, orderBy, limit, serverTimestamp, getDocFromServer } from 'firebase/firestore';
 
 import { filterProfanity } from './lib/profanity';
@@ -689,23 +690,10 @@ const App = () => {
     return () => unsub();
   }, []);
 
-  const handleLogin = async () => {
-    if (isLoggingIn.current) return;
-    isLoggingIn.current = true;
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      
-      // Use redirect directly as popups are often blocked in iframe environments
-      await signInWithRedirect(auth, provider);
-    } catch (err) {
-      console.error('Login Error:', err);
-      if (typeof addNotification === 'function') {
-        addNotification('AUTH ERROR', 'Access protocols failed. Please try again.', 'error', <Shield size={14} className="text-rose-500" />);
-      }
-    } finally {
-      isLoggingIn.current = false;
-    }
+  const [isAuthPortalOpen, setIsAuthPortalOpen] = useState(false);
+
+  const handleLogin = () => {
+    setIsAuthPortalOpen(true);
   };
 
   const handleLogout = () => signOut(auth);
@@ -2753,6 +2741,16 @@ const App = () => {
             >
               <InitialNameModal onSubmit={handleInitialNameSubmit} error={initialModalError} />
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isAuthPortalOpen && (
+            <AuthPortal 
+              isOpen={isAuthPortalOpen} 
+              onClose={() => setIsAuthPortalOpen(false)} 
+              addNotification={addNotification} 
+            />
           )}
         </AnimatePresence>
 

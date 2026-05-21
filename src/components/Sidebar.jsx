@@ -256,17 +256,27 @@ export const Sidebar = ({
               {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest italic group-hover:text-rose-400">LOGOUT</span>}
             </motion.button>
           ) : (
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={onLogin}
-              className={`w-full flex items-center gap-4 h-12 rounded-xl transition-all relative overflow-hidden group ${
-                isExpanded ? 'px-6 bg-primary/20 border border-primary/20' : 'justify-center bg-primary/20'
-              } hover:bg-primary/30 hover:border-primary/40 text-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.1)]`}
-            >
-              <User size={18} />
-              {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest italic">SIGN IN</span>}
-            </motion.button>
+            <div className="flex flex-col gap-2">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onLogin}
+                className={`w-full flex items-center gap-4 h-12 rounded-xl transition-all relative overflow-hidden group ${
+                  isExpanded ? 'px-6 bg-primary/20 border border-primary/20' : 'justify-center bg-primary/20'
+                } hover:bg-primary/30 hover:border-primary/40 text-primary shadow-[0_0_30px_rgba(var(--primary-rgb),0.1)]`}
+              >
+                <User size={18} />
+                {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest italic">SIGN IN</span>}
+              </motion.button>
+              {isExpanded && (
+                <button 
+                  onClick={() => window.open(window.location.href, '_blank')}
+                  className="text-[7px] font-black text-white/20 hover:text-white/60 transition-colors uppercase tracking-[0.2em] italic text-center w-full"
+                >
+                  Trouble signing in? Open in new tab
+                </button>
+              )}
+            </div>
           )}
         </div>
 

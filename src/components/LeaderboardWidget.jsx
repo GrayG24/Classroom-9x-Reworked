@@ -27,7 +27,7 @@ export const LeaderboardWidget = ({ leaderboardData, onPlayerClick }) => {
       <div className="space-y-4">
         {topPlayers.map((player, i) => (
           <motion.div
-            key={player.username}
+            key={player.uid || `${player.username}-${i}`}
             whileHover={{ x: 5 }}
             onClick={() => onPlayerClick(player)}
             className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/20 transition-all group cursor-pointer"
