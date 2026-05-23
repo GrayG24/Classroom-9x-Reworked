@@ -55,11 +55,14 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isP
     max: 35, 
     scale: 1.08, 
     speed: 1000, 
-    glare: true, 
-    "max-glare": 0.5, 
+    glare: false, 
     perspective: 1000,
     easing: "cubic-bezier(.03,.98,.52,.99)" 
   }), []);
+
+  const glowGradient = useMemo(() => {
+    return 'bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.2),transparent_70%)] shadow-[0_0_80px_rgba(255,255,255,0.08)]';
+  }, []);
 
   return (
     <motion.div 
@@ -70,7 +73,7 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isP
         duration: 0.8,
         ease: [0.22, 1, 0.36, 1]
       }}
-      className={`relative z-10 ${rank === 1 ? 'md:order-2 md:-translate-y-8' : rank === 2 ? 'md:order-1 md:-translate-y-3' : 'md:order-3 md:translate-y-2'}`}
+      className={`relative z-10 group ${rank === 1 ? 'md:order-2 md:-translate-y-8' : rank === 2 ? 'md:order-1 md:-translate-y-3' : 'md:order-3 md:translate-y-2'}`}
     >
       <Tilt 
         disabled={isPotatoMode}
@@ -78,7 +81,7 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isP
         className="cursor-pointer"
       >
         <button 
-          className="group relative block h-[420px] w-[280px] rounded-[2.5rem] bg-black/60 shadow-2xl active:scale-95 lg:h-[480px] lg:w-[320px]"
+          className="relative block h-[420px] w-[280px] rounded-[2.5rem] bg-black/60 shadow-2xl active:scale-95 lg:h-[480px] lg:w-[320px]"
           onClick={onClick}
           style={{ transformStyle: 'preserve-3d' }}
         >
@@ -121,8 +124,8 @@ const TiltCard = ({ game, rank, rankLabel, colorClass, shadowClass, onClick, isP
         </button>
       </Tilt>
       
-      {rank === 1 && !isPotatoMode && (
-        <div className="pointer-events-none absolute -inset-10 -z-10 bg-[radial-gradient(circle_at_50%_20%,rgba(var(--primary-rgb),0.2),transparent_70%)] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+      {!isPotatoMode && (
+        <div className={`pointer-events-none absolute -inset-14 -z-10 ${glowGradient} blur-3xl opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-110 transition-all duration-700`}></div>
       )}
     </motion.div>
   );
@@ -291,7 +294,7 @@ export const Home = ({
               </div>
               <div>
                  <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase whitespace-nowrap">DASHBOARD</h2>
-                 <p className="text-white/20 font-black uppercase tracking-[0.4em] text-[8px] mt-0.5">Welcome back, {user.username}</p>
+                 <p className="text-white/40 font-black uppercase tracking-[0.25em] text-xs mt-1">Welcome back, {user.username}</p>
               </div>
            </div>
         </div>

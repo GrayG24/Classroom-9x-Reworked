@@ -113,7 +113,7 @@ service cloud.firestore {
     // --- Global Settings ---
     match /settings/global {
       allow read: if true;
-      allow write: if isOwnerRole();
+      allow write: if isAdmin();
     }
 
     // --- Admin Allowlist ---

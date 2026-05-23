@@ -111,7 +111,7 @@ export const ProfileModal = ({ user, firebaseUser, onClose, isSuperAdmin }) => {
                   initial={{ width: 0 }}
                   animate={{ width: user.level >= 100 ? '100%' : `${Math.min(100, (user.exp / ((user.level || 1) * LEVEL_UP_BASE)) * 100)}%` }}
                   transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-                  className={`h-full shadow-[0_0_15px_var(--primary-glow)] rounded-full ${(user.level >= 100 || superAdminStatus) ? 'bg-gradient-to-r from-red-500 via-orange-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 animate-rainbow-bg' : 'bg-theme'}`}
+                  className={`h-full shadow-[0_0_15px_var(--primary-glow)] rounded-full ${(user.level >= 100) ? 'bg-gradient-to-r from-red-500 via-orange-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 animate-rainbow-bg' : 'bg-green-500'}`}
                   style={{ backgroundSize: '1000% 100%' }}
                 />
               </div>

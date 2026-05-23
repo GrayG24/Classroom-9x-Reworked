@@ -17,6 +17,8 @@ export const Hero = ({ user, onBrowseLibrary }) => {
     "I used AI on my essay - griffin K",
     "bean",
     "sorry for the wait",
+    "90 Gen 90 Gen 90 Gen!!",
+    "\"everybody\" - wyatt",
     "want your own quote up here? send me your qoutes and ill add them"
   ], []);
 

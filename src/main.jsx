@@ -20,17 +20,36 @@ const shouldSuppress = (msg) => {
   return SUPPRESS_PATTERNS.some(pattern => lowerMsg.includes(pattern));
 };
 
+const getDetailedString = (val) => {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  try {
+    const serialized = JSON.stringify(val);
+    if (serialized) return serialized;
+  } catch (e) {}
+  let out = '';
+  try {
+    for (const k in val) {
+      out += ` ${k}:${val[k]}`;
+    }
+  } catch (e) {}
+  return out;
+};
+
 window.addEventListener('unhandledrejection', (event) => {
   const reason = event.reason;
-  const message = reason?.message || String(reason || '');
-  if (shouldSuppress(message)) {
+  const message = reason?.message || (typeof reason === 'string' ? reason : '');
+  const detailed = getDetailedString(reason);
+  if (shouldSuppress(message) || shouldSuppress(detailed)) {
     event.stopImmediatePropagation();
     event.preventDefault();
   }
 }, true);
 
 window.addEventListener('error', (event) => {
-  if (shouldSuppress(event.message) || shouldSuppress(event.error?.message)) {
+  const message = event.message || '';
+  const detailed = getDetailedString(event.error);
+  if (shouldSuppress(message) || shouldSuppress(detailed) || shouldSuppress(event.error?.message)) {
     event.stopImmediatePropagation();
     event.preventDefault();
   }
@@ -39,13 +58,15 @@ window.addEventListener('error', (event) => {
 // Patch console to hide these warnings/errors from the user's view
 const originalWarn = console.warn;
 console.warn = (...args) => {
-  if (typeof args[0] === 'string' && shouldSuppress(args[0])) return;
+  const joinedStr = args.map(arg => typeof arg === 'string' ? arg : getDetailedString(arg)).join(' ');
+  if (shouldSuppress(joinedStr)) return;
   originalWarn.apply(console, args);
 };
 
 const originalError = console.error;
 console.error = (...args) => {
-  if (typeof args[0] === 'string' && shouldSuppress(args[0])) return;
+  const joinedStr = args.map(arg => typeof arg === 'string' ? arg : getDetailedString(arg)).join(' ');
+  if (shouldSuppress(joinedStr)) return;
   originalError.apply(console, args);
 };
 

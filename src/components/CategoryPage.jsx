@@ -11,11 +11,14 @@ export const CategoryPage = ({ categoryId, games, favorites, onToggleFavorite, o
   const category = CATEGORIES.find(c => c.id === categoryId) || { name: 'Unknown', icon: '❓', color: 'text-white' };
   
   const filteredGames = useMemo(() => {
-    return games.filter(g => 
-      g.category.toLowerCase() === categoryId.toLowerCase() &&
-      (g.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-       g.description?.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const list = games.filter(g => {
+      const matchCat = (g.category && g.category.toLowerCase() === categoryId.toLowerCase()) || 
+                       (Array.isArray(g.categories) && g.categories.some(c => c.toLowerCase() === categoryId.toLowerCase()));
+      const matchSearch = g.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          g.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCat && matchSearch;
+    });
+    return [...list].sort((a, b) => a.title.localeCompare(b.title));
   }, [games, categoryId, searchQuery]);
 
   return (

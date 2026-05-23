@@ -635,12 +635,18 @@ const WaveTransition = ({ isVisible, onComplete }) => {
 const App = () => {
   const gameOfTheWeek = useMemo(() => {
     if (!GAMES_DATA || GAMES_DATA.length === 0) return { id: 'ovo-classic', name: 'OvO' };
+    
     const date = new Date();
-    // Deterministic selection based on week of year
-    const startOfYear = new Date(date.getFullYear(), 0, 1);
-    const dayOfYear = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.ceil((dayOfYear + startOfYear.getDay() + 1) / 7);
-    const index = weekNumber % GAMES_DATA.length;
+    const estString = date.toLocaleString("en-US", { timeZone: "America/New_York" });
+    const estDate = new Date(estString);
+    
+    const daysSinceSaturday = (estDate.getDay() + 1) % 7;
+    const currentSaturday = new Date(estDate);
+    currentSaturday.setDate(estDate.getDate() - daysSinceSaturday);
+    currentSaturday.setHours(0, 0, 0, 0);
+    
+    const weekIndex = Math.floor(currentSaturday.getTime() / (1000 * 60 * 60 * 24 * 7));
+    const index = Math.abs(weekIndex) % GAMES_DATA.length;
     const game = GAMES_DATA[index];
     return { id: game.id, name: game.title };
   }, []);
@@ -895,11 +901,12 @@ const App = () => {
       if (snapshot.empty) return;
       const eventData = snapshot.docs[0].data();
       
-      // Ignore if older than 5 seconds
+      // Safe, clock-skew resilient verification (using Math.abs and a wider 2-minute buffer)
+      let eventTime = Date.now();
       if (eventData.timestamp) {
-        const eventTime = eventData.timestamp.toMillis ? eventData.timestamp.toMillis() : 0;
-        if (Date.now() - eventTime > 5000) return;
+        eventTime = eventData.timestamp.toMillis ? eventData.timestamp.toMillis() : Date.now();
       }
+      if (Math.abs(Date.now() - eventTime) > 120000) return;
 
       const { type, senderName, character, frame } = eventData;
       setAdminAnnouncement({
@@ -952,11 +959,12 @@ const App = () => {
       if (snapshot.empty) return;
       const data = snapshot.docs[0].data();
       
-      // Ignore if older than 10 seconds
+      // Safe, clock-skew resilient verification (using Math.abs and a wider 5-minute buffer)
+      let announcementTime = Date.now();
       if (data.timestamp) {
-        const announcementTime = data.timestamp.toMillis ? data.timestamp.toMillis() : 0;
-        if (Date.now() - announcementTime > 10000) return;
+        announcementTime = data.timestamp.toMillis ? data.timestamp.toMillis() : Date.now();
       }
+      if (Math.abs(Date.now() - announcementTime) > 300000) return;
 
       setAdminAnnouncement({
         text: data.text,
@@ -987,7 +995,9 @@ const App = () => {
     }
     const q = query(collection(db, 'users'), orderBy('score', 'desc'), limit(50));
     const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ ...d.data(), uid: d.id }));
+      const data = snapshot.docs
+        .map(d => ({ ...d.data(), uid: d.id }))
+        .filter(player => player.email && player.isAnonymous !== true);
       setLeaderboardData(data);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
@@ -1356,6 +1366,7 @@ const App = () => {
           ...userData, 
           uid: firebaseUser.uid, 
           email: firebaseUser.email,
+          isAnonymous: firebaseUser.isAnonymous || false,
           isAdmin: finalIsAdmin,
           role: finalRole
         }));
@@ -1368,7 +1379,8 @@ const App = () => {
         const initialProfile = {
           ...DEFAULT_USER,
           uid: firebaseUser.uid,
-          email: firebaseUser.email,
+          email: firebaseUser.email || '',
+          isAnonymous: firebaseUser.isAnonymous || false,
           username: firebaseUser.displayName || 'Player',
           hasSetProfile: false,
           lastLoginDate: new Date().toISOString().split('T')[0],
@@ -1452,6 +1464,7 @@ const App = () => {
           level: user.level,
           score: user.score,
           exp: user.exp,
+          isAnonymous: user.isAnonymous || false,
           gamesPlayed: user.gamesPlayed,
           currentCharacter: user.currentCharacter,
           currentFrame: user.currentFrame,
@@ -2054,11 +2067,66 @@ const App = () => {
   };
 
   const filteredGames = useMemo(() => {
-    if (!searchQuery) return GAMES_DATA;
-    return (GAMES_DATA || []).filter(game => 
-      game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      game.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    if (!searchQuery) {
+      return [...GAMES_DATA].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    const query = searchQuery.toLowerCase().trim();
+    const queryTokens = query.split(/\s+/).filter(Boolean);
+    
+    if (queryTokens.length === 0) {
+      return [...GAMES_DATA].sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    const scored = (GAMES_DATA || []).map(game => {
+      let score = 0;
+      const title = game.title.toLowerCase();
+      const desc = (game.description || '').toLowerCase();
+      const category = (game.category || '').toLowerCase();
+      const categories = (game.categories || []).map(c => c.toLowerCase());
+
+      // Exact title match
+      if (title === query) score += 1000;
+      // Title starts with query
+      else if (title.startsWith(query)) score += 500;
+      // Title contains full query
+      else if (title.includes(query)) score += 200;
+
+      // Token match in title
+      queryTokens.forEach(token => {
+        if (title.includes(token)) score += 50;
+      });
+
+      // Category match
+      if (category.includes(query) || categories.some(cat => cat.includes(query))) {
+        score += 100;
+      }
+      queryTokens.forEach(token => {
+        if (category.includes(token) || categories.some(cat => cat.includes(token))) {
+          score += 20;
+        }
+      });
+
+      // Description contains full query
+      if (desc.includes(query)) score += 10;
+      // Token match in description
+      queryTokens.forEach(token => {
+        if (desc.includes(token)) score += 2;
+      });
+
+      return { game, score };
+    });
+
+    return scored
+      .filter(item => item.score > 0)
+      .sort((a, b) => {
+        // First sort by score (relevance)
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        // Then sort alphabetically
+        return a.game.title.localeCompare(b.game.title);
+      })
+      .map(item => item.game);
   }, [searchQuery]);
 
   const handleFlameClick = () => {
@@ -2504,7 +2572,7 @@ const App = () => {
         <WaveTransition isVisible={showWaveTransition} onComplete={() => setShowWaveTransition(false)} />
 
         {/* Modals outside effect containers */}
-        {activeGame && <GameModal game={activeGame} isFavorite={(user.pinnedGames || []).includes(activeGame.id)} onTogglePin={togglePin} onClose={() => setActiveGame(null)} />}
+        {activeGame && <GameModal game={activeGame} isFavorite={(user.pinnedGames || []).includes(activeGame.id)} onToggleFavorite={togglePin} onClose={() => setActiveGame(null)} />}
         {playingGame && <GameView game={playingGame} onClose={() => setPlayingGame(null)} />}
         {isProfileModalOpen && (
           <ProfileModal 

@@ -213,7 +213,7 @@ export const Layout = ({
             paddingLeft: window.innerWidth >= 1024 ? '136px' : 0 
           }}
         >
-          <div className="max-w-[140rem] mx-auto px-4 sm:px-6 md:px-8 lg:px-12">
+          <div className={currentView === AppRoute.SUMMER ? "w-full h-full min-h-screen relative overflow-hidden" : "max-w-[140rem] mx-auto px-4 sm:px-6 md:px-8 lg:px-12"}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentView}

@@ -13,13 +13,20 @@ export const Library = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const categories = Array.from(new Set(games.map(g => g.category)));
+  const categories = React.useMemo(() => {
+    return Array.from(new Set(games.flatMap(g => g.categories || (g.category ? [g.category] : []))))
+      .filter(cat => cat !== 'adventure');
+  }, [games]);
 
-  const filteredGames = games.filter(game => {
-    const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || game.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredGames = React.useMemo(() => {
+    const list = games.filter(game => {
+      const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const gameCats = game.categories || (game.category ? [game.category] : []);
+      const matchesCategory = !selectedCategory || gameCats.includes(selectedCategory);
+      return matchesSearch && matchesCategory;
+    });
+    return [...list].sort((a, b) => a.title.localeCompare(b.title));
+  }, [games, searchQuery, selectedCategory]);
 
   return (
     <div className="min-h-screen pt-32 pb-40 px-6 sm:px-12 max-w-7xl mx-auto">
@@ -111,7 +118,7 @@ const SimpleGameCard = ({ game, isFavorite, isPinned, onToggleFavorite, onToggle
       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-10">
         <div className="transform translate-y-8 group-hover:translate-y-0 transition-all duration-500 delay-100">
           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] mb-3 italic">
-            {game.category.replace('_', ' ')}
+            {(game.categories || [game.category]).map(c => c.replace('_', ' ')).join(' // ')}
           </p>
           <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none truncate">
             {game.title}

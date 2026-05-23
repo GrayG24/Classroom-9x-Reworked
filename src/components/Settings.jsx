@@ -308,8 +308,21 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                       </div>
                       
                       <div className="p-6 rounded-2xl border border-white/5 bg-white/[0.01]">
-                        <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.3em] italic mb-1">TOTAL REDEEMED</p>
-                        <p className="text-3xl font-black text-white italic leading-none">{(user.redeemedCodes || []).length || 0}</p>
+                        <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em] italic mb-3">KNOWN CODES</p>
+                        {(!user.redeemedCodes || user.redeemedCodes.length === 0) ? (
+                          <p className="text-xs font-black text-white/25 uppercase tracking-wider italic">No codes redeemed yet</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2">
+                            {(user.redeemedCodes || []).map((code) => (
+                              <div 
+                                key={code}
+                                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white font-black text-[10px] tracking-widest uppercase italic"
+                              >
+                                {code}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : activeTab === 'account' ? (

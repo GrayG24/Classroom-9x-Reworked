@@ -466,7 +466,7 @@ const RealisticLeaf = ({ d, color, delay = 0 }) => {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", d);
     const length = path.getTotalLength();
-    const count = 40;
+    const count = 12; // Adjusted from 40 for optimal rendering performance
     const newPoints = [];
     for (let i = 0; i < count; i++) {
       const point = path.getPointAtLength((i / (count - 1)) * length);

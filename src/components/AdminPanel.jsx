@@ -317,7 +317,7 @@ export const AdminPanel = ({ user, onClose }) => {
               </button>
             ))}
             
-            {user.role === 'OWNER' && (
+            {user.isAdmin && (
               <div className="pt-10 mt-10 border-t border-white/5">
                  <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-6 italic px-2">QUICK ACTIONS</h4>
                  <button 

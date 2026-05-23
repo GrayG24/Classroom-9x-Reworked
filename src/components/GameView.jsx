@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Maximize2, Minimize2, RefreshCw, Zap } from 'lucide-react';
+import { X, Maximize2, Minimize2, RefreshCw, Zap, AlertTriangle } from 'lucide-react';
 
 export const GameView = ({ game, onClose }) => {
-  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isReported, setIsReported] = useState(false);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -36,17 +37,31 @@ export const GameView = ({ game, onClose }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsReported(true)}
+            disabled={isReported}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all italic border ${
+              isReported 
+                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 cursor-default' 
+                : 'bg-amber-500/10 text-amber-500 border-amber-500/15 hover:bg-amber-500 hover:text-black hover:border-amber-500'
+            }`}
+            title={isReported ? "Game reported successfully" : "Report this game as broken"}
+          >
+            <AlertTriangle size={13} className={isReported ? "" : "animate-pulse"} />
+            <span>{isReported ? 'REPORTED' : 'REPORT BROKEN'}</span>
+          </button>
+
           <button 
             onClick={() => window.location.reload()}
-            className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+            className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
             title="Reload Game"
           >
             <RefreshCw size={18} />
           </button>
           <button 
             onClick={toggleFullscreen}
-            className="p-2 rounded-lg bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+            className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
             title="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -54,7 +69,7 @@ export const GameView = ({ game, onClose }) => {
           <div className="w-px h-6 bg-white/10 mx-2"></div>
           <button 
             onClick={onClose}
-            className="p-2 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-[0_0_20px_rgba(244,63,94,0.1)]"
+            className="p-2 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-[0_0_20px_rgba(244,63,94,0.1)]"
             title="Close Game"
           >
             <X size={18} />
@@ -65,11 +80,15 @@ export const GameView = ({ game, onClose }) => {
       {/* Game Iframe */}
       <div className="flex-1 bg-black relative">
         <iframe
+          id={game.idAttr || undefined}
           src={game.iframeUrl}
           className="w-full h-full border-none"
           title={game.title}
-          allow="autoplay; fullscreen; keyboard"
+          allow={game.allow || "autoplay; fullscreen; keyboard"}
+          sandbox={game.sandbox || undefined}
+          loading={game.loading || undefined}
           referrerPolicy="no-referrer"
+          allowFullScreen
         ></iframe>
       </div>
     </motion.div>

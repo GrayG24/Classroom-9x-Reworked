@@ -61,6 +61,18 @@ html, body {
   min-height: 100%;
 }
 
+/* Make tiny text easier to read and improve visual contrast */
+.text-\[8px\] {
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+}
+.text-\[9px\] {
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+}
+
 /* --- UI OVERHAUL TEST --- */
 .ui-overhaul.ui-overhaul-liquid-glass {
   --background: #0f172a;

@@ -105,7 +105,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
       onClose();
     } catch (err) {
       console.error('Google Popup Auth Error:', err);
-      setError('Google Sign-In failed inside the sandbox. Try signing in on a new page, or register a free online account below.');
+      setError('Google Sign-In failed inside the sandbox. Try signing in on a new page, or create a free online account below.');
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
     } catch (err) {
       console.error('Anonymous Auth Error:', err);
       if (err.code === 'auth/operation-not-allowed') {
-        setError('Anonymous sign-in is not enabled in the Firebase Console. Please register with email or open in a new tab.');
+        setError('Anonymous sign-in is not enabled in the Firebase Console. Please create an account with email or open in a new tab.');
       } else {
         setError(err.message);
       }
@@ -133,21 +133,21 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div className="fixed inset-0 z-[10005] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
       {/* Outer Glow */}
-      <div className="absolute inset-0 bg-[#0ea5e9]/5 blur-[150px] pointer-events-none" />
+      <div className="absolute inset-0 bg-primary/5 blur-[150px] pointer-events-none" />
 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        className="relative w-full max-w-md bg-zinc-950/90 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl"
+        className="relative w-full max-w-sm bg-zinc-950/90 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl"
       >
         {/* Header Section */}
         <div className="p-6 border-b border-zinc-800 flex items-center justify-between">
           <div>
-            <span className="text-[9px] font-mono font-black text-primary uppercase tracking-[0.2em] italic">AUTHENTICATION PORTAL</span>
-            <h3 className="text-xl font-bold font-sans text-white tracking-tight mt-1">Classroom State Sync</h3>
+            <span className="text-[10px] font-sans font-black text-primary uppercase tracking-[0.2em] italic">SIGN IN</span>
+            <h3 className="text-xl font-bold font-sans text-white tracking-tight mt-1">Classroom 9X</h3>
           </div>
           <button 
             onClick={onClose}
@@ -155,14 +155,6 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
           >
             <X size={18} />
           </button>
-        </div>
-
-        {/* Info Helper */}
-        <div className="bg-primary/5 px-6 py-3 border-b border-zinc-800/50 flex gap-3 text-xs leading-relaxed text-zinc-400">
-          <Info size={16} className="text-primary shrink-0 mt-0.5" />
-          <p>
-            Standard social integrations (Google/Discord) may fail when embedded inside custom preview shells. <strong className="text-white">Email and Password</strong> provides 100% reliable inline access.
-          </p>
         </div>
 
         {/* Tab Selector */}
@@ -173,7 +165,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
               activeTab === 'login' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
-            Sign In
+            Log In
             {activeTab === 'login' && (
               <motion.div layoutId="auth-tab-bar" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
@@ -195,7 +187,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
               activeTab === 'guest' ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
-            Guest Access
+            Guest
             {activeTab === 'guest' && (
               <motion.div layoutId="auth-tab-bar" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
@@ -222,7 +214,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
           {(activeTab === 'login' || activeTab === 'register') && (
             <form onSubmit={handleEmailAuth} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-black text-zinc-500 uppercase tracking-widest">EMAIL ADDRESS</label>
+                <label className="text-[10px] font-sans font-black text-zinc-500 uppercase tracking-widest">EMAIL ADDRESS</label>
                 <div className="relative">
                   <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
                   <input 
@@ -238,7 +230,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-black text-zinc-500 uppercase tracking-widest">PASSWORD</label>
+                <label className="text-[10px] font-sans font-black text-zinc-500 uppercase tracking-widest">PASSWORD</label>
                 <div className="relative">
                   <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
                   <input 
@@ -256,14 +248,14 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 bg-primary text-black font-mono font-black text-xs uppercase tracking-widest rounded-xl hover:bg-opacity-90 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_20px_rgba(var(--primary-rgb),0.25)]"
+                className="w-full h-11 bg-primary text-black font-sans font-black text-xs uppercase tracking-widest rounded-xl hover:bg-opacity-90 disabled:bg-zinc-800 disabled:text-zinc-500 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_20px_rgba(var(--primary-rgb),0.25)]"
               >
                 {loading ? (
                   <Loader2 size={16} className="animate-spin text-black" />
                 ) : activeTab === 'login' ? (
                   <>
                     <UserCheck size={16} />
-                    Sign In Inline
+                    Log In
                   </>
                 ) : (
                   <>
@@ -279,56 +271,25 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
           {activeTab === 'guest' && (
             <div className="space-y-4 text-center">
               <p className="text-xs text-zinc-400 font-sans leading-relaxed mb-6">
-                Guest access registers a virtual identity in our synchronized Firebase instance in real-time. No credentials required, but settings are temporary and bind only to this session.
+                Play as a guest. Note that your levels, game scores, and customization progress <strong className="text-amber-500">will NOT be saved</strong>. Guest sessions are temporary and all progress is lost when you refresh or leave the site.
               </p>
 
               <button
                 onClick={handleGuestAuth}
                 disabled={loading}
-                className="w-full h-11 border border-zinc-700/50 hover:border-zinc-500/80 bg-zinc-900 hover:bg-zinc-800/85 text-white font-mono font-black text-xs uppercase tracking-widest rounded-xl disabled:bg-zinc-950 disabled:text-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full h-11 border border-zinc-700/50 hover:border-zinc-500/80 bg-zinc-900 hover:bg-zinc-800/85 text-white font-sans font-black text-xs uppercase tracking-widest rounded-xl disabled:bg-zinc-950 disabled:text-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 size={16} className="animate-spin" />
                 ) : (
                   <>
                     <Sparkles size={16} className="text-zinc-400" />
-                    Launch Guest Session
+                    Play as Guest
                   </>
                 )}
               </button>
             </div>
           )}
-
-          {/* Social Divider */}
-          <div className="relative my-6 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-800/70" />
-            </div>
-            <span className="relative px-3 text-[9px] font-mono font-bold text-zinc-600 bg-zinc-950 uppercase tracking-widest">
-              ALTERNATIVE CHANNELS
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {/* Google Authentication */}
-            <button
-              onClick={handleGoogleAuth}
-              disabled={loading}
-              className="h-10 border border-zinc-800 hover:border-zinc-700 bg-[#0c0a09] text-zinc-300 font-mono font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:text-white"
-            >
-              <Chrome size={14} className="text-rose-500" />
-              Google Pop
-            </button>
-
-            {/* Launch In New Tab */}
-            <button
-              onClick={() => window.open(window.location.href, '_blank')}
-              className="h-10 border border-zinc-800 hover:border-zinc-700 bg-[#0c0a09] text-zinc-300 font-mono font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer hover:text-white"
-            >
-              <Compass size={14} className="text-theme" />
-              New Tab Mode
-            </button>
-          </div>
         </div>
       </motion.div>
     </div>
