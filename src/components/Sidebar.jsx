@@ -12,10 +12,11 @@ export const Sidebar = ({
   onLogout,
   firebaseUser,
   isExpanded,
-  onToggleExpand
+  onToggleExpand,
+  onlineCount: propOnlineCount
 }) => {
   const [time, setTime] = useState(new Date());
-  const [onlineCount, setOnlineCount] = useState(1);
+  const [localOnlineCount, setLocalOnlineCount] = useState(1);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -23,16 +24,19 @@ export const Sidebar = ({
   }, []);
 
   useEffect(() => {
+    if (propOnlineCount !== undefined) return;
     const fetchStatus = () => {
       fetch('/api/system/status')
         .then(res => res.json())
-        .then(data => setOnlineCount(data.activeUsers || 1))
+        .then(data => setLocalOnlineCount(data.activeUsers || 1))
         .catch(() => {});
     };
     fetchStatus();
     const interval = setInterval(fetchStatus, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [propOnlineCount]);
+
+  const onlineCount = propOnlineCount !== undefined ? propOnlineCount : localOnlineCount;
 
   const currentChar = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
 

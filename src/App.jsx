@@ -884,6 +884,7 @@ const App = () => {
   const [quests, setQuests] = useState([]);
   const [boosts, setBoosts] = useState([]);
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [systemStats, setSystemStats] = useState({ activeUsers: 1, totalPlayers: 1 });
 
   const isModalOpen = !!(
     activeGame || 
@@ -957,25 +958,99 @@ const App = () => {
     const q = query(collection(db, 'announcements'), orderBy('timestamp', 'desc'), limit(1));
     const unsub = onSnapshot(q, (snapshot) => {
       if (snapshot.empty) return;
-      const data = snapshot.docs[0].data();
+      const docSnap = snapshot.docs[0];
+      const data = docSnap.data();
+      const announcementId = docSnap.id;
       
-      // Safe, clock-skew resilient verification (using Math.abs and a wider 5-minute buffer)
+      // If user had closed this specific announcement already, do not show it again
+      if (localStorage.getItem('classroom9x_dismissed_announcement_id') === announcementId) {
+        return;
+      }
+
       let announcementTime = Date.now();
       if (data.timestamp) {
         announcementTime = data.timestamp.toMillis ? data.timestamp.toMillis() : Date.now();
       }
-      if (Math.abs(Date.now() - announcementTime) > 300000) return;
+
+      // Keep announcements visible for up to 24 hours after publication
+      const ageMs = Date.now() - announcementTime;
+      if (ageMs > 24 * 60 * 60 * 1000) return; // 24 hours limit
 
       setAdminAnnouncement({
+        id: announcementId,
         text: data.text,
-        sender: { username: data.senderName, characterId: data.character, frameId: data.frame },
+        sender: { 
+          username: data.senderName || 'System', 
+          characterId: data.character || 'agent-x', 
+          frameId: data.frame || 'default' 
+        },
         announcementType: data.type || 'system',
-        timestamp: new Date().toISOString()
+        timestamp: new Date(announcementTime).toISOString()
       });
-      setTimeout(() => setAdminAnnouncement(null), 12000);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'announcements');
     });
+    return () => unsub();
+  }, [firebaseUser]);
+
+  // Handle manual dismissal of global announcements
+  const handleCloseAnnouncement = () => {
+    if (adminAnnouncement?.id) {
+      localStorage.setItem('classroom9x_dismissed_announcement_id', adminAnnouncement.id);
+    }
+    setAdminAnnouncement(null);
+  };
+
+  // Periodically update user's lastSeen timestamp in Firestore to remain active
+  useEffect(() => {
+    if (!firebaseUser || !user || !user.hasSetProfile) return;
+    
+    const updateActive = async () => {
+      if (document.hidden) return; // Skip if tab is inactive/backgrounded
+      try {
+        const userRef = doc(db, 'users', firebaseUser.uid);
+        await updateDoc(userRef, {
+          lastSeen: serverTimestamp()
+        });
+      } catch (err) {
+        console.warn('Failed to update active status:', err);
+      }
+    };
+    
+    // Update immediately on mount/auth
+    updateActive();
+    
+    // Update active status every 3 minutes
+    const interval = setInterval(updateActive, 180000);
+    return () => clearInterval(interval);
+  }, [firebaseUser, user?.hasSetProfile]);
+
+  // Listen to total user list in real-time to compute global active stats and total players
+  useEffect(() => {
+    if (!firebaseUser || window.isFirestoreQuotaExceeded) return;
+    
+    const q = query(collection(db, 'users'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const users = snapshot.docs.map(d => {
+        const data = d.data();
+        let lastSeenMs = 0;
+        if (data.lastSeen) {
+          lastSeenMs = data.lastSeen.toMillis ? data.lastSeen.toMillis() : 0;
+        }
+        return { ...data, lastSeenMs };
+      });
+      
+      const fiveMinsAgo = Date.now() - 5 * 60 * 1000;
+      const activeCount = users.filter(u => u.lastSeenMs > fiveMinsAgo).length;
+      
+      setSystemStats({
+        activeUsers: Math.max(activeCount, 1),
+        totalPlayers: users.length || 1
+      });
+    }, (error) => {
+      console.warn('System stats collection sync error:', error);
+    });
+    
     return () => unsub();
   }, [firebaseUser]);
 
@@ -987,7 +1062,7 @@ const App = () => {
   const fpsHistory = useRef([]);
   const lastLagNotification = useRef(0);
 
-  // Leaderboard Real-time Sync
+  // Leaderboard Real-time Sync (Filtered only on username to be fully global/inclusive)
   useEffect(() => {
     if (!firebaseUser || window.isFirestoreQuotaExceeded) {
       if (!firebaseUser) setLeaderboardData([]);
@@ -997,7 +1072,7 @@ const App = () => {
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs
         .map(d => ({ ...d.data(), uid: d.id }))
-        .filter(player => player.email && player.isAnonymous !== true);
+        .filter(player => player.username && player.username !== 'Player' && player.hasSetProfile === true);
       setLeaderboardData(data);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
@@ -2187,6 +2262,7 @@ const App = () => {
           onSwitchToLibrary={() => setCurrentView(AppRoute.LIBRARY)}
           onProfileClick={() => setIsProfileModalOpen(true)}
           onLeaderboardClick={() => setCurrentView(AppRoute.LEADERBOARD)}
+          systemStats={systemStats}
         />
       );
     }
@@ -2352,7 +2428,7 @@ const App = () => {
                      <p className="text-lg font-black text-white tracking-tight italic leading-tight">{adminAnnouncement.text}</p>
                   </div>
                   <button 
-                    onClick={() => setAdminAnnouncement(null)}
+                    onClick={handleCloseAnnouncement}
                     className="p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors text-white/20 hover:text-white"
                   >
                     <X size={20} />
@@ -2472,6 +2548,7 @@ const App = () => {
                 onLogin={handleLogin}
                 onLogout={handleLogout}
                 firebaseUser={firebaseUser}
+                onlineCount={systemStats.activeUsers}
               >
                 <>
                   <AnimatePresence>

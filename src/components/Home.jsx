@@ -196,25 +196,29 @@ export const Home = ({
   onPlayGame,
   onSwitchToLibrary,
   onProfileClick,
-  onLeaderboardClick
+  onLeaderboardClick,
+  systemStats: propSystemStats
 }) => {
   const [isPinnedMinimized, setIsPinnedMinimized] = useState(false);
-  const [systemStats, setSystemStats] = useState({ activeUsers: 0, totalPlayers: 0 });
+  const [localSystemStats, setLocalSystemStats] = useState({ activeUsers: 0, totalPlayers: 0 });
 
   useEffect(() => {
+    if (propSystemStats) return;
     const fetchStats = async () => {
       try {
         const res = await fetch('/api/system/status');
         if (res.ok) {
           const data = await res.json();
-          setSystemStats(data);
+          setLocalSystemStats(data);
         }
       } catch (err) {}
     };
     fetchStats();
     const interval = setInterval(fetchStats, 15000); // More frequent updates
     return () => clearInterval(interval);
-  }, []);
+  }, [propSystemStats]);
+
+  const systemStats = propSystemStats || localSystemStats;
 
   const featuredGame = useMemo(() => {
     if (gameOfTheWeek) {

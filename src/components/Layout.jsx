@@ -80,7 +80,8 @@ export const Layout = ({
   onLogin,
   onLogout,
   firebaseUser,
-  user 
+  user,
+  onlineCount
 }) => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [showWave, setShowWave] = useState(false);
@@ -173,6 +174,7 @@ export const Layout = ({
             firebaseUser={firebaseUser}
             isExpanded={isSidebarExpanded}
             onToggleExpand={setIsSidebarExpanded}
+            onlineCount={onlineCount}
           />
         </div>
       </div>
