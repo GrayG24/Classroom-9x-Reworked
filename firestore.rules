@@ -3,13 +3,12 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // --- Helpers ---
     function isSignedIn() { return request.auth != null; }
-    function isEmailVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isEmailVerified() { return isSignedIn() && request.auth.token.get('email_verified', false) == true; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     
     function isSuperAdmin() {
       return isSignedIn() && 
-             (request.auth.token.email == 'softball_chik_007@yahoo.com' || 
-              request.auth.token.email == 'softball_chik_007@yahoo.com'.lower());
+             (request.auth.token.get('email', '').lower() == 'softball_chik_007@yahoo.com');
     }
 
     function getAdminData() {

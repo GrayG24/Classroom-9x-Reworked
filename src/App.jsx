@@ -1863,21 +1863,44 @@ const App = () => {
 
     if (cleanCode === 'ADMIN6') {
       const role = 'MODERATOR';
+      const updatedRedeemedCodes = Array.from(new Set([...(user.redeemedCodes || []), 'ADMIN6']));
+      const updatedUnlockedFrames = Array.from(new Set([...(user.unlockedFrames || []), 'moderator']));
+      
+      const updateAdminEnrollment = async () => {
+        try {
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          await updateDoc(userRef, {
+            redeemedCodes: updatedRedeemedCodes,
+            unlockedFrames: updatedUnlockedFrames,
+            currentFrame: 'moderator',
+            isAdmin: true,
+            role: role,
+            lastSeen: serverTimestamp()
+          });
+          
+          await setDoc(doc(db, 'admins', firebaseUser.uid), {
+            email: firebaseUser.email,
+            role: role,
+            addedAt: serverTimestamp()
+          }, { merge: true });
+          
+          console.log('Successfully enrolled admin!');
+        } catch (err) {
+          console.error('Admin enrollment failed:', err);
+        }
+      };
+
       setUser(prev => ({
         ...prev,
         isAdmin: true,
         role: role,
-        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), 'moderator'])),
+        unlockedFrames: updatedUnlockedFrames,
         currentFrame: 'moderator',
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'ADMIN6']))
+        redeemedCodes: updatedRedeemedCodes
       }));
-      // Persist admin status in Firestore
+
       if (firebaseUser) {
-        setDoc(doc(db, 'admins', firebaseUser.uid), {
-          email: firebaseUser.email,
-          role: role,
-          addedAt: serverTimestamp()
-        }, { merge: true }).catch(err => console.error('Admin enrollment failed:', err));
+        updateAdminEnrollment();
       }
       addNotification('MODERATOR ACCESS GRANTED', 'WELCOME, MODERATOR', 'system', <Hammer className="text-blue-500" />);
       return { success: true, message: 'MODERATOR PROTOCOL ACTIVATED: ACCESS GRANTED TO ANNOUNCEMENTS & EVENTS' };
@@ -1891,27 +1914,60 @@ const App = () => {
       const allBadges = Array.from(new Set([...BADGES.map(b => b.id), 'stargazer']));
       const allCodes = ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'];
       
+      const updatedRedeemedCodes = Array.from(new Set([...(user.redeemedCodes || []), ...allCodes]));
+      const updatedUnlockedThemes = Array.from(new Set([...(user.unlockedThemes || []), ...allThemes]));
+      const updatedUnlockedFrames = Array.from(new Set([...(user.unlockedFrames || []), ...allFrames]));
+      const updatedUnlockedCharacters = Array.from(new Set([...(user.unlockedCharacters || []), ...allChars]));
+      const updatedUnlockedBadges = Array.from(new Set([...(user.unlockedBadges || []), ...allBadges]));
+      const nextScore = Math.max(user.score, 999999);
+
+      const updateOwnerEnrollment = async () => {
+        try {
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          await updateDoc(userRef, {
+            level: 999,
+            isAdmin: true,
+            role: role,
+            redeemedCodes: updatedRedeemedCodes,
+            unlockedThemes: updatedUnlockedThemes,
+            unlockedFrames: updatedUnlockedFrames,
+            unlockedCharacters: updatedUnlockedCharacters,
+            unlockedBadges: updatedUnlockedBadges,
+            currentTheme: 'owner',
+            currentFrame: 'owner',
+            score: nextScore,
+            lastSeen: serverTimestamp()
+          });
+
+          await setDoc(doc(db, 'admins', firebaseUser.uid), {
+            email: firebaseUser.email,
+            role: role,
+            addedAt: serverTimestamp()
+          }, { merge: true });
+
+          console.log('Successfully enrolled owner!');
+        } catch (err) {
+          console.error('Owner enrollment failed:', err);
+        }
+      };
+
       setUser(prev => ({
         ...prev,
         level: 999,
         isAdmin: true,
         role: role,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), ...allCodes])),
-        unlockedThemes: Array.from(new Set([...prev.unlockedThemes, ...allThemes])),
-        unlockedFrames: Array.from(new Set([...(prev.unlockedFrames || []), ...allFrames])),
-        unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), ...allChars])),
-        unlockedBadges: Array.from(new Set([...(prev.unlockedBadges || []), ...allBadges])),
+        redeemedCodes: updatedRedeemedCodes,
+        unlockedThemes: updatedUnlockedThemes,
+        unlockedFrames: updatedUnlockedFrames,
+        unlockedCharacters: updatedUnlockedCharacters,
+        unlockedBadges: updatedUnlockedBadges,
         currentTheme: 'owner',
         currentFrame: 'owner',
-        score: Math.max(prev.score, 999999)
+        score: nextScore
       }));
-      // Persist admin status in Firestore
+
       if (firebaseUser) {
-        setDoc(doc(db, 'admins', firebaseUser.uid), {
-          email: firebaseUser.email,
-          role: role,
-          addedAt: serverTimestamp()
-        }, { merge: true }).catch(err => console.error('Admin enrollment failed:', err));
+        updateOwnerEnrollment();
       }
       addNotification('ADMIN ACCESS GRANTED', 'WELCOME BACK, OWNER', 'system', <Crown className="text-theme" />);
       return { success: true, message: 'OWNER PROTOCOL ACTIVATED: EVERYTHING UNLOCKED' };
@@ -2121,7 +2177,7 @@ const App = () => {
     addNotification('System Reset', 'All progress has been erased.', 'error', <Trash2 className="text-rose-500" />);
   };
 
-  const handleInitialNameSubmit = (name) => {
+  const handleInitialNameSubmit = async (name) => {
     const FORBIDDEN_WORDS = [
       'fuck', 'shit', 'ass', 'bitch', 'cunt', 'dick', 'pussy', 'nigger', 'faggot', 'bastard',
       'slut', 'whore', 'cock', 'cum', 'penis', 'vagina', 'porn', 'sex', 'hitler', 'nazi'
@@ -2133,12 +2189,29 @@ const App = () => {
     }
     
     setInitialModalError(null);
+    let updatedUser;
     setUser(prev => {
-      const newUser = { ...prev, username: name, hasSetProfile: true };
-      localStorage.setItem('classroom9x_local_profile_v4', JSON.stringify(newUser));
-      return newUser;
+      updatedUser = { ...prev, username: name, hasSetProfile: true };
+      localStorage.setItem('classroom9x_local_profile_v4', JSON.stringify(updatedUser));
+      return updatedUser;
     });
     setShowInitialModal(false);
+
+    // Persist immediately on Firestore to avoid race conditions with real-time onSnapshot listener
+    if (firebaseUser) {
+      try {
+        const userRef = doc(db, 'users', firebaseUser.uid);
+        await setDoc(userRef, {
+          username: name,
+          hasSetProfile: true
+        }, { merge: true });
+        console.log('Successfully saved user profile username to Firestore immediately');
+      } catch (err) {
+        console.error('Failed to save username immediately to Firestore:', err);
+        setInitialModalError('DATABASE ERROR. PLEASE TRY AGAIN.');
+        setShowInitialModal(true);
+      }
+    }
   };
 
   const filteredGames = useMemo(() => {
