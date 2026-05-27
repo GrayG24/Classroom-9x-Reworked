@@ -1,80 +1,202 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Palette, Shield, Layers, Bot, User, ChevronRight, Check, Crown, Sparkles, Activity, Zap, Lock } from 'lucide-react';
+import { 
+  Palette, 
+  Shield, 
+  Layers, 
+  Bot, 
+  User, 
+  ChevronRight, 
+  Check, 
+  Crown, 
+  Sparkles, 
+  Activity, 
+  Zap, 
+  Lock, 
+  Award, 
+  Eye, 
+  Trophy, 
+  Compass, 
+  Flame 
+} from 'lucide-react';
 import { CHARACTERS } from '../constants';
 
 export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
   const [activeTab, setActiveTab] = useState('identity');
   const [tempUsername, setTempUsername] = useState(user.username);
+  const [usernameStatus, setUsernameStatus] = useState(null);
 
+  // Define All 19 System Themes with distinct colors to match index.css Variables
   const themes = [
-    { id: 'void', name: 'VOID', primary: '#ffffff', bg: '#000000', desc: 'The original darkness.', level: 1 },
-    { id: 'black-white', name: 'MONOCHROME', primary: '#ffffff', bg: '#000000', desc: 'Simple black and white.', level: 1 },
-    { id: 'cyan', name: 'CYBERPUNK', primary: '#06b6d4', bg: '#083344', desc: 'Neon world.', level: 1 },
-    { id: 'emerald', name: 'MATRIX', primary: '#10b981', bg: '#064e3b', desc: 'Green digital world.', level: 10 },
-    { id: 'rose', name: 'VAPORWAVE', primary: '#f43f5e', bg: '#4c0519', desc: 'Retro colors.', level: 25 },
-    { id: 'gold', name: 'GOLD', primary: '#fbbf24', bg: '#451a03', desc: 'Shining like a winner.', isCode: true },
-    { id: 'interstellar', name: 'INTERSTELLAR', primary: '#f0f9ff', bg: '#020617', desc: 'High above the stars.', rarity: 'Transcendant' },
+    { id: 'void', name: 'PURE VOID', primary: '#f4f4f5', bg: '#020202', desc: 'A clean, pitch-black dark theme.', level: 1, type: 'basic' },
+    { id: 'black-white', name: 'MONOCHROME', primary: '#ffffff', bg: '#18181b', desc: 'Classic crisp black and white.', level: 1, type: 'basic' },
+    { id: 'cyan', name: 'CYBER CYAN', primary: '#00f2ff', bg: '#083344', desc: 'Bright glowing electric cyan.', level: 1, type: 'basic' },
+    
+    { id: 'violet', name: 'AMETHYST GLOW', primary: '#a78bfa', bg: '#1e1b4b', desc: 'Mystical and smooth deep purple.', level: 5, type: 'advanced' },
+    { id: 'cobalt', name: 'COBALT BLUE', primary: '#3b82f6', bg: '#0f172a', desc: 'A solid, deep space blue theme.', level: 5, type: 'advanced' },
+    
+    { id: 'emerald', name: 'MATRIX GREEN', primary: '#059669', bg: '#022c22', desc: 'A glowing matrix green look.', level: 10, type: 'advanced' },
+    { id: 'retrofuture', name: 'RETRO LIME', primary: '#84cc16', bg: '#0d0e12', desc: 'A futuristic vibrant lime green.', level: 10, type: 'advanced' },
+    
+    { id: 'galaxy', name: 'COSMIC NEBULA', primary: '#d946ef', bg: '#17031e', desc: 'Glowing magenta and deep galaxy purple.', level: 15, type: 'rare' },
+    { id: 'synthwave', name: 'SYNTHWAVE NEON', primary: '#ec4899', bg: '#2e0817', desc: 'Retro sunset hot pink.', level: 20, type: 'rare' },
+    
+    { id: 'gold', name: 'SHINY GOLD', primary: '#d97706', bg: '#451a03', desc: 'Shiny golden champion theme.', level: 25, type: 'epic' },
+    { id: 'fire', name: 'VOLCANIC FLAME', primary: '#ea580c', bg: '#1a0400', desc: 'Molten volcanic red and hot orange.', level: 25, type: 'epic' },
+    { id: 'interstellar', name: 'DEEP SPACE', primary: '#0284c7', bg: '#030712', desc: 'Glow of a deep space blue nebula.', level: 50, type: 'legendary' },
+    
+    // Code/Special Themes Custom Config
+    { id: 'rainbow', name: 'RAINBOW CODES', primary: '#f43f5e', bg: '#12011b', desc: 'A smooth shifting rainbow spectrum.', isCode: true, type: 'mythic' },
+    { id: 'spongebob', name: 'BEACH BUBBLES', primary: '#fde047', bg: '#0f0b3c', desc: 'Cheerful beach yellow.', isCode: true, type: 'rare' },
+    { id: 'kanye', name: 'GRADUATION BEATS', primary: '#818cf8', bg: '#10021c', desc: 'Smooth lavender music vibes.', isCode: true, type: 'epic' },
+    { id: 'hologram', name: 'HOLOGRAM BLUE', primary: '#a5f3fc', bg: '#030712', desc: 'Flickering holographic sky blue.', isCode: true, type: 'legendary' },
+    { id: 'ironman', name: 'ARC TECHNOLOGY', primary: '#dc2626', bg: '#250202', desc: 'A hot red arc reactor theme.', isCode: true, type: 'epic' },
+    { id: 'usa', name: 'PATRIOT PRIDE', primary: '#3b82f6', bg: '#0f0505', desc: 'Show your pride with red, white, and blue.', isCode: true, type: 'rare' },
+    { id: 'tester', name: 'BETA TESTING', primary: '#fda4af', bg: '#090d16', desc: 'System diagnostic early testing theme.', isCode: true, type: 'mythic' },
+    { id: 'owner', name: 'OWNER EXCLUSIVE', primary: '#fbbf24', bg: '#1a0307', desc: 'The elite creator gold theme.', isCode: true, type: 'transcendent' },
   ];
 
+  // Define All 15 Custom Styled Profile Frames matching index.css Classes
   const frames = [
-    { id: 'obsidian', name: 'OBSIDIAN', rarity: 'Common', level: 1 },
-    { id: 'neon', name: 'NEON', rarity: 'Rare', level: 5 },
-    { id: 'emerald', name: 'EMERALD', rarity: 'Rare', level: 15 },
-    { id: 'gold', name: 'GOLD', rarity: 'Epic', level: 30 },
+    { id: 'default', name: 'DEFAULT BORDER', rarity: 'Common', level: 1, desc: 'Simple thin profile border.' },
+    { id: 'obsidian', name: 'OBSIDIAN BORDER', rarity: 'Common', level: 1, desc: 'Sleek and tough dark border.' },
+    { id: 'neon', name: 'NEON GLOW BORDER', rarity: 'Uncommon', level: 5, desc: 'Glowing bright outline border.' },
+    { id: 'solar', name: 'SOLAR ECLIPSE BORDER', rarity: 'Rare', level: 15, desc: 'Fierce orange burning sun border.' },
+    { id: 'interstellar', name: 'SPACE RING BORDER', rarity: 'Epic', level: 30, desc: 'Shining orbit space stardust border.' },
+    { id: 'deep-sea', name: 'DEEP SEA BORDER', rarity: 'Epic', level: 45, desc: 'Watery deep blue custom border.' },
+    
+    // Code/Special Frames
+    { id: 'hologram', name: 'HOLOGRAM BORDER', rarity: 'Legendary', isCode: true, desc: 'Light blue digital projection border.' },
+    { id: 'glitch', name: 'GLITCHY BORDER', rarity: 'Legendary', isCode: true, desc: 'Rapidly blinking tech error border.' },
+    { id: 'usa', name: 'PATRIOTIC BORDER', rarity: 'Rare', isCode: true, desc: 'Red, white, and blue border.' },
+    { id: 'tester', name: 'BETA TESTER BORDER', rarity: 'Mythic', isCode: true, desc: 'Special early tester gold border.' },
+    { id: 'moderator', name: 'MODERATOR BORDER', rarity: 'Legendary', isCode: true, desc: 'Official manager secure border.' },
+    { id: 'owner', name: 'OWNER GOLDEN CROWN', rarity: 'Transcendent', isCode: true, desc: 'Special crown for the owner of the site.' },
+    
+    // Quest/Award Frames
+    { id: 'cyberpunk', name: 'NEON RUNNER BORDER', rarity: 'Mythic', isQuest: true, desc: 'Play 300 games to unlock.' },
+    { id: 'matrix', name: 'GREEN MATRIX BORDER', rarity: 'Mythic', isQuest: true, desc: 'Complete special challenge to unlock.' },
+    { id: 'diamond', name: 'DIAMOND HANDS BORDER', rarity: 'Transcendent', isQuest: true, desc: 'Play 500 games to unlock.' },
   ];
 
-  const character = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
+  const handleUsernameChange = (e) => {
+    setTempUsername(e.target.value);
+    setUsernameStatus(null);
+  };
+
+  const submitUsername = () => {
+    const trimmed = tempUsername.trim();
+    if (!trimmed || trimmed === user.username) return;
+    try {
+      onUpdateUsername(trimmed);
+      setUsernameStatus({ type: 'success', text: 'USERNAME UPDATED IMMEDIATELY!' });
+    } catch (e) {
+      setUsernameStatus({ type: 'error', text: 'FAILED TO UPDATE USERNAME.' });
+    }
+  };
+
+  // Safe checks for unlocks
+  const isCharUnlocked = (char) => {
+    if (char.id === 'agent-x') return true;
+    const unlockedList = user.unlockedCharacters || [];
+    if (char.isCode) {
+      return unlockedList.includes(char.id);
+    }
+    return user.level >= (char.level || 1) || unlockedList.includes(char.id);
+  };
+
+  const isThemeUnlocked = (theme) => {
+    if (theme.id === 'void' || theme.id === 'black-white' || theme.id === 'cyan') return true;
+    const unlockedList = user.unlockedThemes || [];
+    if (theme.isCode) {
+      return unlockedList.includes(theme.id);
+    }
+    return user.level >= (theme.level || 1) || unlockedList.includes(theme.id);
+  };
+
+  const isFrameUnlocked = (frame) => {
+    if (frame.id === 'default' || frame.id === 'obsidian') return true;
+    const unlockedList = user.unlockedFrames || [];
+    if (frame.isCode || frame.isQuest) {
+      return unlockedList.includes(frame.id);
+    }
+    return user.level >= (frame.level || 1) || unlockedList.includes(frame.id);
+  };
+
+  const activeCharacter = CHARACTERS.find(c => c.id === user.currentCharacter) || CHARACTERS[0];
+
+  const getRarityColor = (typeOrRarity) => {
+    const raw = typeOrRarity?.toLowerCase();
+    switch (raw) {
+      case 'common': return 'from-slate-400 to-zinc-500 text-slate-200';
+      case 'uncommon': return 'from-emerald-400 to-green-600 text-emerald-200';
+      case 'rare': return 'from-blue-400 to-indigo-600 text-blue-200';
+      case 'advanced': return 'from-purple-400 to-indigo-600 text-purple-200';
+      case 'epic': return 'from-amber-400 to-yellow-600 text-amber-200';
+      case 'legendary': return 'from-rose-400 to-pink-600 text-rose-200';
+      case 'mythic': return 'from-purple-500 to-pink-600 text-purple-200';
+      case 'transcendent': return 'from-cyan-400 via-pink-400 to-yellow-400 text-cyan-200';
+      default: return 'from-zinc-500 to-zinc-700 text-zinc-200';
+    }
+  };
 
   return (
-    <div className="min-h-screen pt-40 pb-40 relative overflow-hidden">
-      {/* Background Accents */}
-      <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full -z-10 animate-pulse"></div>
-      <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full -z-10 animate-pulse delay-1000"></div>
-
+    <div className="min-h-screen pt-40 pb-40 relative overflow-hidden transition-all duration-500 bg-background text-foreground animate-fade-in">
+      {/* Background Ambience Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"></div>
+      
       <div className="max-w-[100rem] mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
         <div className="flex flex-col lg:flex-row gap-16">
+          
           {/* Navigation Sidebar */}
           <div className="lg:w-80 shrink-0">
-            <div className="flex flex-col gap-12">
+            <div className="flex flex-col gap-10">
               <div>
                 <motion.div 
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center gap-4 mb-6"
+                  className="flex items-center gap-3 mb-4"
                 >
-                  <div className="w-3 h-3 bg-primary animate-pulse"></div>
-                  <span className="text-[10px] font-mono font-black uppercase tracking-[0.5em] text-primary">SETTINGS</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_10px_var(--primary)]"></div>
+                  <span className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-primary">PROFILE STYLES</span>
                 </motion.div>
-                <h1 className="text-8xl font-black text-white uppercase tracking-tighter italic leading-none">
-                  CUSTOMIZE
+                <h1 className="text-7xl font-extrabold text-white uppercase tracking-tighter italic leading-none">
+                  MY LOOKS
                 </h1>
+                <p className="text-white/30 text-xs font-mono tracking-widest uppercase mt-4 italic">Change your picture, profile borders, and system themes.</p>
               </div>
 
-              <div className="flex flex-col gap-3">
+              {/* Subnavigation Hub */}
+              <div className="flex flex-col gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-[2.5rem]">
                 {[
-                  { id: 'identity', label: 'Character', icon: User, desc: 'Avatar & Name' },
-                  { id: 'visuals', label: 'System Themes', icon: Palette, desc: 'Change Colors' },
-                  { id: 'frames', label: 'Profile Borders', icon: Layers, desc: 'Avatar Frames' }
+                  { id: 'identity', label: 'Profile Avatars', icon: User, desc: 'YOUR PICTURE', count: CHARACTERS.length },
+                  { id: 'visuals', label: 'Themes', icon: Palette, desc: 'YOUR DESIGN', count: themes.length },
+                  { id: 'frames', label: 'Profile Frames', icon: Layers, desc: 'YOUR BORDER', count: frames.length }
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-6 px-8 py-6 rounded-[2rem] transition-all relative overflow-hidden group ${
+                    className={`flex items-center justify-between px-6 py-5 rounded-2xl transition-all relative overflow-hidden group ${
                       activeTab === tab.id 
                         ? 'bg-white text-black shadow-[0_20px_40px_rgba(255,255,255,0.15)]' 
-                        : 'text-white/40 hover:text-white hover:bg-white/5'
+                        : 'text-white/50 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    <tab.icon size={24} className="relative z-10" />
-                    <div className="text-left relative z-10">
-                      <p className="text-[11px] font-black uppercase tracking-[0.2em] italic leading-none mb-1">{tab.label}</p>
-                      <p className={`text-[8px] font-bold uppercase tracking-widest ${activeTab === tab.id ? 'text-black/40' : 'text-white/20'}`}>{tab.desc}</p>
+                    <div className="flex items-center gap-5 relative z-10">
+                      <tab.icon size={20} className="relative z-10 shrink-0" />
+                      <div className="text-left relative z-10">
+                        <p className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">{tab.label}</p>
+                        <p className={`text-[8px] font-bold uppercase tracking-wider ${activeTab === tab.id ? 'text-black/50' : 'text-white/20'}`}>{tab.desc}</p>
+                      </div>
                     </div>
+                    <span className={`text-[9px] font-mono font-black border px-2 py-0.5 rounded-md ${activeTab === tab.id ? 'border-black/10 bg-black/5 text-black' : 'border-white/5 bg-white/[0.02] text-white/40'}`}>
+                      {tab.count}
+                    </span>
                     {activeTab === tab.id && (
                       <motion.div 
-                        layoutId="active-style-pill"
+                        layoutId="active-nav-pill"
                         className="absolute inset-0 bg-white"
+                        style={{ zIndex: 0 }}
                       />
                     )}
                   </button>
@@ -83,200 +205,344 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
             </div>
           </div>
 
-          {/* Content Area */}
-          <div className="flex-1">
+          {/* Interactive Content Center */}
+          <div className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
+              
+              {/* TAB 1: CARD IDENTITY (CHARACTERS) */}
               {activeTab === 'identity' && (
                 <motion.div
                   key="identity"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
+                  exit={{ opacity: 0, y: -15 }}
                   className="grid grid-cols-1 xl:grid-cols-12 gap-12"
                 >
-                  <div className="xl:col-span-7 space-y-10">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-2xl font-black text-white uppercase tracking-tighter italic">CHARACTERS</h3>
-                      <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">{CHARACTERS.length} AVAILABLE</span>
+                  <div className="xl:col-span-7 space-y-8">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE YOUR AVATAR</h3>
+                      <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                        {CHARACTERS.filter(isCharUnlocked).length} / {CHARACTERS.filter(char => !char.isCode || isCharUnlocked(char)).length} UNLOCKED
+                      </span>
                     </div>
-                    
+
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                      {CHARACTERS.map((char) => {
-                        const isUnlocked = user?.unlockedCharacters?.includes(char.id) || false;
+                      {CHARACTERS.filter(char => !char.isCode || isCharUnlocked(char)).map((char) => {
+                        const isUnlocked = isCharUnlocked(char);
                         const isSelected = user.currentCharacter === char.id;
                         return (
                           <button
                             key={char.id}
-                            disabled={!isUnlocked}
-                            onClick={() => onUpdateUser({ ...user, currentCharacter: char.id })}
-                            className={`aspect-square rounded-3xl p-2 transition-all relative group overflow-hidden ${
+                            onClick={() => {
+                              if (isUnlocked) {
+                                onUpdateUser({ ...user, currentCharacter: char.id });
+                              }
+                            }}
+                            className={`aspect-square rounded-[2rem] p-1.5 transition-all relative group overflow-hidden ${
                               isSelected 
-                                ? 'bg-white ring-4 ring-white/20 shadow-[0_0_40px_rgba(255,255,255,0.2)]' 
+                                ? 'bg-white ring-4 ring-white/20 shadow-[0_0_30px_rgba(255,255,255,0.25)] scale-[1.03]' 
                                 : isUnlocked 
-                                  ? 'bg-white/[0.03] border border-white/10 hover:border-white/30' 
-                                  : 'bg-black/40 opacity-20 grayscale cursor-not-allowed'
+                                  ? 'bg-white/[0.02] border border-white/10 hover:border-white/30 hover:bg-white/[0.04]' 
+                                  : 'bg-black/50 border border-white/5 opacity-30 cursor-not-allowed'
                             }`}
                           >
-                            {char.img ? (
-                              <img src={char.img} alt={char.name} className="w-full h-full object-cover rounded-2xl group-hover:scale-110 transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-white/10">
-                                <char.icon size={32} />
-                              </div>
-                            )}
-                            {isSelected && (
-                              <div className="absolute top-3 right-3 w-8 h-8 bg-black rounded-xl flex items-center justify-center border border-white/20 shadow-2xl">
-                                <Check size={16} className="text-white" />
-                              </div>
-                            )}
+                            <div className="w-full h-full rounded-[1.7rem] overflow-hidden bg-black flex items-center justify-center relative">
+                              {char.img ? (
+                                <img 
+                                  src={char.img} 
+                                  alt={char.name} 
+                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                                  referrerPolicy="no-referrer"
+                                />
+                              ) : (
+                                <div className="text-white/20">
+                                  <char.icon size={26} />
+                                </div>
+                              )}
+
+                              {/* Lock indicator */}
+                              {!isUnlocked && (
+                                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5">
+                                  <Lock size={12} className="text-white/40" />
+                                  <span className="text-[7px] font-mono font-black text-rose-500 uppercase tracking-wider">LVL {char.level || 'CODE'}</span>
+                                </div>
+                              )}
+
+                              {/* Selected pill */}
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 w-6 h-6 bg-black rounded-lg flex items-center justify-center border border-white/10 shadow-2xl">
+                                  <Check size={12} className="text-white" />
+                                </div>
+                              )}
+                            </div>
                           </button>
                         );
                       })}
                     </div>
                   </div>
 
+                  {/* Preview Sidebar Panel */}
                   <div className="xl:col-span-5">
-                    <div className="bg-white/[0.02] border border-white/10 rounded-[4rem] p-12 flex flex-col items-center justify-center text-center space-y-10 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    <div className="bg-white/[0.02] border border-white/10 rounded-[3.5rem] p-10 flex flex-col items-center justify-center text-center space-y-8 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                       
+                      {/* Avatar Render Circle */}
                       <div className="relative">
-                        <div className="w-56 h-56 rounded-[3.5rem] bg-black border-2 border-white/20 p-4 relative z-10 overflow-hidden shadow-2xl">
-                          {character.img ? (
-                            <img src={character.img} alt="Preview" className="w-full h-full object-cover" />
+                        <div className="w-48 h-48 rounded-full bg-black border-2 border-white/10 p-3 relative z-10 overflow-hidden shadow-2xl">
+                          {activeCharacter.img ? (
+                            <img 
+                              src={activeCharacter.img} 
+                              alt="Active Avatar" 
+                              className="w-full h-full object-cover rounded-full" 
+                              referrerPolicy="no-referrer"
+                            />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/10">
-                              <character.icon size={64} />
+                            <div className="w-full h-full flex items-center justify-center text-white/20">
+                              <activeCharacter.icon size={56} />
                             </div>
                           )}
                         </div>
-                        <div className={`absolute -inset-6 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20`}></div>
-                        <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-black shadow-2xl z-30 border-4 border-black">
-                          <Crown size={24} />
+                        {/* Dynamic absolute Frame */}
+                        <div className={`absolute -inset-1.5 frame-${user.currentFrame || 'obsidian'} pointer-events-none z-20`} />
+                        
+                        <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-black shadow-2xl z-30 border-4 border-black">
+                          <Crown size={18} />
                         </div>
                       </div>
 
-                      <div className="w-full space-y-10">
-                        <div className="relative group">
+                      {/* Character description */}
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-mono text-primary uppercase font-bold tracking-widest">{activeCharacter.isCode ? 'SECRET AVATAR UNLOCKED' : `LEVEL ${activeCharacter.level || 1} PROFILE`}</p>
+                        <h4 className="text-2xl font-black text-white tracking-tight uppercase italic">{activeCharacter.name}</h4>
+                        <p className="text-[10px] text-white/40 max-w-sm font-medium leading-relaxed uppercase">{activeCharacter.desc}</p>
+                      </div>
+
+                      {/* Username Update Interface */}
+                      <div className="w-full space-y-6 pt-4 border-t border-white/5">
+                        <div className="relative">
                           <input 
                             type="text"
                             value={tempUsername}
-                            onChange={(e) => setTempUsername(e.target.value)}
-                            className="w-full bg-white/5 border-2 border-white/10 rounded-3xl px-8 py-6 text-center text-4xl font-black text-white uppercase tracking-tighter italic focus:outline-none focus:border-white/40 transition-all shadow-inner"
-                            placeholder="ENTER NEW NAME..."
+                            onChange={handleUsernameChange}
+                            maxLength={15}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-center text-xl font-black text-white uppercase tracking-wider italic focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all shadow-inner"
+                            placeholder="ENTER NEW USERNAME..."
                           />
-                          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] italic">CHANGE USERNAME</p>
-                          </div>
+                          <p className="text-[8px] font-semibold text-white/20 uppercase tracking-[0.3em] font-mono mt-3 italic">TYPE A NEW USERNAME</p>
                         </div>
                         
-                        <div className="pt-4 flex justify-center">
-                          <button 
-                            onClick={() => onUpdateUsername(tempUsername)}
-                            disabled={tempUsername.trim() === user.username || !tempUsername.trim()}
-                            className="px-16 py-6 bg-white text-black font-black text-[11px] uppercase tracking-[0.4em] rounded-2xl hover:bg-primary hover:scale-105 active:scale-95 transition-all disabled:opacity-10 disabled:scale-100 italic shadow-[0_0_50px_rgba(255,255,255,0.2)]"
-                          >
-                            UPDATE NAME
-                          </button>
-                        </div>
+                        <button 
+                          onClick={submitUsername}
+                          disabled={tempUsername.trim() === user.username || !tempUsername.trim()}
+                          className="w-full py-4 bg-white text-black font-black text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-primary hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-10 disabled:scale-100 disabled:pointer-events-none italic shadow-[0_0_30px_rgba(255,255,255,0.15)]"
+                        >
+                          SAVE NEW USERNAME
+                        </button>
 
-                        <div className="flex items-center justify-center gap-6 pt-4">
-                          <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5">
-                            <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Level</p>
-                            <p className="text-sm font-black text-white italic">{user.level}</p>
-                          </div>
-                          <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5">
-                            <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1">Title</p>
-                            <p className="text-sm font-black text-white italic">{user.currentTitle}</p>
-                          </div>
-                        </div>
+                        {usernameStatus && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`p-3 rounded-xl border text-center text-[10px] font-bold ${
+                              usernameStatus.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
+                            }`}
+                          >
+                            {usernameStatus.text}
+                          </motion.div>
+                        )}
                       </div>
                     </div>
                   </div>
                 </motion.div>
               )}
 
+              {/* TAB 2: SYSTEM THEME SELECTION (THEMES) */}
               {activeTab === 'visuals' && (
                 <motion.div
                   key="visuals"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                  exit={{ opacity: 0, y: -15 }}
+                  className="space-y-8"
                 >
-                  {themes.map((theme) => {
-                    const isUnlocked = user?.unlockedThemes?.includes(theme.id) || theme.id === 'void';
-                    const isSelected = user.currentTheme === theme.id;
-                    return (
-                      <button
-                        key={theme.id}
-                        disabled={!isUnlocked}
-                        onClick={() => onUpdateUser({ ...user, currentTheme: theme.id })}
-                        className={`group relative p-10 rounded-[3rem] text-left transition-all overflow-hidden ${
-                          isSelected 
-                            ? 'bg-white text-black shadow-[0_30px_60px_rgba(255,255,255,0.1)]' 
-                            : isUnlocked
-                              ? 'bg-white/[0.02] border border-white/10 hover:border-white/30 hover:bg-white/[0.04]'
-                              : 'bg-black/40 opacity-20 grayscale cursor-not-allowed'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-8">
-                          <div className="w-16 h-16 rounded-2xl border-4 border-black/10 shadow-2xl" style={{ backgroundColor: theme.primary }}></div>
-                          {isSelected && <Sparkles size={24} className="text-black/20" />}
-                          {!isUnlocked && <Lock size={20} className="text-white/20" />}
-                        </div>
-                        <h4 className="text-2xl font-black uppercase tracking-tighter italic mb-2">{theme.name}</h4>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest leading-relaxed ${isSelected ? 'text-black/40' : 'text-white/20'}`}>{theme.desc}</p>
-                        
-                        {isUnlocked && !isSelected && (
-                          <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
-                            <span className="text-[8px] font-black uppercase tracking-[0.3em] text-white/20">READY</span>
-                            <ChevronRight size={14} className="text-white/20 group-hover:translate-x-1 transition-transform" />
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE A SITE THEME</h3>
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mt-1">Select a look you have unlocked</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                      {themes.filter(isThemeUnlocked).length} / {themes.filter(theme => !theme.isCode || isThemeUnlocked(theme)).length} UNLOCKED
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {themes.filter(theme => !theme.isCode || isThemeUnlocked(theme)).map((theme) => {
+                      const isUnlocked = isThemeUnlocked(theme);
+                      const isSelected = user.currentTheme === theme.id;
+                      return (
+                        <button
+                          key={theme.id}
+                          onClick={() => {
+                            if (isUnlocked) {
+                              onUpdateUser({ ...user, currentTheme: theme.id });
+                            }
+                          }}
+                          className={`group text-left p-6 rounded-[2.5rem] transition-all relative overflow-hidden flex flex-col justify-between h-56 ${
+                            isSelected 
+                              ? 'bg-white text-black shadow-[0_25px_50px_rgba(255,255,255,0.15)] scale-[1.02]' 
+                              : isUnlocked
+                                ? 'bg-white/[0.02] border border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
+                                : 'bg-black/50 border border-white/5 opacity-30 cursor-not-allowed'
+                          }`}
+                        >
+                          {/* Inner Background Glow representation */}
+                          {isSelected && (
+                            <div className="absolute inset-0 bg-gradient-to-br from-white via-zinc-100 to-zinc-200 -z-10" />
+                          )}
+
+                          <div className="flex items-start justify-between w-full">
+                            {/* Color Accents dots representation */}
+                            <div className="flex gap-2 p-1 bg-black/20 rounded-full border border-white/5">
+                              <span 
+                                className="w-5 h-5 rounded-full border-2 border-black/10 block shadow-inner" 
+                                style={{ background: theme.primary }}
+                              />
+                              <span 
+                                className="w-5 h-5 rounded-full border-2 border-black/10 block" 
+                                style={{ background: theme.bg }}
+                              />
+                            </div>
+
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${
+                              isSelected 
+                                ? 'bg-black/5 border-black/10 text-black/60' 
+                                : 'bg-white/5 border-white/10 text-white/40'
+                            }`}>
+                              {theme.type.toUpperCase()}
+                            </span>
                           </div>
-                        )}
-                      </button>
-                    );
-                  })}
+
+                          <div className="space-y-2 mt-4 relative z-10">
+                            <h4 className="text-xl font-extrabold uppercase tracking-tight italic">{theme.name}</h4>
+                            <p className={`text-[9px] font-medium leading-relaxed uppercase ${isSelected ? 'text-black/50' : 'text-white/40'}`}>
+                              {theme.desc}
+                            </p>
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-black/5 w-full flex items-center justify-between relative z-10">
+                            {isSelected ? (
+                              <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-black">
+                                <Sparkles size={11} className="animate-spin" />
+                                <span>ACTIVE</span>
+                              </div>
+                            ) : isUnlocked ? (
+                              <div className="flex items-center justify-between w-full">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-white/20">READY TO USE</span>
+                                <ChevronRight size={12} className="text-white/30 group-hover:translate-x-1 transition-transform" />
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-rose-500">
+                                <Lock size={10} />
+                                <span>LOCKED (LEVEL {theme.level || 'CODE'})</span>
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </motion.div>
               )}
 
+              {/* TAB 3: PROFILE BORDERS (FRAMES) */}
               {activeTab === 'frames' && (
                 <motion.div
                   key="frames"
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                  exit={{ opacity: 0, y: -15 }}
+                  className="space-y-8"
                 >
-                  {frames.map((frame) => {
-                    const isUnlocked = user.unlockedFrames.includes(frame.id);
-                    const isSelected = user.currentFrame === frame.id;
-                    return (
-                      <button
-                        key={frame.id}
-                        disabled={!isUnlocked}
-                        onClick={() => onUpdateUser({ ...user, currentFrame: frame.id })}
-                        className={`group relative p-10 rounded-[3rem] text-left transition-all overflow-hidden ${
-                          isSelected 
-                            ? 'bg-white text-black shadow-[0_30px_60px_rgba(255,255,255,0.1)]' 
-                            : isUnlocked
-                              ? 'bg-white/[0.02] border border-white/10 hover:border-white/30 hover:bg-white/[0.04]'
-                              : 'bg-black/40 opacity-20 grayscale cursor-not-allowed'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-8">
-                          <div className={`w-16 h-16 rounded-2xl border-4 border-black/10 shadow-2xl frame-${frame.id}`}></div>
-                          {!isUnlocked && <Lock size={20} className="text-white/20" />}
-                        </div>
-                        <h4 className="text-2xl font-black uppercase tracking-tighter italic mb-2">{frame.name}</h4>
-                        <div className="flex items-center gap-3">
-                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ${isSelected ? 'bg-black/10 text-black/60' : 'bg-white/5 text-white/40'}`}>{frame.rarity}</span>
-                          <span className={`text-[9px] font-bold uppercase tracking-widest ${isSelected ? 'text-black/40' : 'text-white/20'}`}>LVL {frame.level}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE YOUR AVATAR border</h3>
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mt-1">These frames wrap around your avatar</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
+                      {frames.filter(isFrameUnlocked).length} / {frames.filter(frame => !frame.isCode || isFrameUnlocked(frame)).length} UNLOCKED
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {frames.filter(frame => !frame.isCode || isFrameUnlocked(frame)).map((frame) => {
+                      const isUnlocked = isFrameUnlocked(frame);
+                      const isSelected = user.currentFrame === frame.id;
+                      return (
+                        <button
+                          key={frame.id}
+                          onClick={() => {
+                            if (isUnlocked) {
+                              onUpdateUser({ ...user, currentFrame: frame.id });
+                            }
+                          }}
+                          className={`group text-left p-6 rounded-[2.5rem] transition-all relative overflow-hidden flex flex-col justify-between h-56 ${
+                            isSelected 
+                              ? 'bg-white text-black shadow-[0_25px_50px_rgba(255,255,255,0.15)] scale-[1.02]' 
+                              : isUnlocked
+                                ? 'bg-white/[0.02] border border-white/10 hover:border-white/20 hover:bg-white/[0.04]'
+                                : 'bg-black/50 border border-white/5 opacity-30 cursor-not-allowed'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between w-full">
+                            {/* Frame overlay represent model */}
+                            <div className="relative w-14 h-14 bg-black rounded-full p-1.5 flex items-center justify-center border border-white/5 mt-1">
+                              <div className="w-full h-full bg-zinc-900 rounded-full flex items-center justify-center">
+                                <User size={16} className={isSelected ? 'text-black/20' : 'text-white/20'} />
+                              </div>
+                              <div className={`absolute -inset-1 frame-${frame.id} pointer-events-none z-20`} />
+                            </div>
+
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className={`px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest bg-gradient-to-r ${getRarityColor(frame.rarity)}`}>
+                                {frame.rarity.toUpperCase()}
+                              </span>
+                              {!frame.isCode && !frame.isQuest && (
+                                <span className={`text-[8px] font-mono font-bold uppercase tracking-widest ${isSelected ? 'text-black/50' : 'text-white/30'}`}>
+                                  LEVEL {frame.level}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5 mt-4">
+                            <h4 className="text-lg font-extrabold uppercase tracking-tight italic">{frame.name}</h4>
+                            <p className={`text-[9px] font-medium leading-relaxed uppercase ${isSelected ? 'text-black/50' : 'text-white/40'}`}>
+                              {frame.desc}
+                            </p>
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-black/5 w-full flex items-center justify-between">
+                            {isSelected ? (
+                              <span className="text-[8px] font-mono font-black uppercase tracking-wider text-black">ACTIVE</span>
+                            ) : isUnlocked ? (
+                              <div className="flex items-center justify-between w-full">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-white/20">READY TO USE</span>
+                                <ChevronRight size={12} className="text-white/30 group-hover:translate-x-1 transition-transform" />
+                              </div>
+                            ) : (
+                              <span className="text-[8px] font-black uppercase tracking-widest text-rose-500 flex items-center gap-1">
+                                <Lock size={10} />
+                                <span>LOCKED ({frame.isQuest ? 'QUEST' : frame.isCode ? 'CODE' : `LEVEL ${frame.level}`})</span>
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </motion.div>
               )}
+
             </AnimatePresence>
           </div>
         </div>

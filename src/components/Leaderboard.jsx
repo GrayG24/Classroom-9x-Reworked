@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trophy, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Crown, Palette, TrendingUp, Medal, Target } from 'lucide-react';
+import { CHARACTERS } from '../constants';
 
 export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
   const userRank = (leaderboardData || []).findIndex(p => (p.uid === user.uid || p.username === user.username)) + 1;
@@ -85,6 +86,10 @@ export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
               const isSilver = index === 1;
               const isBronze = index === 2;
 
+              const themeClass = `theme-${player.currentTheme || 'default'}`;
+              const character = CHARACTERS.find(c => c.id === player.currentCharacter) || CHARACTERS[0];
+              const AvatarIcon = character.icon || User;
+
               return (
                 <motion.div
                   key={player.uid || `${player.username}-${index}`}
@@ -92,31 +97,37 @@ export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
                   onClick={() => onPlayerClick(player)}
-                  className={`relative group cursor-pointer ${isGold ? 'md:scale-110 z-20' : 'z-10'}`}
+                  className={`relative group cursor-pointer ${themeClass} ${isGold ? 'md:scale-110 z-20' : 'z-10'}`}
                 >
-                  <div className={`p-12 rounded-[4rem] bg-black/40 border-2 backdrop-blur-3xl shadow-2xl transition-all duration-700 group-hover:-translate-y-6 ${
-                    isGold ? 'border-white/40 shadow-[0_0_80px_rgba(255,255,255,0.2)]' : 
-                    isSilver ? 'border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.1)]' : 
-                    'border-white/10 shadow-[0_0_50px_rgba(255,255,255,0.05)]'
-                  }`}>
+                  <div className={`p-12 rounded-[4rem] bg-black/50 border-2 backdrop-blur-3xl shadow-2xl transition-all duration-700 group-hover:-translate-y-6`}
+                    style={{
+                      border: '2px solid var(--primary, rgba(255,255,255,0.1))',
+                      boxShadow: isGold ? '0 0 60px var(--primary-glow, rgba(255,255,255,0.15))' : '0 0 40px var(--primary-glow, rgba(255,255,255,0.05))'
+                    }}
+                  >
                     <div className="flex flex-col items-center text-center">
                       <div className="relative mb-10">
-                        <div className={`w-40 h-40 rounded-full bg-black border-4 overflow-hidden flex items-center justify-center text-white relative z-10 transition-all duration-700 group-hover:scale-110 ${
-                          isGold ? 'border-white shadow-[0_0_40px_rgba(255,255,255,0.5)]' : 
-                          isSilver ? 'border-white/60' : 
-                          'border-white/30'
-                        }`}>
-                          {player.img ? (
+                        <div className={`w-40 h-40 rounded-full bg-black border-4 overflow-hidden flex items-center justify-center text-white relative z-10 transition-all duration-700 group-hover:scale-110`}
+                          style={{
+                            borderColor: 'var(--primary, rgba(255,255,255,0.2))'
+                          }}
+                        >
+                          {character.img ? (
+                            <img src={character.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                          ) : player.img ? (
                             <img src={player.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
                           ) : (
-                            <User size={80} />
+                            <AvatarIcon size={80} />
                           )}
                         </div>
-                        <div className={`absolute -top-10 left-1/2 -translate-x-1/2 z-20 drop-shadow-[0_0_20px_currentColor] transition-transform duration-700 group-hover:-translate-y-2 ${
+                        <div className={`absolute -inset-1 frame-${player.currentFrame || 'obsidian'} pointer-events-none z-20`} style={{ borderRadius: '50%' }} />
+                        <div className={`absolute -top-10 left-1/2 -translate-x-1/2 z-30 drop-shadow-[0_0_20px_currentColor] transition-transform duration-700 group-hover:-translate-y-2 ${
                           isGold ? 'text-white' : 
                           isSilver ? 'text-white/60' : 
                           'text-white/30'
-                        }`}>
+                        }`}
+                          style={{ color: 'var(--primary, inherit)' }}
+                        >
                           <Crown size={52} fill="currentColor" />
                         </div>
                         <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-6 py-2 bg-white text-black rounded-full z-30 shadow-2xl border-4 border-black">
@@ -124,7 +135,7 @@ export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
                         </div>
                       </div>
                       
-                      <h3 className="text-4xl font-black text-white uppercase tracking-tighter italic mb-3 group-hover:text-white transition-colors">{player.username}</h3>
+                      <h3 className="text-4xl font-black text-white uppercase tracking-tighter italic mb-3 transition-colors" style={{ color: 'var(--primary, #ffffff)' }}>{player.username}</h3>
                       <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em] mb-10 italic">PLAYER RANK {index + 1}</p>
                       
                       <div className="flex items-center gap-4 mb-10">
@@ -159,52 +170,67 @@ export const Leaderboard = ({ user, leaderboardData, onPlayerClick }) => {
               </div>
 
               <div className="space-y-6">
-                {otherPlayers.map((player, i) => (
-                  <motion.div
-                    key={player.uid || `${player.username}-${i}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    onClick={() => onPlayerClick(player)}
-                    className="grid grid-cols-[100px_1fr_140px_200px] gap-12 items-center p-8 rounded-[2.5rem] bg-white/[0.02] border border-white/5 hover:border-white/20 hover:bg-white/[0.05] transition-all duration-500 group cursor-pointer"
-                  >
-                    <div className="flex items-center justify-center">
-                      <span className="text-3xl font-black text-white/10 group-hover:text-white transition-colors italic tracking-tighter">#{i + 4}</span>
-                    </div>
+                {otherPlayers.map((player, i) => {
+                  const themeClass = `theme-${player.currentTheme || 'default'}`;
+                  const character = CHARACTERS.find(c => c.id === player.currentCharacter) || CHARACTERS[0];
+                  const AvatarIcon = character.icon || User;
 
-                    <div className="flex items-center gap-8">
-                      <div className="w-16 h-16 rounded-full bg-black border border-white/5 flex items-center justify-center text-white group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] transition-all duration-500 overflow-hidden">
-                        {player.img ? (
-                          <img src={player.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
-                        ) : (
-                          <User size={32} />
-                        )}
+                  return (
+                    <motion.div
+                      key={player.uid || `${player.username}-${i}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => onPlayerClick(player)}
+                      className={`grid grid-cols-[100px_1fr_140px_200px] gap-12 items-center p-8 rounded-[2.5rem] bg-black/50 hover:bg-black/80 transition-all duration-500 group cursor-pointer ${themeClass}`}
+                      style={{
+                        border: '1px solid var(--primary, rgba(255,255,255,0.05))',
+                        boxShadow: '0 0 15px var(--primary-glow, transparent)'
+                      }}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span className="text-3xl font-black text-white/10 group-hover:text-white transition-colors italic tracking-tighter" style={{ color: 'var(--primary, rgba(255,255,255,0.1))' }}>#{i + 4}</span>
                       </div>
-                      <div>
-                        <p className="text-2xl font-black text-white uppercase tracking-tight italic group-hover:text-white transition-colors">{player.username}</p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-                          <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">LEVEL {player.level}</span>
+
+                      <div className="flex items-center gap-8">
+                        <div className="relative w-16 h-16 shrink-0 z-10">
+                          <div className="w-full h-full rounded-full bg-black border border-white/5 flex items-center justify-center text-white group-hover:scale-110 transition-all duration-500 overflow-hidden">
+                            {character.img ? (
+                              <img src={character.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                            ) : player.img ? (
+                              <img src={player.img} alt={player.username} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                            ) : (
+                              <AvatarIcon size={32} />
+                            )}
+                          </div>
+                          <div className={`absolute -inset-1 frame-${player.currentFrame || 'obsidian'} pointer-events-none z-20`} style={{ borderRadius: '50%' }} />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-black text-white uppercase tracking-tight italic group-hover:text-white transition-colors" style={{ color: 'var(--primary, #ffffff)' }}>{player.username}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--primary, #ffffff)' }}></div>
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic" style={{ color: 'var(--primary, rgba(255,255,255,0.2))' }}>LEVEL {player.level}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="text-center">
-                      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/5 group-hover:border-white/20 transition-colors">
-                        <span className="text-lg font-black text-white italic">{player.level}</span>
+                      <div className="text-center">
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/5 border border-white/5 group-hover:border-white/20 transition-colors" style={{ borderColor: 'var(--primary, rgba(255,255,255,0.05))', backgroundColor: 'var(--primary-glow, rgba(255,255,255,0.02))' }}>
+                          <span className="text-lg font-black text-white italic" style={{ color: 'var(--primary, #ffffff)' }}>{player.level}</span>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="text-right">
-                      <div className="flex items-center justify-end gap-3 text-white mb-1.5">
-                        <Zap size={18} fill="currentColor" className="text-white/40 group-hover:text-white transition-colors" />
-                        <span className="text-3xl font-black italic tracking-tighter tabular-nums">{player.score.toLocaleString()}</span>
+                      
+                      <div className="text-right">
+                        <div className="flex items-center justify-end gap-3 text-white mb-1.5">
+                          <Zap size={18} fill="currentColor" className="text-white/40 group-hover:text-white transition-colors" style={{ color: 'var(--primary, rgba(255,255,255,0.4))' }} />
+                          <span className="text-3xl font-black italic tracking-tighter tabular-nums" style={{ color: 'var(--primary, #ffffff)' }}>{player.score.toLocaleString()}</span>
+                        </div>
+                        <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]" style={{ color: 'var(--primary, rgba(255,255,255,0.2))' }}>POINTS</p>
                       </div>
-                      <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">POINTS</p>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
 
               <div className="mt-16 flex justify-center">

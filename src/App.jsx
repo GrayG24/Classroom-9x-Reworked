@@ -972,9 +972,9 @@ const App = () => {
         announcementTime = data.timestamp.toMillis ? data.timestamp.toMillis() : Date.now();
       }
 
-      // Keep announcements visible for up to 24 hours after publication
+      // Keep announcements visible for up to 2 hours after publication (to keep fresh and avoid stale ones)
       const ageMs = Date.now() - announcementTime;
-      if (ageMs > 24 * 60 * 60 * 1000) return; // 24 hours limit
+      if (ageMs > 2 * 60 * 60 * 1000) return; // 2 hours limit
 
       setAdminAnnouncement({
         id: announcementId,
@@ -987,10 +987,27 @@ const App = () => {
         announcementType: data.type || 'system',
         timestamp: new Date(announcementTime).toISOString()
       });
+
+      // Clear any existing dismiss timer to avoid conflicts
+      if (adminAnnouncementTimer.current) {
+        clearTimeout(adminAnnouncementTimer.current);
+      }
+
+      // Auto-dismiss the active announcement banner after 15 seconds of appearing
+      adminAnnouncementTimer.current = setTimeout(() => {
+        setAdminAnnouncement(null);
+      }, 15000);
+
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'announcements');
     });
-    return () => unsub();
+
+    return () => {
+      unsub();
+      if (adminAnnouncementTimer.current) {
+        clearTimeout(adminAnnouncementTimer.current);
+      }
+    };
   }, [firebaseUser]);
 
   // Handle manual dismissal of global announcements
@@ -1061,6 +1078,15 @@ const App = () => {
   const lastCompletedQuestsCount = useRef(0);
   const fpsHistory = useRef([]);
   const lastLagNotification = useRef(0);
+  const adminAnnouncementTimer = useRef(null);
+
+  const [leaderboardResyncTrigger, setLeaderboardResyncTrigger] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLeaderboardResyncTrigger(prev => prev + 1);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Leaderboard Real-time Sync (Filtered only on username to be fully global/inclusive)
   useEffect(() => {
@@ -1072,13 +1098,13 @@ const App = () => {
     const unsub = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs
         .map(d => ({ ...d.data(), uid: d.id }))
-        .filter(player => player.username && player.username !== 'Player' && player.hasSetProfile === true);
+        .filter(player => player.username && player.username !== 'Player' && player.hasSetProfile === true && !player.isAnonymous && !player.username.toLowerCase().startsWith('guest'));
       setLeaderboardData(data);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'users');
     });
     return () => unsub();
-  }, [firebaseUser]);
+  }, [firebaseUser, leaderboardResyncTrigger]);
 
   // Global Chat Real-time Sync
   useEffect(() => {
@@ -1446,18 +1472,19 @@ const App = () => {
           role: finalRole
         }));
         
-        if (!userData.hasSetProfile) {
+        if (!userData.hasSetProfile && !firebaseUser.isAnonymous) {
           setShowInitialModal(true);
         }
       } else {
         // Create initial profile
+        const isAnon = firebaseUser.isAnonymous || false;
         const initialProfile = {
           ...DEFAULT_USER,
           uid: firebaseUser.uid,
           email: firebaseUser.email || '',
-          isAnonymous: firebaseUser.isAnonymous || false,
-          username: firebaseUser.displayName || 'Player',
-          hasSetProfile: false,
+          isAnonymous: isAnon,
+          username: isAnon ? `Guest_${firebaseUser.uid.substring(0, 5)}` : (firebaseUser.displayName || 'Player'),
+          hasSetProfile: isAnon ? true : false,
           lastLoginDate: new Date().toISOString().split('T')[0],
           isAdmin: isAdminFlag,
           role: role
@@ -1472,7 +1499,9 @@ const App = () => {
         try {
           await setDoc(userRef, initialProfile);
           setUser(initialProfile);
-          setShowInitialModal(true);
+          if (!isAnon) {
+            setShowInitialModal(true);
+          }
         } catch (error) {
           handleFirestoreError(error, OperationType.CREATE, `users/${firebaseUser.uid}`);
         }
@@ -1509,6 +1538,10 @@ const App = () => {
         username: user.username,
         currentCharacter: user.currentCharacter,
         currentFrame: user.currentFrame,
+        currentTheme: user.currentTheme,
+        unlockedThemes: user.unlockedThemes?.length,
+        unlockedFrames: user.unlockedFrames?.length,
+        unlockedCharacters: user.unlockedCharacters?.length,
         featuredBadgeId: user.featuredBadgeId,
         pinnedGames: user.pinnedGames?.length,
         favorites: user.favorites?.length
@@ -1864,15 +1897,20 @@ const App = () => {
     if (cleanCode === 'ADMIN6') {
       const role = 'MODERATOR';
       const updatedRedeemedCodes = Array.from(new Set([...(user.redeemedCodes || []), 'ADMIN6']));
-      const updatedUnlockedFrames = Array.from(new Set([...(user.unlockedFrames || []), 'moderator']));
+      const updatedUnlockedThemes = Array.from(new Set([...(user.unlockedThemes || []), 'tester']));
+      const updatedUnlockedFrames = Array.from(new Set([...(user.unlockedFrames || []), 'moderator', 'tester']));
+      const updatedUnlockedBadges = Array.from(new Set([...(user.unlockedBadges || []), 'tester-badge']));
       
       const updateAdminEnrollment = async () => {
         try {
           const userRef = doc(db, 'users', firebaseUser.uid);
           await updateDoc(userRef, {
             redeemedCodes: updatedRedeemedCodes,
+            unlockedThemes: updatedUnlockedThemes,
             unlockedFrames: updatedUnlockedFrames,
+            unlockedBadges: updatedUnlockedBadges,
             currentFrame: 'moderator',
+            currentTheme: 'tester',
             isAdmin: true,
             role: role,
             lastSeen: serverTimestamp()
@@ -1894,8 +1932,11 @@ const App = () => {
         ...prev,
         isAdmin: true,
         role: role,
+        unlockedThemes: updatedUnlockedThemes,
         unlockedFrames: updatedUnlockedFrames,
+        unlockedBadges: updatedUnlockedBadges,
         currentFrame: 'moderator',
+        currentTheme: 'tester',
         redeemedCodes: updatedRedeemedCodes
       }));
 
@@ -1903,7 +1944,7 @@ const App = () => {
         updateAdminEnrollment();
       }
       addNotification('MODERATOR ACCESS GRANTED', 'WELCOME, MODERATOR', 'system', <Hammer className="text-blue-500" />);
-      return { success: true, message: 'MODERATOR PROTOCOL ACTIVATED: ACCESS GRANTED TO ANNOUNCEMENTS & EVENTS' };
+      return { success: true, message: 'MODERATOR PROTOCOL ACTIVATED: SYSTEM RECONSTRUCTED & TESTER ITEMS SYNCED' };
     }
 
     if (cleanCode === 'OWNER3413') {
@@ -1912,7 +1953,7 @@ const App = () => {
       const allFrames = ['moderator', 'obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
       const allChars = CHARACTERS.map(c => c.id);
       const allBadges = Array.from(new Set([...BADGES.map(b => b.id), 'stargazer']));
-      const allCodes = ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'];
+      const allCodes = ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'PINEAPPLE', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'];
       
       const updatedRedeemedCodes = Array.from(new Set([...(user.redeemedCodes || []), ...allCodes]));
       const updatedUnlockedThemes = Array.from(new Set([...(user.unlockedThemes || []), ...allThemes]));
@@ -2000,10 +2041,10 @@ const App = () => {
       return { success: true, message: 'PROTOCOL INITIATED: SPECTRUM MODE UNLOCKED' };
     }
 
-    if (cleanCode === 'SPONGEBOB') {
+    if (cleanCode === 'SPONGEBOB' || cleanCode === 'PINEAPPLE') {
       setUser(prev => ({
         ...prev,
-        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'SPONGEBOB'])),
+        redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), 'SPONGEBOB', 'PINEAPPLE'])),
         unlockedThemes: Array.from(new Set([...prev.unlockedThemes, 'spongebob'])),
         unlockedCharacters: Array.from(new Set([...(prev.unlockedCharacters || []), 'spongebob']))
       }));
@@ -2049,10 +2090,10 @@ const App = () => {
       setUser(prev => ({
         ...prev,
         redeemedCodes: Array.from(new Set([...(prev.redeemedCodes || []), '9XISBACK'])),
-        level: prev.level + 10
+        level: prev.level + 100
       }));
       addNotification('Code Redeemed!', 'PROFILE CLEARANCE GRANTED', 'system', <Shield className="text-theme" />);
-      return { success: true, message: 'PROFILE CLEARANCE GRANTED: +10 LEVELS' };
+      return { success: true, message: 'PROFILE CLEARANCE GRANTED: +100 LEVELS' };
     }
 
     if (cleanCode === 'CLASSROOM9X') {

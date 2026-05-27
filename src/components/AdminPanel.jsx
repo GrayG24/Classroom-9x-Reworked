@@ -59,7 +59,9 @@ export const AdminPanel = ({ user, onClose }) => {
     // Players listener
     const q = query(collection(db, 'users'), orderBy('username'));
     const unsub = onSnapshot(q, (snapshot) => {
-      const users = snapshot.docs.map(d => ({ ...d.data(), uid: d.id }));
+      const users = snapshot.docs
+        .map(d => ({ ...d.data(), uid: d.id }))
+        .filter(u => !u.isAnonymous && !(u.username && u.username.toLowerCase().startsWith('guest')));
       setPlayers(users);
       
       // Calculate real-time stats

@@ -47,7 +47,7 @@ export const Sidebar = ({
     { id: AppRoute.LIBRARY, label: 'Games', icon: Gamepad2, isReleased: true },
     { id: AppRoute.SUMMER, label: 'Summer Countdown', icon: Sun, isReleased: true, accentColor: 'text-orange-400', beachBonus: true },
     { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid, isReleased: false },
-    { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: false },
+    ...(user?.isAdmin ? [{ id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: true }] : []),
     { id: AppRoute.SETTINGS, label: 'Settings', icon: Settings, isReleased: true },
   ];
 

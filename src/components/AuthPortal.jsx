@@ -71,9 +71,13 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
       let errMsg = msg || 'An unexpected error occurred during authentication.';
 
       if (fullErrorStr.includes('email-already-in-use')) {
-        errMsg = 'This email is already registered. Try switching to the "Sign In" tab.';
+        errMsg = 'This email is already registered. Try switching to the "Log In" tab above.';
       } else if (fullErrorStr.includes('user-not-found') || fullErrorStr.includes('invalid-credential')) {
-        errMsg = 'No user account matching this email and password was found. Check your spelling or Create an Account.';
+        if (activeTab === 'login') {
+          errMsg = 'Incorrect email or password. Please verify your spelling, or click "Create Account" above to start a new account.';
+        } else {
+          errMsg = 'This email address or password could not be registered. Please check that your email is formatted correctly, your password is at least 6 characters, or try using another email address.';
+        }
       } else if (fullErrorStr.includes('wrong-password') || fullErrorStr.includes('invalid-password')) {
         errMsg = 'Incorrect password. Please try again.';
       } else if (fullErrorStr.includes('invalid-email')) {
@@ -81,7 +85,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
       } else if (fullErrorStr.includes('weak-password')) {
         errMsg = 'The password is too weak. It must be at least 6 characters.';
       } else if (fullErrorStr.includes('operation-not-allowed')) {
-        errMsg = 'Email/Password logins are not enabled in the Firebase Console yet.';
+        errMsg = 'Email/Password sign-ins are not enabled in this Firebase Console. Please verify with the Firebase project administrator, or try Guest/Google Sign In.';
       } else if (fullErrorStr.includes('too-many-requests')) {
         errMsg = 'Too many failed login attempts. This account has been temporarily disabled. Try again later.';
       }

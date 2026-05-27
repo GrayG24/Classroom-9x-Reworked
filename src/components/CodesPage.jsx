@@ -80,7 +80,7 @@ export const CodesPage = ({ user, onRedeemCode }) => {
               <p className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">UNLOCKED CODES</p>
               <div className="flex flex-wrap justify-center gap-2 max-h-60 overflow-y-auto p-4 scrollbar-hide bg-black/20 rounded-[2rem] border border-white/5">
                 {((user.role === 'OWNER' || user.redeemedCodes?.includes('OWNER3413')) ? 
-                  ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'] : 
+                  ['GLITCH', 'RAINBOW', 'SPONGEBOB', 'PINEAPPLE', 'HOLOGRAM', 'JARVIS', '9XISBACK', 'ADMIN6', 'IMAGENIUS', 'TESTER9832', 'OWNER3413', 'CODES211', 'MERICA', 'CLASSROOM9X'] : 
                   (user.redeemedCodes || [])).map(code => (
                   <span key={code} className="px-5 py-2.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black text-primary tracking-widest italic animate-in zoom-in duration-300">
                     {code}

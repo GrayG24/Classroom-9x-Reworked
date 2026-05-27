@@ -6,7 +6,7 @@ export const GameCard = ({ game, isPinned, onTogglePin, onClick }) => {
   return (
     <motion.div 
       whileHover={{ y: -12, scale: 1.02 }}
-      className="group relative bg-black/40 border border-white/10 rounded-[2rem] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)] will-change-transform"
+      className="group relative bg-black/40 border border-white/10 rounded-[2rem] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl transition-all duration-700 hover:border-white/40 hover:shadow-[0_40px_100px_rgba(0,0,0,0.8)] will-change-transform proto-card"
     >
       <div className="aspect-[3/4] relative overflow-hidden rounded-t-[2rem]" onClick={() => onClick(game)}>
         <img 
