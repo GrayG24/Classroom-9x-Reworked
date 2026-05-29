@@ -47,7 +47,7 @@ export const Sidebar = ({
     { id: AppRoute.LIBRARY, label: 'Games', icon: Gamepad2, isReleased: true },
     { id: AppRoute.SUMMER, label: 'Summer Countdown', icon: Sun, isReleased: true, accentColor: 'text-orange-400', beachBonus: true },
     { id: AppRoute.APPS, label: 'Apps', icon: LayoutGrid, isReleased: false },
-    ...(user?.isAdmin ? [{ id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: true }] : []),
+    { id: AppRoute.CUSTOMIZATION, label: 'Customization', icon: Palette, isReleased: false },
     { id: AppRoute.SETTINGS, label: 'Settings', icon: Settings, isReleased: true },
   ];
 
@@ -71,7 +71,7 @@ export const Sidebar = ({
         width: { type: "spring", stiffness: 120, damping: 22, mass: 1 },
         opacity: { duration: 0.4 }
       }}
-      className="fixed left-6 top-6 bottom-6 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 rounded-[2.5rem]"
+      className="global-sidebar-panel fixed left-6 top-6 bottom-6 z-50 flex flex-col shrink-0 shadow-[20px_0_100px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-[24px] border border-white/10 rounded-[2.5rem]"
       style={{ willChange: 'transform, width' }}
     >
       {/* Logo Section */}
@@ -139,7 +139,7 @@ export const Sidebar = ({
               }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if ((!isComingSoon && !isBroken) || user.isAdmin) {
+                if ((!isComingSoon && !isBroken) || !user?.settings?.hideUnreleased || user.isAdmin) {
                   onViewChange(item.id);
                 }
               }}

@@ -12,6 +12,8 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
   const starsRef = useRef([]);
   const shootingStarsRef = useRef([]);
   const warpSpeedRef = useRef(1);
+  const progressRef = useRef(0);
+  const hasSpawnedHugeStarRef = useRef(false);
 
   // Setup Starfield Simulation
   useEffect(() => {
@@ -117,41 +119,82 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
         }
       });
 
-      // Handle Shooting Stars
-      if (Math.random() < 0.003 && shootingStarsRef.current.length < 2 && !isWarping) {
+      // Handle Cinematic HUGE Shooting Star Trigger
+      const currentProgress = progressRef.current;
+      if (currentProgress > 35 && currentProgress < 75 && !hasSpawnedHugeStarRef.current && !isWarping) {
+        hasSpawnedHugeStarRef.current = true;
+        shootingStarsRef.current.push({
+          x: -150,
+          y: Math.random() * (canvas.height * 0.2) + 80,
+          len: 420 + Math.random() * 120,
+          dx: 15 + Math.random() * 5,
+          dy: 3 + Math.random() * 2,
+          life: 1.25,
+          color: 'rgba(255, 223, 100, 1)',
+          isHuge: true,
+          triggeredEvent: false
+        });
+      }
+
+      // Handle Regular ambient Shooting Stars (These DO NOT reward stargazer badge)
+      if (Math.random() < 0.0035 && shootingStarsRef.current.length < 2 && !isWarping) {
         shootingStarsRef.current.push({
           x: Math.random() * (canvas.width * 0.4),
           y: Math.random() * (canvas.height * 0.3),
-          len: 50 + Math.random() * 80,
-          dx: 8 + Math.random() * 12,
-          dy: 2 + Math.random() * 4,
+          len: 45 + Math.random() * 45,
+          dx: 8 + Math.random() * 8,
+          dy: 2 + Math.random() * 3,
           life: 1.0,
-          color: `rgba(255, 245, 245, 1)`,
+          color: `rgba(200, 220, 255, 0.8)`,
+          isHuge: false
         });
-        if (onCosmicEvent) {
-          try { onCosmicEvent(); } catch (e) {}
-        }
       }
 
       shootingStarsRef.current.forEach((ss, idx) => {
         ctx.beginPath();
         const grad = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.len, ss.y - (ss.len * ss.dy / ss.dx));
-        grad.addColorStop(0, `rgba(255, 255, 255, ${ss.life})`);
-        grad.addColorStop(0.3, `rgba(147, 197, 253, ${ss.life * 0.7})`);
-        grad.addColorStop(1, 'rgba(59, 130, 246, 0)');
         
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = 1.5;
+        if (ss.isHuge) {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${ss.life})`);
+          grad.addColorStop(0.15, `rgba(253, 224, 71, ${ss.life * 0.95})`); // Yellow shadow
+          grad.addColorStop(0.5, `rgba(244, 63, 94, ${ss.life * 0.6})`);  // Rose flare
+          grad.addColorStop(1, 'rgba(124, 58, 237, 0)');                 // Violet tail
+          
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 6;
+          ctx.shadowBlur = 35;
+          ctx.shadowColor = 'rgba(253, 224, 71, 0.8)';
+        } else {
+          grad.addColorStop(0, `rgba(255, 255, 255, ${ss.life})`);
+          grad.addColorStop(0.3, `rgba(147, 197, 253, ${ss.life * 0.7})`);
+          grad.addColorStop(1, 'rgba(59, 130, 246, 0)');
+          
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = 1.5;
+        }
+        
         ctx.moveTo(ss.x, ss.y);
         ctx.lineTo(ss.x - ss.len, ss.y - (ss.len * ss.dy / ss.dx));
         ctx.stroke();
 
+        if (ss.isHuge) {
+          ctx.shadowBlur = 0; // reset
+        }
+
         // Update shooting star physics
         ss.x += ss.dx;
         ss.y += ss.dy;
-        ss.life -= 0.02;
+        ss.life -= ss.isHuge ? 0.008 : 0.02; // HUGE star glides majestically and slowly!
 
-        if (ss.life <= 0 || ss.x > canvas.width || ss.y > canvas.height) {
+        // Trigger stargazing badge only on the HUGE shooting star!
+        if (ss.isHuge && !ss.triggeredEvent) {
+          ss.triggeredEvent = true;
+          if (onCosmicEvent) {
+            try { onCosmicEvent(); } catch (e) {}
+          }
+        }
+
+        if (ss.life <= 0 || ss.x > canvas.width + ss.len || ss.y > canvas.height + ss.len) {
           shootingStarsRef.current.splice(idx, 1);
         }
       });
@@ -178,12 +221,15 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
       
       // Beautiful easeOutCubic curve for visual organic pacing
       const ease = 1 - Math.pow(1 - ratio, 3);
-      setProgress(ease * 100);
+      const nextProgress = ease * 100;
+      setProgress(nextProgress);
+      progressRef.current = nextProgress;
 
       if (ratio < 1) {
         requestAnimationFrame(updateLoader);
       } else {
         setProgress(100);
+        progressRef.current = 100;
         setStage('ready');
         setTimeout(() => setIsLoaded(true), 150);
       }
@@ -282,12 +328,7 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
       {/* Main Content Layout Container */}
       <div className="relative z-10 w-full max-w-xl px-6 flex flex-col items-center justify-between h-full py-24 pointer-events-none">
         {/* Top Space Filler (to balance beautiful vertical rhythm) */}
-        <div className="w-full flex justify-between items-center opacity-40">
-          <span className="text-[10px] font-black tracking-[0.4em] text-white/30 italic uppercase">
-            UNBLOCKED GAMES
-          </span>
-          <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-        </div>
+        <div className="w-full h-8" />
 
         {/* Center Title Showcase Section */}
         <div className="flex flex-col items-center gap-12 w-full my-auto">
@@ -320,7 +361,7 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
                   className="w-full flex flex-col items-center gap-3"
                 >
                   <div className="w-full flex justify-between items-end px-1">
-                    <span className="text-[10px] font-black text-rose-500/70 tracking-[0.3em] uppercase italic animate-pulse">
+                    <span className="text-[10px] font-black text-white/70 tracking-[0.3em] uppercase italic animate-pulse">
                       {progress < 40 ? 'SECURE_LINK' : progress < 85 ? 'STABILIZING_MATRIX' : 'READY_TO_LAUNCH'}
                     </span>
                     <span className="text-[11px] font-black text-white/50 tracking-widest font-mono select-none">
@@ -332,7 +373,7 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
                   <div className="w-full h-[2px] bg-white/[0.04] relative rounded-full overflow-hidden">
                     <div 
                       style={{ width: `${progress}%` }}
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-500 to-rose-400 rounded-full transition-all duration-75 ease-out shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+                      className="absolute inset-y-0 left-0 bg-white rounded-full transition-all duration-75 ease-out shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                     />
                   </div>
                 </motion.div>

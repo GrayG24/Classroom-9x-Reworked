@@ -121,7 +121,7 @@ export const ProfileModal = ({ user, firebaseUser, onClose, isSuperAdmin }) => {
             </div>
 
             <div className="grid grid-cols-1 w-full gap-3 relative group">
-                {hasAdminAccess ? (
+                {hasAdminAccess && (
                   <button 
                     onClick={() => {
                       onClose();
@@ -132,7 +132,7 @@ export const ProfileModal = ({ user, firebaseUser, onClose, isSuperAdmin }) => {
                     <Shield size={16} />
                     ADMIN PANEL
                   </button>
-                ) : (
+                )}
                 <button 
                   disabled={true}
                   className="w-full py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all italic flex items-center justify-center gap-3 border bg-black/40 text-white/20 border-white/5 cursor-not-allowed opacity-50 overflow-hidden relative"
@@ -143,7 +143,6 @@ export const ProfileModal = ({ user, firebaseUser, onClose, isSuperAdmin }) => {
                     <span className="text-[7px] font-black text-rose-500 uppercase tracking-[0.4em] italic">COMING SOON</span>
                   </div>
                 </button>
-              )}
             </div>
 
             <button 

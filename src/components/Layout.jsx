@@ -146,14 +146,17 @@ export const Layout = ({
   }, []);
 
   const navItems = [
-    { id: AppRoute.HOME, icon: House, label: 'Home' },
-    { id: AppRoute.LIBRARY, icon: Gamepad2, label: 'Games' },
-    { id: AppRoute.APPS, icon: LayoutGrid, label: 'Apps' },
-    { id: AppRoute.CODES, icon: Key, label: 'Codes' },
-    { id: AppRoute.PROXY, icon: Globe, label: 'Proxy' },
-    { id: AppRoute.CUSTOMIZATION, icon: Palette, label: 'Style' },
-    { id: AppRoute.SETTINGS, icon: SettingsIcon, label: 'Config' },
-  ];
+    { id: AppRoute.HOME, icon: House, label: 'Home', isReleased: true },
+    { id: AppRoute.LIBRARY, icon: Gamepad2, label: 'Games', isReleased: true },
+    { id: AppRoute.APPS, icon: LayoutGrid, label: 'Apps', isReleased: false },
+    { id: AppRoute.CODES, icon: Key, label: 'Codes', isReleased: true },
+    { id: AppRoute.PROXY, icon: Globe, label: 'Proxy', isReleased: true },
+    { id: AppRoute.CUSTOMIZATION, icon: Palette, label: 'Style', isReleased: false },
+    { id: AppRoute.SETTINGS, icon: SettingsIcon, label: 'Config', isReleased: true },
+  ].filter(item => {
+    if (user?.settings?.hideUnreleased && item.isReleased === false) return false;
+    return true;
+  });
 
   const isPotatoMode = user?.settings?.performanceMode;
 

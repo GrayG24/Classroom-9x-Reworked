@@ -823,10 +823,23 @@ const App = () => {
   const [activeGame, setActiveGame] = useState(null);
   const [playingGame, setPlayingGame] = useState(null);
 
+  const addExpAndTrackPlayRef = useRef(null);
+  const updateQuestProgressRef = useRef(null);
+
   useEffect(() => {
     const handlePlayGame = (e) => {
-      setPlayingGame(e.detail);
+      const game = e.detail;
+      setPlayingGame(game);
       setActiveGame(null);
+      
+      // Award rewards ONLY when the actual play button is pressed inside the game card
+      if (addExpAndTrackPlayRef.current) {
+        addExpAndTrackPlayRef.current(game);
+      }
+      if (updateQuestProgressRef.current) {
+        updateQuestProgressRef.current('play', 1);
+        updateQuestProgressRef.current('score', 250);
+      }
     };
     window.addEventListener('play-game', handlePlayGame);
     return () => window.removeEventListener('play-game', handlePlayGame);
@@ -1084,7 +1097,7 @@ const App = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setLeaderboardResyncTrigger(prev => prev + 1);
-    }, 10000);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -1351,6 +1364,7 @@ const App = () => {
       return q;
     }));
   };
+  updateQuestProgressRef.current = updateQuestProgress;
 
   const handleClaimQuestReward = (questId) => {
     const quest = quests.find(q => q.id === questId);
@@ -1793,6 +1807,7 @@ const App = () => {
       };
     });
   };
+  addExpAndTrackPlayRef.current = addExpAndTrackPlay;
 
   const setTheme = (theme) => {
     if (typeof theme !== 'string') return;
@@ -1820,7 +1835,7 @@ const App = () => {
     setUser(prev => {
       const newBadges = [...prev.unlockedBadges, 'stargazer'];
       const newThemes = [...prev.unlockedThemes];
-      if (!newThemes.includes('interstellar')) newThemes.push('interstellar');
+      if (!newThemes.includes('galaxy')) newThemes.push('galaxy');
       
       return {
         ...prev,
@@ -1829,7 +1844,7 @@ const App = () => {
       };
     });
     
-    addNotification('COSMIC EVENT WITNESSED', 'You saw a shooting star! STARGAZER badge and INTERSTELLAR theme unlocked.', 'badge', <Star size={14} className="mythic-rainbow-text" />, 'rainbow');
+    addNotification('COSMIC EVENT WITNESSED', 'You saw a HUGE shooting star! STARGAZER badge and GALAXY theme unlocked.', 'badge', <Star size={14} className="mythic-rainbow-text" />, 'rainbow');
   };
 
   const toggleFriend = (username) => {
@@ -1949,7 +1964,7 @@ const App = () => {
 
     if (cleanCode === 'OWNER3413') {
       const role = 'OWNER';
-      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'fire', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa', 'interstellar'];
+      const allThemes = ['cyan', 'emerald', 'violet', 'cobalt', 'gold', 'fire', 'galaxy', 'hologram', 'rainbow', 'ironman', 'spongebob', 'owner', 'synthwave', 'retrofuture', 'kanye', 'tester', 'usa', 'interstellar', 'glitch'];
       const allFrames = ['moderator', 'obsidian', 'default', 'neon', 'solar', 'interstellar', 'glitch', 'hologram', 'deep-sea', 'owner', 'diamond', 'cyberpunk', 'matrix', 'tester', 'usa'];
       const allChars = CHARACTERS.map(c => c.id);
       const allBadges = Array.from(new Set([...BADGES.map(b => b.id), 'stargazer']));
@@ -1965,7 +1980,7 @@ const App = () => {
       const updateOwnerEnrollment = async () => {
         try {
           const userRef = doc(db, 'users', firebaseUser.uid);
-          await updateDoc(userRef, {
+           await updateDoc(userRef, {
             level: 999,
             isAdmin: true,
             role: role,
@@ -1976,6 +1991,8 @@ const App = () => {
             unlockedBadges: updatedUnlockedBadges,
             currentTheme: 'owner',
             currentFrame: 'owner',
+            currentCharacter: 'owner',
+            img: 'https://styles.redditmedia.com/t5_bp2vj4/styles/profileIcon_c4myk79c495d1.png?width=256&height=256&frame=1&auto=webp&crop=256:256,smart&s=269d44883cc4c673f2b47c1e178b2f8de500e331',
             score: nextScore,
             lastSeen: serverTimestamp()
           });
@@ -2004,6 +2021,8 @@ const App = () => {
         unlockedBadges: updatedUnlockedBadges,
         currentTheme: 'owner',
         currentFrame: 'owner',
+        currentCharacter: 'owner',
+        img: 'https://styles.redditmedia.com/t5_bp2vj4/styles/profileIcon_c4myk79c495d1.png?width=256&height=256&frame=1&auto=webp&crop=256:256,smart&s=269d44883cc4c673f2b47c1e178b2f8de500e331',
         score: nextScore
       }));
 
@@ -2174,9 +2193,6 @@ const App = () => {
 
   const handleGameSelect = (game) => {
     setActiveGame(game);
-    addExpAndTrackPlay(game);
-    updateQuestProgress('play', 1);
-    updateQuestProgress('score', 250);
   };
 
   const handleUpdateUsername = (newName) => {
@@ -2348,7 +2364,7 @@ const App = () => {
         );
       case AppRoute.PROXY: return <ProxyPage />;
       case AppRoute.CUSTOMIZATION: 
-        if (!user.isAdmin) return <LockedPage title="Customization" onReturn={() => setCurrentView(AppRoute.HOME)} />;
+        if (!user.isAdmin && user?.settings?.hideUnreleased) return <LockedPage title="Customization" onReturn={() => setCurrentView(AppRoute.HOME)} />;
         return (
           <Customization 
             user={user}

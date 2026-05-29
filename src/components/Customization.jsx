@@ -53,6 +53,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
     { id: 'ironman', name: 'ARC TECHNOLOGY', primary: '#dc2626', bg: '#250202', desc: 'A hot red arc reactor theme.', isCode: true, type: 'epic' },
     { id: 'usa', name: 'PATRIOT PRIDE', primary: '#3b82f6', bg: '#0f0505', desc: 'Show your pride with red, white, and blue.', isCode: true, type: 'rare' },
     { id: 'tester', name: 'BETA TESTING', primary: '#fda4af', bg: '#090d16', desc: 'System diagnostic early testing theme.', isCode: true, type: 'mythic' },
+    { id: 'glitch', name: 'SYSTEM GLITCH', primary: '#ff00ff', bg: '#05020a', desc: 'A chaotic, glitched cyberpunk theme.', isCode: true, type: 'mythic' },
     { id: 'owner', name: 'OWNER EXCLUSIVE', primary: '#fbbf24', bg: '#1a0307', desc: 'The elite creator gold theme.', isCode: true, type: 'transcendent' },
   ];
 
@@ -169,9 +170,9 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
               {/* Subnavigation Hub */}
               <div className="flex flex-col gap-3 bg-white/[0.02] border border-white/5 p-4 rounded-[2.5rem]">
                 {[
-                  { id: 'identity', label: 'Profile Avatars', icon: User, desc: 'YOUR PICTURE', count: CHARACTERS.length },
-                  { id: 'visuals', label: 'Themes', icon: Palette, desc: 'YOUR DESIGN', count: themes.length },
-                  { id: 'frames', label: 'Profile Frames', icon: Layers, desc: 'YOUR BORDER', count: frames.length }
+                  { id: 'identity', label: 'AVATARS', icon: User, desc: 'YOUR PIC', count: CHARACTERS.length },
+                  { id: 'visuals', label: 'THEMES', icon: Palette, desc: 'YOUR COLOR', count: themes.length },
+                  { id: 'frames', label: 'BORDERS', icon: Layers, desc: 'YOUR BORDER', count: frames.length }
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -220,7 +221,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                 >
                   <div className="xl:col-span-7 space-y-8">
                     <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE YOUR AVATAR</h3>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE YOUR PICTURE</h3>
                       <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
                         {CHARACTERS.filter(isCharUnlocked).length} / {CHARACTERS.filter(char => !char.isCode || isCharUnlocked(char)).length} UNLOCKED
                       </span>
@@ -312,7 +313,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
 
                       {/* Character description */}
                       <div className="space-y-2">
-                        <p className="text-[10px] font-mono text-primary uppercase font-bold tracking-widest">{activeCharacter.isCode ? 'SECRET AVATAR UNLOCKED' : `LEVEL ${activeCharacter.level || 1} PROFILE`}</p>
+                        <p className="text-[10px] font-mono text-primary uppercase font-bold tracking-widest">{activeCharacter.isCode ? 'SECRET PICTURE UNLOCKED' : `LEVEL ${activeCharacter.level || 1} USER`}</p>
                         <h4 className="text-2xl font-black text-white tracking-tight uppercase italic">{activeCharacter.name}</h4>
                         <p className="text-[10px] text-white/40 max-w-sm font-medium leading-relaxed uppercase">{activeCharacter.desc}</p>
                       </div>
@@ -326,9 +327,9 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                             onChange={handleUsernameChange}
                             maxLength={15}
                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-center text-xl font-black text-white uppercase tracking-wider italic focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all shadow-inner"
-                            placeholder="ENTER NEW USERNAME..."
+                            placeholder="ENTER NEW NAME..."
                           />
-                          <p className="text-[8px] font-semibold text-white/20 uppercase tracking-[0.3em] font-mono mt-3 italic">TYPE A NEW USERNAME</p>
+                          <p className="text-[8px] font-semibold text-white/20 uppercase tracking-[0.3em] font-mono mt-3 italic">TYPE NEW NAME</p>
                         </div>
                         
                         <button 
@@ -336,7 +337,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                           disabled={tempUsername.trim() === user.username || !tempUsername.trim()}
                           className="w-full py-4 bg-white text-black font-black text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-primary hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-10 disabled:scale-100 disabled:pointer-events-none italic shadow-[0_0_30px_rgba(255,255,255,0.15)]"
                         >
-                          SAVE NEW USERNAME
+                          SAVE NEW NAME
                         </button>
 
                         {usernameStatus && (
@@ -367,8 +368,8 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                 >
                   <div className="flex items-center justify-between border-b border-white/5 pb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE A SITE THEME</h3>
-                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mt-1">Select a look you have unlocked</p>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE SITE THEME</h3>
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mt-1">Pick any look you unlocked</p>
                     </div>
                     <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
                       {themes.filter(isThemeUnlocked).length} / {themes.filter(theme => !theme.isCode || isThemeUnlocked(theme)).length} UNLOCKED
@@ -465,8 +466,8 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                 >
                   <div className="flex items-center justify-between border-b border-white/5 pb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE YOUR AVATAR border</h3>
-                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mt-1">These frames wrap around your avatar</p>
+                      <h3 className="text-xl font-bold text-white uppercase tracking-tighter italic">CHOOSE YOUR BORDER</h3>
+                      <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest mt-1">These borders wrap around your picture</p>
                     </div>
                     <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
                       {frames.filter(isFrameUnlocked).length} / {frames.filter(frame => !frame.isCode || isFrameUnlocked(frame)).length} UNLOCKED
@@ -526,7 +527,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
                               <span className="text-[8px] font-mono font-black uppercase tracking-wider text-black">ACTIVE</span>
                             ) : isUnlocked ? (
                               <div className="flex items-center justify-between w-full">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-white/20">READY TO USE</span>
+                                <span className="text-[8px] font-black uppercase tracking-widest text-white/20">USE IT</span>
                                 <ChevronRight size={12} className="text-white/30 group-hover:translate-x-1 transition-transform" />
                               </div>
                             ) : (

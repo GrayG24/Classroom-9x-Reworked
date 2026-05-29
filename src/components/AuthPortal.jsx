@@ -68,17 +68,15 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
       const msg = err?.message || String(err || '');
       const fullErrorStr = `${code} ${msg}`.toLowerCase();
 
-      let errMsg = msg || 'An unexpected error occurred during authentication.';
+      let errMsg = 'An unexpected error occurred during authentication.';
 
-      if (fullErrorStr.includes('email-already-in-use')) {
-        errMsg = 'This email is already registered. Try switching to the "Log In" tab above.';
-      } else if (fullErrorStr.includes('user-not-found') || fullErrorStr.includes('invalid-credential')) {
+      if (code === 'auth/invalid-credential' || fullErrorStr.includes('invalid-credential') || fullErrorStr.includes('user-not-found')) {
         if (activeTab === 'login') {
-          errMsg = 'Incorrect email or password. Please verify your spelling, or click "Create Account" above to start a new account.';
+          errMsg = 'Incorrect email or password. Please double check your spelling, or select the "Sign Up" tab to register a new account.';
         } else {
-          errMsg = 'This email address or password could not be registered. Please check that your email is formatted correctly, your password is at least 6 characters, or try using another email address.';
+          errMsg = 'This account credential is invalid or already in use. Try selecting the "Log In" tab above.';
         }
-      } else if (fullErrorStr.includes('wrong-password') || fullErrorStr.includes('invalid-password')) {
+      } else if (fullErrorStr.includes('email-already-in-use')) {
         errMsg = 'Incorrect password. Please try again.';
       } else if (fullErrorStr.includes('invalid-email')) {
         errMsg = 'Invalid email address format. Please enter a valid email.';

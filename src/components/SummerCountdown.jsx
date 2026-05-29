@@ -91,15 +91,26 @@ const SummerCountdown = ({ user }) => {
           <SharkFin bottom="75%" left="15%" delay={1} isPotatoMode={isPotatoMode} />
           {!isPotatoMode && <SharkFin bottom="85%" right="25%" delay={4} isPotatoMode={isPotatoMode} />}
 
-          {/* Realistic Textured Sand Layer */}
-          <div className="absolute bottom-0 inset-x-0 h-[65%] bg-[#fde1aa] shadow-[inset_0_40px_80px_rgba(0,0,0,0.15)] z-20">
-             {/* Sand Texture - Micro-noise and shading */}
-             <div className="absolute inset-0 opacity-60 pointer-events-none" 
+          {/* Realistic Textured Sand Layer with layered dunes and real shoreline shadows */}
+          <div className="absolute bottom-0 inset-x-0 h-[65%] bg-gradient-to-b from-[#f5d79e] to-[#edd093] shadow-[inset_0_40px_80px_rgba(0,0,0,0.18)] z-20 overflow-hidden">
+             {/* Back Sand Dune - curved path layer */}
+             <svg className="absolute inset-x-0 top-0 h-28 -translate-y-4 fill-[#ebd2a0] opacity-90" viewBox="0 0 1440 200" preserveAspectRatio="none">
+               <path d="M0,120 Q360,60 720,130 T1440,80 L1440,200 L0,200 Z" />
+             </svg>
+             
+             {/* Wet Sand Horizon near the shoreline */}
+             <div className="absolute top-0 inset-x-0 h-4 bg-gradient-to-b from-[#c2a774]/35 to-transparent blur-[2px]" />
+
+             {/* Sand Texture - Micro-noise and realistic grain shading */}
+             <div className="absolute inset-0 opacity-45 pointer-events-none" 
                   style={{ 
-                    backgroundImage: 'radial-gradient(#d9b38c 0.8px, transparent 0)', 
-                    backgroundSize: '8px 8px' 
+                    backgroundImage: 'radial-gradient(#cc9d6c 1px, transparent 0)', 
+                    backgroundSize: '10px 10px' 
                   }} />
-             <div className="absolute inset-0 opacity-20 pointer-events-none bg-gradient-to-t from-black/5 to-transparent" />
+             
+             {/* Soft shadows from Palm trees & environment */}
+             <div className="absolute inset-0 opacity-25 pointer-events-none bg-[radial-gradient(ellipse_at_bottom_left,rgba(0,0,0,0.12),transparent_60%)]" />
+             <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,0,0,0.12),transparent_60%)]" />
              
              {/* Visual element placeholder */}
              <div className="absolute bottom-6 md:bottom-12 inset-x-0 flex justify-center opacity-10 pointer-events-none z-40 px-4">
@@ -218,8 +229,9 @@ const SunBeams = () => (
 );
 
 const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
-  // Each unit (days, hours, mins, secs) can melt slightly differently if desired
-  const visualMeltHeight = meltProgress * 110; 
+  const fullHeight = window.innerWidth < 768 ? (window.innerHeight < 700 ? 160 : 220) : 288;
+  const remainingHeightScale = Math.max(0, 1 - meltProgress);
+  const visualMeltHeight = meltProgress * 110;
 
   return (
     <motion.div
@@ -228,109 +240,112 @@ const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
       transition={{ delay: 0.2 + index * 0.1, type: "spring", damping: 15 }}
       className="flex flex-col items-center group relative scale-[0.6] sm:scale-75 md:scale-100 origin-bottom flex-shrink-0 min-w-[100px] md:min-w-[180px]"
     >
-      <div className="relative">
+      <div className="relative" style={{ width: window.innerWidth < 768 ? '100px' : '176px', height: `${fullHeight}px` }}>
         {/* Popsicle Stick - Detailed with grain */}
-        <div className="absolute -bottom-10 md:-bottom-16 left-1/2 -translate-x-1/2 w-5 md:w-10 h-20 md:h-32 bg-[#d2b48c] rounded-b-xl md:rounded-b-2xl border-b-4 md:border-b-8 border-black/10 shadow-xl overflow-hidden">
+        <div className="absolute -bottom-10 md:-bottom-16 left-1/2 -translate-x-1/2 w-5 md:w-10 h-20 md:h-32 bg-gradient-to-r from-[#cc9a66] via-[#d2b48c] to-[#bc8f8f] rounded-b-xl md:rounded-b-2xl border-b-4 md:border-b-8 border-black/20 shadow-xl overflow-hidden z-10">
            {/* Wood grain details */}
            {!isPotatoMode && [...Array(5)].map((_, i) => (
-             <div key={i} className="absolute inset-x-0 h-[1px] bg-[#bc8f8f]/30" style={{ top: `${20 + i * 15}%` }} />
+             <div key={i} className="absolute inset-x-0 h-[1.5px] bg-[#8b5a2b]/25" style={{ top: `${20 + i * 15}%` }} />
            ))}
-           <div className="absolute inset-y-0 left-2 w-[1px] bg-[#bc8f8f]/20" />
-           <div className="absolute inset-y-0 right-2 w-[1px] bg-[#bc8f8f]/20" />
+           <div className="absolute inset-y-0 left-2 w-[1.5px] bg-white/20" />
+           <div className="absolute inset-y-0 right-2 w-[1.5px] bg-black/15" />
         </div>
         
         {/* Main Body */}
         <motion.div 
           animate={{ 
-            height: (window.innerWidth < 768 ? (window.innerHeight < 700 ? 160 : 220) : 288) - visualMeltHeight,
-            borderBottomLeftRadius: 24 + (visualMeltHeight * 0.4),
-            borderBottomRightRadius: 24 + (visualMeltHeight * 0.4)
+            height: fullHeight * remainingHeightScale,
+            borderBottomLeftRadius: 24 + (meltProgress * 40),
+            borderBottomRightRadius: 24 + (meltProgress * 40)
           }}
-          className={`w-20 sm:w-32 md:w-44 bg-gradient-to-br ${stat.color} rounded-t-[3rem] md:rounded-t-[6rem] relative shadow-2xl transition-all duration-300 group-hover:scale-105 group-hover:-translate-y-2 flex flex-col items-center justify-center border-t-2 border-white/20`}
+          className={`absolute bottom-0 inset-x-0 bg-gradient-to-b ${stat.color} rounded-t-[3.5rem] md:rounded-t-[6.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-105 group-hover:-translate-y-2 flex flex-col items-center border-t border-white/40 z-20`}
           style={{ overflow: 'visible' }}
         >
-          {/* Surface highlights for 3D look */}
-          <div className="absolute top-4 left-6 right-6 h-32 bg-white/10 rounded-t-[4rem] blur-xl pointer-events-none" />
-          {!isPotatoMode && <div className="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-8 bg-white/30 rounded-full blur-md opacity-40 pointer-events-none" />}
+          {/* Real Wet Glisten Shine Specular Highlights - fit perfectly via percentage values */}
+          <div className="absolute top-[8%] left-[10%] right-[10%] h-[40%] bg-gradient-to-b from-white/25 via-white/5 to-transparent rounded-t-[3rem] blur-xs pointer-events-none" />
+          <div className="absolute top-[4%] left-[15%] w-3 h-[55%] bg-white/45 rounded-full blur-[1.5px] pointer-events-none opacity-80" />
+          <div className="absolute top-[30%] right-[15%] w-1.5 h-[25%] bg-white/30 rounded-full blur-[0.5px] pointer-events-none opacity-60" />
+          
+          {/* Main specular core glare */}
+          {!isPotatoMode && <div className="absolute top-[4%] left-1/2 -translate-x-1/2 w-[70%] h-[15%] bg-gradient-to-b from-white/40 to-transparent rounded-full blur-md opacity-30 pointer-events-none" />}
 
           {/* Sticky drip paths on the front surface */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-t-[4rem] md:rounded-t-[6rem]">
-            <DripPath color={stat.dripColor} delay={0.5} left="25%" />
-            {!isPotatoMode && <DripPath color={stat.dripColor} delay={2.5} left="70%" height={120} />}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-t-[3.5rem] md:rounded-t-[6.5rem]">
+            <DripPath color={stat.dripColor} delay={0.5} left="25%" height={fullHeight * remainingHeightScale * 0.4} />
+            {!isPotatoMode && <DripPath color={stat.dripColor} delay={2.5} left="75%" height={fullHeight * remainingHeightScale * 0.45} />}
           </div>
 
-          {/* Falling Drips Reworked - Viscous motion */}
-          {!isPotatoMode && (
+          {/* Falling Drips Reworked - Thinner and more realistic */}
+          {!isPotatoMode && remainingHeightScale > 0.1 && (
             <div className="absolute -bottom-16 inset-x-0 flex justify-around pointer-events-none overflow-visible">
                {[...Array(3)].map((_, j) => (
                   <motion.div
                     key={j}
                     animate={{ 
-                      y: [0, 180],
+                      y: [0, 190],
                       opacity: [0, 1, 1, 0],
-                      scale: [0.8, 1.8, 1.4, 0.4],
-                      borderRadius: ["50% 50% 50% 50%", "50% 50% 20% 20%", "50% 50% 50% 50%"]
+                      scale: [0.6, 1.2, 0.8, 0.2],
                     }}
                     transition={{ 
-                      duration: 2.5 + Math.random(), 
+                      duration: 2.2 + Math.random() * 0.8, 
                       repeat: Infinity, 
-                      delay: j * 0.8 + Math.random(),
+                      delay: j * 0.9 + Math.random(),
                       times: [0, 0.05, 0.85, 1],
                       ease: [0.45, 0, 0.55, 1]
                     }}
-                    className="w-3 md:w-4 h-5 md:h-7 shadow-lg"
-                    style={{ backgroundColor: stat.dripColor, opacity: 0.9 }}
+                    className="w-1 md:w-1.5 h-3 md:h-4.5 shadow-md animate-pulse"
+                    style={{ backgroundColor: stat.dripColor, opacity: 0.95, borderRadius: '50%' }}
                   />
                ))}
             </div>
           )}
 
-          {/* Drip "Nubs" attached to body - Elastic feel */}
-          {!isPotatoMode && (
-            <div className="absolute -bottom-4 left-4 right-4 flex justify-around pointer-events-none">
+          {/* Drip "Nubs" attached to body - Smaller/thinner */}
+          {!isPotatoMode && remainingHeightScale > 0.15 && (
+            <div className="absolute -bottom-3 left-2 right-2 flex justify-around pointer-events-none">
                <motion.div 
-                 animate={{ height: [12, 45, 12], y: [0, 8, 0], scaleX: [1, 0.8, 1] }}
-                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                 className="w-3 md:w-5 rounded-full opacity-90 shadow-sm"
+                 animate={{ height: [6, 20, 6], y: [0, 4, 0] }}
+                 transition={{ duration: 2.3, repeat: Infinity, ease: "easeInOut" }}
+                 className="w-1.5 rounded-full opacity-90 shadow-sm"
                  style={{ backgroundColor: stat.dripColor }}
                />
                <motion.div 
-                 animate={{ height: [18, 65, 18], y: [0, 15, 0], scaleX: [1, 0.7, 1] }}
-                 transition={{ duration: 3.5, repeat: Infinity, delay: 0.7, ease: "easeInOut" }}
-                 className="w-4 md:w-6 rounded-full opacity-95 shadow-sm"
+                 animate={{ height: [10, 28, 10], y: [0, 6, 0] }}
+                 transition={{ duration: 3.2, repeat: Infinity, delay: 0.6, ease: "easeInOut" }}
+                 className="w-2 rounded-full opacity-95 shadow-sm"
                  style={{ backgroundColor: stat.dripColor }}
                />
             </div>
           )}
 
           {/* Ice Texture / Frost Crystals */}
-          {!isPotatoMode && (
-            <div className="absolute inset-0 opacity-20 pointer-events-none">
-               <div className="absolute top-8 left-1/4 w-1.5 h-36 bg-gradient-to-b from-white/60 to-transparent rounded-full blur-[3px]" />
-               <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+          {!isPotatoMode && remainingHeightScale > 0.1 && (
+            <div className="absolute inset-0 opacity-25 pointer-events-none">
+               <div className="absolute top-[10%] left-1/4 w-1 h-[50%] bg-gradient-to-b from-white/70 to-transparent rounded-full blur-[1px]" />
+               <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.45) 1.2px, transparent 1.2px)', backgroundSize: '14px 14px' }} />
             </div>
           )}
-
-          {/* Centers Numbers and Labels - Centered inside the dynamic height body */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
-             <motion.span 
-               initial={{ scale: 0.5 }}
-               animate={{ scale: 1 }}
-               className="text-[50px] md:text-[100px] font-black text-white tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] leading-none"
-             >
-               {String(stat.value).padStart(2, '0')}
-             </motion.span>
-             <span className="text-[8px] md:text-[12px] font-black text-white/90 uppercase tracking-[0.2em] md:tracking-[0.4em] italic mt-1 md:mt-2 drop-shadow-sm">
-               {stat.label}
-             </span>
-          </div>
         </motion.div>
+
+        {/* Centers Numbers and Labels - Kept in the stable parent container so they don't squash */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
+           <motion.span 
+             initial={{ scale: 0.5 }}
+             animate={{ scale: 1 }}
+             className="text-[44px] md:text-[88px] font-black text-white tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] leading-none font-sans"
+           >
+             {String(stat.value).padStart(2, '0')}
+           </motion.span>
+           <span className="text-[8px] md:text-[11px] font-black text-white/95 uppercase tracking-[0.25em] md:tracking-[0.45em] italic mt-1 md:mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+             {stat.label}
+           </span>
+        </div>
       </div>
     </motion.div>
   );
 };
 
-const DripPath = ({ color, delay, left, height = 80 }) => (
+const DripPath = ({ color, delay, left, height = 90 }) => (
   <motion.div 
     initial={{ height: 0, opacity: 0 }}
     animate={{ 
@@ -338,18 +353,18 @@ const DripPath = ({ color, delay, left, height = 80 }) => (
       opacity: [1, 1, 0]
     }}
     transition={{ 
-      duration: 5, 
+      duration: 5.5, 
       repeat: Infinity, 
       delay,
       times: [0, 0.7, 1]
     }}
-    className="absolute w-2 rounded-full blur-[1px]"
-    style={{ left, top: '20%', backgroundColor: color, opacity: 0.6 }}
+    className="absolute w-1 rounded-full blur-[0.2px]"
+    style={{ left, top: '22%', backgroundColor: color, opacity: 0.75 }}
   >
     <motion.div 
-      animate={{ scale: [1, 1.2, 1] }}
+      animate={{ scale: [1, 1.15, 1] }}
       transition={{ duration: 2, repeat: Infinity }}
-      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full"
+      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
       style={{ backgroundColor: color }}
     />
   </motion.div>
@@ -358,27 +373,40 @@ const DripPath = ({ color, delay, left, height = 80 }) => (
 const SharkFin = ({ bottom, left, right, delay, isPotatoMode }) => (
   <motion.div
     animate={{ 
-      x: [-30, 30, -30],
-      scaleX: [1, 1, -1, -1, 1], // Turn around
-      rotate: [-5, 5, -5]
+      x: [-45, 45, -45],
+      scaleX: [1, 1, -1, -1, 1], // Turn around beautifully
+      rotate: [-6, 6, -6]
     }}
-    transition={{ duration: isPotatoMode ? 12 : 8, repeat: Infinity, ease: "easeInOut", delay }}
+    transition={{ duration: isPotatoMode ? 14 : 9, repeat: Infinity, ease: "easeInOut", delay }}
     style={{ bottom, left, right }}
     className="absolute z-10 pointer-events-none"
   >
-    <svg width="50" height="50" viewBox="0 0 50 50" fill="none">
-      {/* Higher detail fin */}
-      <path d="M5 45C5 45 12 40 18 30C24 20 45 5 45 5C45 5 40 25 30 35C20 45 5 45 5 45Z" fill="#334155" />
-      <path d="M8 43C8 43 15 38 20 30C25 22 40 8 40 8" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-      {/* Water ripple at base */}
+    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+      {/* Higher detail curved realistic fin */}
+      <path d="M5 50C5 50 14 44 21 32C28 20 50 3 50 3C50 3 45 27 34 38C23 49 5 50 5 50Z" fill="#1e293b" />
+      <path d="M8 48C8 48 16 42 22 32C28 22 44 8 44 8" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
+      <path d="M6 49.5C10 49.5 20 48 24 44" stroke="#0f172a" strokeWidth="2.5" />
+      
+      {/* Dynamic multiple water expansion ripples at base */}
       {!isPotatoMode && (
-        <motion.ellipse 
-          cx="20" cy="45" rx="15" ry="5" 
-          stroke="rgba(255,255,255,0.3)" 
-          strokeWidth="1"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
+        <>
+          <motion.ellipse 
+            cx="22" cy="50" rx="18" ry="5.5" 
+            stroke="rgba(255,255,255,0.4)" 
+            strokeWidth="1.2"
+            fill="none"
+            animate={{ scale: [0.9, 1.3, 0.9], opacity: [0.2, 0.6, 0.2] }}
+            transition={{ duration: 2.2, repeat: Infinity }}
+          />
+          <motion.ellipse 
+            cx="22" cy="50" rx="28" ry="8" 
+            stroke="rgba(255,255,255,0.2)" 
+            strokeWidth="1"
+            fill="none"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.4, 0.1] }}
+            transition={{ duration: 3.5, repeat: Infinity, delay: 0.8 }}
+          />
+        </>
       )}
     </svg>
   </motion.div>
@@ -387,10 +415,55 @@ const SharkFin = ({ bottom, left, right, delay, isPotatoMode }) => (
 const BeachShell = ({ bottom, left, right, rotate }) => (
   <div 
     style={{ bottom, left, right, transform: `rotate(${rotate}deg)` }}
-    className="absolute opacity-60 pointer-events-none"
+    className="absolute opacity-70 pointer-events-none"
   >
-    <Shell size={16} className="text-[#fdf5e6] fill-[#fdf5e6] drop-shadow-sm" />
+    <Shell size={16} className="text-[#fefbf3] fill-[#fefbf3] drop-shadow-[0_2px_4px_rgba(139,69,19,0.25)]" />
   </div>
+);
+
+const RealisticLeaf = ({ rotate, scale = 1, color, delay = 0 }) => (
+  <g transform={`scale(${scale})`}>
+    <motion.g
+      animate={{ 
+        rotate: [rotate - 2.5, rotate + 2.5, rotate - 2.5],
+      }}
+      transition={{ 
+        duration: 8 + Math.random() * 5, 
+        repeat: Infinity, 
+        ease: "easeInOut",
+        delay 
+      }}
+      style={{ transformOrigin: '0px 0px' }}
+    >
+      {/* Main Spine of the Frond */}
+      <path 
+        d="M 0,0 Q 60 10 220 140" 
+        stroke={color} 
+        strokeWidth="6" 
+        fill="none" 
+        strokeLinecap="round" 
+        opacity="0.95" 
+      />
+      {/* Symmetrical Realistic Drooping Leaflets along frond spine */}
+      <path 
+        d={`
+          M 15,3 L 30,35 M 15,3 L 0,-25
+          M 35,7 L 55,50 M 35,7 L 20,-25
+          M 55,14 L 80,65 M 55,14 L 40,-22
+          M 75,23 L 105,80 M 75,23 L 60,-15
+          M 95,34 L 130,95 M 95,34 L 80,-8
+          M 115,48 L 155,110 M 115,48 L 100,5
+          M 135,64 L 175,123 M 135,64 L 120,20
+          M 155,83 L 195,135 M 155,83 L 140,40
+          M 175,105 L 210,145 M 175,105 L 160,60
+        `} 
+        stroke={color} 
+        strokeWidth="4" 
+        strokeLinecap="round" 
+        opacity="0.85" 
+      />
+    </motion.g>
+  </g>
 );
 
 const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) => (
@@ -410,7 +483,6 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
         <filter id="leafShadow" x="-50%" y="-50%" width="200%" height="200%">
           <feDropShadow dx="4" dy="4" stdDeviation="6" floodOpacity="0.3" />
         </filter>
-        {/* Added texture to the trunk segments */}
         <pattern id="trunk-texture" width="10" height="20" patternUnits="userSpaceOnUse">
           <path d="M0 10 Q 5 12 10 10" stroke="#3a1a03" strokeWidth="1" opacity="0.3" fill="none" />
         </pattern>
@@ -432,92 +504,37 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
       ))}
       
       {/* High-detail realistic leaves - Radially symmetrical and drooping structure */}
-      <g className="leaf-group" transform="translate(100, 80)">
+      <g className="leaf-group" transform="translate(200, 180)">
         {/* Right side - Arching out and down */}
-        <RealisticLeaf d="M100 100C180 100 280 140 300 220" color="#044d3b" delay={0} />
-        <RealisticLeaf d="M100 100C150 120 220 200 180 300" color="#065f46" delay={0.5} />
-        <RealisticLeaf d="M100 100C120 140 150 250 130 350" color="#044d3b" delay={1.2} />
+        <g transform="scale(1, 1)">
+          <RealisticLeaf rotate={10} scale={1.1} color="#044d3b" delay={0} />
+          <RealisticLeaf rotate={40} scale={0.95} color="#065f46" delay={0.5} />
+          <RealisticLeaf rotate={75} scale={0.8} color="#044d3b" delay={1.2} />
+        </g>
         
-        {/* Left side - Arching out and down */}
-        <RealisticLeaf d="M100 100C20 100 -80 140 -100 220" color="#044d3b" delay={0.3} />
-        <RealisticLeaf d="M100 100C50 120 -20 200 20 300" color="#059669" delay={1.5} />
-        <RealisticLeaf d="M100 100C80 140 50 250 70 350" color="#065f46" delay={0.8} />
+        {/* Left side - Arching out and down (mirrored) */}
+        <g transform="scale(-1, 1)">
+          <RealisticLeaf rotate={10} scale={1.1} color="#044d3b" delay={0.3} />
+          <RealisticLeaf rotate={40} scale={0.95} color="#059669" delay={1.5} />
+          <RealisticLeaf rotate={75} scale={0.8} color="#065f46" delay={0.8} />
+        </g>
         
-        {/* Center/Top layers - Shorter and more horizontal */}
-        <RealisticLeaf d="M100 100C140 105 200 120 220 160" color="#10b981" delay={1.8} />
-        <RealisticLeaf d="M100 100C60 105 0 120 -20 160" color="#34d399" delay={1.1} />
+        {/* Center/Top layers - upright & shorter */}
+        <RealisticLeaf rotate={-60} scale={0.75} color="#10b981" delay={1.8} />
+        <RealisticLeaf rotate={-120} scale={0.75} color="#34d399" delay={1.1} />
       </g>
       
       {/* Coconuts with more detail */}
-      <g transform="translate(100, 80)">
-        <circle cx="95" cy="112" r="8" fill="#2d1302" />
-        <circle cx="112" cy="104" r="7" fill="#3a1a03" />
-        <circle cx="103" cy="122" r="9" fill="#2d1302" />
+      <g transform="translate(180, 165)">
+        <circle cx="10" cy="20" r="14" fill="#2d1302" stroke="#1d0a01" strokeWidth="2" />
+        <circle cx="32" cy="12" r="12" fill="#3a1a03" stroke="#231002" strokeWidth="2" />
+        <circle cx="21" cy="30" r="15" fill="#2d1302" stroke="#1d0a01" strokeWidth="2" />
+        {/* Coconut hair details */}
+        <path d="M 8,20 Q 12,25 15,22 M 28,10 Q 32,15 35,12" stroke="#100501" strokeWidth="1" />
       </g>
     </svg>
   </motion.div>
 );
-
-const RealisticLeaf = ({ d, color, delay = 0 }) => {
-  const [points, setPoints] = useState([]);
-  
-  // Calculate points along the path once for leaflets
-  useEffect(() => {
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", d);
-    const length = path.getTotalLength();
-    const count = 12; // Adjusted from 40 for optimal rendering performance
-    const newPoints = [];
-    for (let i = 0; i < count; i++) {
-      const point = path.getPointAtLength((i / (count - 1)) * length);
-      // More natural leaflet angle based on path progress
-      const angle = (i / count) * 45;
-      newPoints.push({ x: point.x, y: point.y, angle });
-    }
-    setPoints(newPoints);
-  }, [d]);
-
-  return (
-    <motion.g
-      animate={{ 
-        rotate: [-1, 1, -1],
-      }}
-      transition={{ 
-        duration: 10 + Math.random() * 5, 
-        repeat: Infinity, 
-        ease: "easeInOut",
-        delay 
-      }}
-    >
-      {/* Central Spine */}
-      <path d={d} stroke={color} strokeWidth="12" strokeLinecap="round" fill="none" opacity="0.9" />
-      
-      {/* Detailed Leaflets - rendered as simple paths for performance */}
-      {points.map((p, i) => (
-        <React.Fragment key={i}>
-          {/* Right leaflet */}
-          <path 
-            d={`M${p.x},${p.y} L${p.x + 60},${p.y + 15}`}
-            stroke={color}
-            strokeWidth="10"
-            strokeLinecap="round"
-            style={{ transform: `rotate(${p.angle}deg)`, transformOrigin: `${p.x}px ${p.y}px` }}
-            opacity="0.8"
-          />
-          {/* Left leaflet */}
-          <path 
-            d={`M${p.x},${p.y} L${p.x - 60},${p.y + 15}`}
-            stroke={color}
-            strokeWidth="10"
-            strokeLinecap="round"
-            style={{ transform: `rotate(${-p.angle}deg)`, transformOrigin: `${p.x}px ${p.y}px` }}
-            opacity="0.8"
-          />
-        </React.Fragment>
-      ))}
-    </motion.g>
-  );
-};
 
 const Sun = ({ isPotatoMode }) => (
   <>
@@ -550,27 +567,30 @@ const Sun = ({ isPotatoMode }) => (
          <div className="absolute inset-0 rounded-full border-[10px] border-orange-500/10 blur-[2px]" />
          
          {!isPotatoMode && (
-           <motion.div 
-             animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.3, 1], filter: ['blur(15px)', 'blur(30px)', 'blur(15px)'] }} 
-             transition={{ duration: 3, repeat: Infinity }}
-             className="absolute -inset-4 bg-white/40 rounded-full blur-2xl" 
-           />
+            <motion.div 
+              animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.3, 1], filter: ['blur(15px)', 'blur(30px)', 'blur(15px)'] }} 
+              transition={{ duration: 3, repeat: Infinity }}
+              className="absolute -inset-4 bg-white/40 rounded-full blur-2xl" 
+            />
          )}
       </div>
 
-      {/* Dynamic Solar Flares */}
+      {/* Dynamic Solar Flares - Fixed rotation clobber with wrapper div element container */}
       {!isPotatoMode && [...Array(32)].map((_, i) => (
-        <motion.div
+        <div
           key={i}
-          animate={{ 
-            opacity: [0.3, 0.7, 0.3], 
-            scaleY: [1, 1.8, 1],
-            x: [0, (Math.random() - 0.5) * 10, 0]
-          }}
-          transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, delay: i * 0.15 }}
-          className="absolute top-1/2 left-1/2 w-2 h-48 md:w-3 md:h-80 bg-gradient-to-t from-yellow-50/60 via-yellow-200/10 to-transparent rounded-full -translate-x-1/2 origin-top"
-          style={{ transform: `rotate(${i * (360/32)}deg) translateY(5rem)` }}
-        />
+          className="absolute top-1/2 left-1/2 w-2 h-48 md:w-3 md:h-80 origin-top"
+          style={{ transform: `translate(-50%, 0%) rotate(${i * (360/32)}deg) translateY(2rem)` }}
+        >
+          <motion.div
+            animate={{ 
+              opacity: [0.3, 0.7, 0.3], 
+              scaleY: [1, 1.8, 1],
+            }}
+            transition={{ duration: 3 + Math.random() * 4, repeat: Infinity, delay: i * 0.15 }}
+            className="w-full h-full bg-gradient-to-t from-yellow-50/60 via-yellow-200/10 to-transparent rounded-full origin-top"
+          />
+        </div>
       ))}
     </motion.div>
     
