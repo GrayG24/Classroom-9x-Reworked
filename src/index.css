@@ -2370,3 +2370,43 @@ img[src*="glitch_avatar_artwork"] {
   scroll-behavior: auto !important;
 }
 
+.theme-doge {
+  --primary: #f59e0b;
+  --primary-glow: rgba(245, 158, 11, 0.6);
+  --glow: 0 0 20px rgba(245, 158, 11, 0.4);
+  --accent: #d97706;
+  --background: #1a1309;
+  --panel-bg: rgba(28, 20, 10, 0.85);
+  --panel-border: rgba(245, 158, 11, 0.15);
+}
+
+.theme-doge::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background-image: url('https://flyclipart.com/thumbs/doge-meme-1690949.png') !important;
+  background-size: 160px !important;
+  background-repeat: repeat !important;
+  opacity: 0.08 !important;
+  pointer-events: none;
+}
+
+.theme-doge .proto-rail-link-active {
+  background: #f59e0b !important;
+  color: #000000 !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4) !important;
+}
+
+.theme-doge .nav-item.active {
+  background: #f59e0b !important;
+  color: #000000 !important;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4) !important;
+}
+
+.theme-doge .proto-rail-link-active svg,
+.theme-doge .nav-item.active svg,
+.theme-doge .nav-item.active span {
+  color: #000000 !important;
+}
+

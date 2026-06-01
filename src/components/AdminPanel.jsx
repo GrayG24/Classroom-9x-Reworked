@@ -242,6 +242,13 @@ export const AdminPanel = ({ user, onClose }) => {
           } else if (action === 'reset') {
             await updateDoc(playerRef, { score: 0, level: 1, exp: 0, gamesPlayed: 0 });
           } else if (action === 'remove') {
+            if (player.email) {
+              await setDoc(doc(db, 'deleted_emails', player.email.toLowerCase()), {
+                email: player.email.toLowerCase(),
+                uid: player.uid,
+                deletedAt: serverTimestamp()
+              });
+            }
             await deleteDoc(playerRef);
           }
         } catch (err) {

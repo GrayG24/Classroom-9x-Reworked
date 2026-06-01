@@ -46,6 +46,7 @@ export const CHARACTERS = [
   { id: 'kanye', name: 'Ye', isCode: true, desc: 'I am a genius. I am a god.', img: 'https://images.genius.com/cd83ad3baf919c5d988894bec3d6ea74.1000x1000x1.jpg', icon: Star },
   { id: 'patriot', name: 'The Patriot', isCode: true, desc: 'Freedom and justice for all.', img: 'https://cdn.openart.ai/uploads/image_qa4FI6Vn_1705156204757_raw.jpg', icon: ShieldCheck },
   { id: 'glitch', name: 'Glitch', isCode: true, desc: 'An anomaly in the computer grid. Highly unstable and glowing.', img: '/src/assets/images/glitch_avatar_artwork_1779908851777.png', icon: ZapOff },
+  { id: 'doge', name: 'Doge', isCode: true, desc: 'Very cute. Much wow. So doge.', img: 'https://flyclipart.com/thumbs/doge-meme-1690949.png', icon: Star },
   { id: 'doge-king', name: 'Doge King', isCode: true, desc: 'Exclusive quest reward. Much royalty. Very wow.', img: 'https://wallpapercave.com/wp/wp6956389.jpg', icon: Crown },
   { id: 'owner', name: 'Elite Owner Logo', isCode: true, desc: 'Official owner avatar profile picture.', img: 'https://styles.redditmedia.com/t5_bp2vj4/styles/profileIcon_c4myk79c495d1.png?width=256&height=256&frame=1&auto=webp&crop=256:256,smart&s=269d44883cc4c673f2b47c1e178b2f8de500e331', icon: Crown },
 ];

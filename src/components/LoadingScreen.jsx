@@ -6,6 +6,15 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [stage, setStage] = useState('initializing');
   const [isWarping, setIsWarping] = useState(false);
+  const [hasDoge, setHasDoge] = useState(false);
+
+  useEffect(() => {
+    // 1% chance roll for doge
+    const roll = Math.random() < 0.01;
+    if (roll) {
+      setHasDoge(true);
+    }
+  }, []);
   
   const canvasRef = useRef(null);
   const requestRef = useRef(null);
@@ -321,6 +330,28 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
         ref={canvasRef} 
         className="absolute inset-0 w-full h-full block z-0 pointer-events-none"
       />
+
+      <AnimatePresence>
+        {hasDoge && (
+          <motion.img
+            src="https://flyclipart.com/thumbs/doge-meme-1690949.png"
+            referrerPolicy="no-referrer"
+            initial={{ x: '-150vw', y: '25vh', rotate: 0 }}
+            animate={{ x: '150vw', y: '-25vh', rotate: 360 }}
+            transition={{ duration: 7, ease: 'linear' }}
+            className="absolute w-36 h-36 z-[999999] pointer-events-none select-none opacity-90"
+            onAnimationComplete={() => {
+              if (onCosmicEvent) {
+                try {
+                  onCosmicEvent('doge');
+                } catch (e) {
+                  console.error('Error triggering doge cosmic event:', e);
+                }
+              }
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Cinematic Vignette Inner Frame Shadow */}
       <div className="absolute inset-0 pointer-events-none z-1 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(2,2,4,0.85)_100%)]" />

@@ -20,7 +20,6 @@ export const Footer = () => {
             </div>
             <div className="text-left">
               <span className="text-sm font-black text-white uppercase tracking-tighter italic block">CLASSROOM 9X</span>
-              <p className="text-[8px] font-black text-white/20 uppercase tracking-[0.5em] italic mt-1">EST. 2026</p>
             </div>
           </div>
           

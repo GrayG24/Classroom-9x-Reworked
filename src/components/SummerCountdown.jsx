@@ -2,8 +2,26 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Waves, Palmtree, Shell } from 'lucide-react';
 
+const useWindowSize = () => {
+  const [size, setSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+    height: typeof window !== 'undefined' ? window.innerHeight : 800
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return size;
+};
+
 const SummerCountdown = ({ user }) => {
   const isPotatoMode = user?.settings?.performanceMode === true;
+  const { width, height } = useWindowSize();
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -11,7 +29,6 @@ const SummerCountdown = ({ user }) => {
     seconds: 0
   });
   const [meltProgress, setMeltProgress] = useState(0);
-
   const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
@@ -132,9 +149,21 @@ const SummerCountdown = ({ user }) => {
         <Sun isPotatoMode={isPotatoMode} />
       </div>
 
-      {/* Realistic Palmtrees - Pushed further to edges to clear text */}
+      {/* Realistic Palmtrees - Left and Right framing */}
       <div className="absolute inset-x-0 bottom-0 top-0 z-20 pointer-events-none overflow-hidden">
-         <DetailedPalmtree bottom="-8%" left="-18%" scale={1.0} className="md:scale-[1.3] lg:scale-[1.8]" />
+         {/* Left Palm Tree */}
+         <DetailedPalmtree 
+           bottom="-5%" 
+           left="-8%" 
+           scale={width < 768 ? 0.6 : width < 1024 ? 0.9 : 1.3} 
+         />
+         {/* Right Palm Tree (Flipped) */}
+         <DetailedPalmtree 
+           bottom="-5%" 
+           right="-8%" 
+           scale={width < 768 ? 0.6 : width < 1024 ? 0.9 : 1.3} 
+           flip={true} 
+         />
       </div>
 
       {/* Main Content Overlay */}
@@ -184,7 +213,7 @@ const SummerCountdown = ({ user }) => {
               </div>
 
               {/* Detailed Popsicle Countdown - Responsive layout */}
-              <div className="flex flex-wrap md:flex-nowrap justify-center items-end gap-4 md:gap-16">
+              <div className="flex flex-wrap md:flex-nowrap justify-center items-end gap-3 sm:gap-6 md:gap-12 lg:gap-16 w-full max-w-5xl px-2">
                 {stats.map((stat, i) => (
                   <Popsicle 
                     key={stat.label} 
@@ -192,6 +221,7 @@ const SummerCountdown = ({ user }) => {
                     index={i} 
                     meltProgress={meltProgress}
                     isPotatoMode={isPotatoMode}
+                    screenWidth={width}
                   />
                 ))}
               </div>
@@ -228,125 +258,120 @@ const SunBeams = () => (
   </div>
 );
 
-const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
-  const fullHeight = window.innerWidth < 768 ? (window.innerHeight < 700 ? 160 : 220) : 288;
-  const remainingHeightScale = Math.max(0, 1 - meltProgress);
-  const visualMeltHeight = meltProgress * 110;
+const Popsicle = ({ stat, index, meltProgress, isPotatoMode, screenWidth }) => {
+  const isMobile = screenWidth < 768;
+  const isSmallHeight = window.innerHeight < 700;
+  
+  // Popsicle Body Heights
+  const fullHeight = isMobile ? (isSmallHeight ? 140 : 180) : 250;
+  const remainingHeightScale = Math.max(0.12, 1 - meltProgress);
+  const bodyHeight = fullHeight * remainingHeightScale;
 
   return (
     <motion.div
       initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.2 + index * 0.1, type: "spring", damping: 15 }}
-      className="flex flex-col items-center group relative scale-[0.6] sm:scale-75 md:scale-100 origin-bottom flex-shrink-0 min-w-[100px] md:min-w-[180px]"
+      className="flex flex-col items-center group relative origin-bottom flex-shrink-0"
+      style={{ 
+        width: isMobile ? '70px' : '150px',
+        margin: '0 auto'
+      }}
     >
-      <div className="relative" style={{ width: window.innerWidth < 768 ? '100px' : '176px', height: `${fullHeight}px` }}>
-        {/* Popsicle Stick - Detailed with grain and translucent tint showing through */}
-        <div className="absolute -bottom-10 md:-bottom-16 left-1/2 -translate-x-1/2 w-5 md:w-10 h-20 md:h-32 bg-gradient-to-r from-[#cc9a66] via-[#d2b48c] to-[#bc8f8f] rounded-xl md:rounded-3xl border-b-4 md:border-b-8 border-black/20 shadow-xl overflow-hidden z-[21]">
-           {/* Wood grain details */}
-           {!isPotatoMode && [...Array(5)].map((_, i) => (
-             <div key={i} className="absolute inset-x-0 h-[1.5px] bg-[#8b5a2b]/25" style={{ top: `${20 + i * 15}%` }} />
+      <div 
+        className="relative flex flex-col justify-end items-center" 
+        style={{ 
+          width: '100%', 
+          height: `${fullHeight + (isMobile ? 40 : 80)}px` 
+        }}
+      >
+        {/* Longer, Sturdy, Crafted Popsicle Stick */}
+        <div 
+          className="absolute left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#d7b282] via-[#e2c69f] to-[#be9a6e] rounded-b-2xl border-b-4 border-black/20 shadow-lg overflow-hidden"
+          style={{ 
+            width: isMobile ? '16px' : '28px', 
+            height: isMobile ? '65px' : '110px',
+            bottom: isMobile ? '0px' : '10px',
+            zIndex: 10
+          }}
+        >
+           {/* Wood grains */}
+           {!isPotatoMode && [...Array(6)].map((_, i) => (
+              <div key={i} className="absolute inset-x-0 h-[1.5px] bg-[#8a5d2e]/20" style={{ top: `${15 + i * 15}%` }} />
            ))}
-           <div className="absolute inset-y-0 left-2 w-[1.5px] bg-white/20" />
-           <div className="absolute inset-y-0 right-2 w-[1.5px] bg-black/15" />
-           
-           {/* Translucent tint representing the top half of the stick inside the frozen colored popsicle */}
+           {/* Shadow tint inside frozen bar */}
            <div 
-             className="absolute top-0 inset-x-0 h-1/2 transition-colors opacity-70 mix-blend-multiply" 
-             style={{ backgroundColor: stat.dripColor }} 
-           />
-           <div 
-             className="absolute top-0 inset-x-0 h-1/2 transition-colors opacity-45 mix-blend-color-burn" 
+             className="absolute top-0 inset-x-0 h-1/2 mix-blend-multiply opacity-40" 
              style={{ backgroundColor: stat.dripColor }} 
            />
         </div>
         
-        {/* Main Body */}
+        {/* Main Frozen Body */}
         <motion.div 
           animate={{ 
-            height: fullHeight * remainingHeightScale,
-            borderBottomLeftRadius: 24 + (meltProgress * 40),
-            borderBottomRightRadius: 24 + (meltProgress * 40)
+            height: bodyHeight,
+            borderBottomLeftRadius: isMobile ? 12 : 24,
+            borderBottomRightRadius: isMobile ? 12 : 24
           }}
-          className={`absolute bottom-0 inset-x-0 bg-gradient-to-b ${stat.color} rounded-t-[3.5rem] md:rounded-t-[6.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] transition-all duration-300 group-hover:scale-105 group-hover:-translate-y-2 flex flex-col items-center border-t border-white/40 z-20`}
-          style={{ overflow: 'visible' }}
+          className={`absolute inset-x-0 bg-gradient-to-b ${stat.color} rounded-t-[2.5rem] md:rounded-t-[5rem] shadow-xl transition-all duration-350 flex flex-col items-center border-t border-white/30 z-20`}
+          style={{ 
+            bottom: isMobile ? '40px' : '75px',
+            overflow: 'visible' 
+          }}
         >
-          {/* Real Wet Glisten Shine Specular Highlights - fit perfectly via percentage values */}
-          <div className="absolute top-[8%] left-[10%] right-[10%] h-[40%] bg-gradient-to-b from-white/25 via-white/5 to-transparent rounded-t-[3rem] blur-xs pointer-events-none" />
-          <div className="absolute top-[4%] left-[15%] w-3 h-[55%] bg-white/45 rounded-full blur-[1.5px] pointer-events-none opacity-80" />
-          <div className="absolute top-[30%] right-[15%] w-1.5 h-[25%] bg-white/30 rounded-full blur-[0.5px] pointer-events-none opacity-60" />
-          
-          {/* Main specular core glare */}
-          {!isPotatoMode && <div className="absolute top-[4%] left-1/2 -translate-x-1/2 w-[70%] h-[15%] bg-gradient-to-b from-white/40 to-transparent rounded-full blur-md opacity-30 pointer-events-none" />}
+          {/* Specular Wet Shine Highlights */}
+          <div className="absolute top-[8%] left-[10%] right-[10%] h-[35%] bg-gradient-to-b from-white/25 via-white/5 to-transparent rounded-t-[2rem] blur-xs pointer-events-none" />
+          <div className="absolute top-[4%] left-[12%] w-1.5 md:w-2.5 h-[50%] bg-white/40 rounded-full blur-[1px] pointer-events-none opacity-80" />
+          <div className="absolute top-[25%] right-[12%] w-1 h-[20%] bg-white/25 rounded-full blur-[0.5px] pointer-events-none opacity-50" />
 
-          {/* Sticky drip paths on the front surface */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-t-[3.5rem] md:rounded-t-[6.5rem]">
-            <DripPath color={stat.dripColor} delay={0.5} left="25%" height={fullHeight * remainingHeightScale * 0.4} />
-            {!isPotatoMode && <DripPath color={stat.dripColor} delay={2.5} left="75%" height={fullHeight * remainingHeightScale * 0.45} />}
+          {/* Sticky dripping runs down the surface */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-t-[2.5rem] md:rounded-t-[5rem]">
+            <DripPath color={stat.dripColor} delay={0.5} left="25%" height={bodyHeight * 0.4} />
+            {!isPotatoMode && <DripPath color={stat.dripColor} delay={2.5} left="75%" height={bodyHeight * 0.45} />}
           </div>
 
-          {/* Falling Drips Reworked - Thinner and more realistic */}
+          {/* Falling liquid drips */}
           {!isPotatoMode && remainingHeightScale > 0.1 && (
-            <div className="absolute -bottom-16 inset-x-0 flex justify-around pointer-events-none overflow-visible">
-               {[...Array(3)].map((_, j) => (
+            <div className="absolute -bottom-12 inset-x-0 flex justify-around pointer-events-none overflow-visible">
+               {[...Array(2)].map((_, j) => (
                   <motion.div
                     key={j}
                     animate={{ 
-                      y: [0, 190],
+                      y: [0, 120],
                       opacity: [0, 1, 1, 0],
-                      scale: [0.6, 1.2, 0.8, 0.2],
+                      scale: [0.6, 1.1, 0.7, 0.1],
                     }}
                     transition={{ 
-                      duration: 2.2 + Math.random() * 0.8, 
+                      duration: 2.0 + Math.random() * 0.7, 
                       repeat: Infinity, 
-                      delay: j * 0.9 + Math.random(),
+                      delay: j * 1.1 + Math.random(),
                       times: [0, 0.05, 0.85, 1],
-                      ease: [0.45, 0, 0.55, 1]
+                      ease: "easeInOut"
                     }}
-                    className="w-1 md:w-1.5 h-3 md:h-4.5 shadow-md animate-pulse"
-                    style={{ backgroundColor: stat.dripColor, opacity: 0.95, borderRadius: '50%' }}
+                    className="w-1 md:w-1.5 h-2 md:h-4 shadow-sm"
+                    style={{ backgroundColor: stat.dripColor, opacity: 0.9, borderRadius: '50%' }}
                   />
                ))}
             </div>
           )}
-
-          {/* Drip "Nubs" attached to body - Smaller/thinner */}
-          {!isPotatoMode && remainingHeightScale > 0.15 && (
-            <div className="absolute -bottom-3 left-2 right-2 flex justify-around pointer-events-none">
-               <motion.div 
-                 animate={{ height: [6, 20, 6], y: [0, 4, 0] }}
-                 transition={{ duration: 2.3, repeat: Infinity, ease: "easeInOut" }}
-                 className="w-1.5 rounded-full opacity-90 shadow-sm"
-                 style={{ backgroundColor: stat.dripColor }}
-               />
-               <motion.div 
-                 animate={{ height: [10, 28, 10], y: [0, 6, 0] }}
-                 transition={{ duration: 3.2, repeat: Infinity, delay: 0.6, ease: "easeInOut" }}
-                 className="w-2 rounded-full opacity-95 shadow-sm"
-                 style={{ backgroundColor: stat.dripColor }}
-               />
-            </div>
-          )}
-
-          {/* Ice Texture / Frost Crystals */}
-          {!isPotatoMode && remainingHeightScale > 0.1 && (
-            <div className="absolute inset-0 opacity-25 pointer-events-none">
-               <div className="absolute top-[10%] left-1/4 w-1 h-[50%] bg-gradient-to-b from-white/70 to-transparent rounded-full blur-[1px]" />
-               <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.45) 1.2px, transparent 1.2px)', backgroundSize: '14px 14px' }} />
-            </div>
-          )}
         </motion.div>
 
-        {/* Centers Numbers and Labels - Kept in the stable parent container so they don't squash */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30">
+        {/* Stable text indicators overlay */}
+        <div 
+          className="absolute inset-x-0 flex flex-col items-center justify-center pointer-events-none z-30"
+          style={{ 
+            height: `${bodyHeight}px`,
+            bottom: isMobile ? '40px' : '75px'
+          }}
+        >
            <motion.span 
              initial={{ scale: 0.5 }}
              animate={{ scale: 1 }}
-             className="text-[44px] md:text-[88px] font-black text-white tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] leading-none font-sans"
+             className="text-[28px] md:text-[64px] font-black text-white tracking-tighter drop-shadow-[0_3px_8px_rgba(0,0,0,0.8)] leading-none"
            >
              {String(stat.value).padStart(2, '0')}
            </motion.span>
-           <span className="text-[8px] md:text-[11px] font-black text-white/95 uppercase tracking-[0.25em] md:tracking-[0.45em] italic mt-1 md:mt-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+           <span className="text-[7px] md:text-[10px] font-black text-white/95 uppercase tracking-widest italic mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
              {stat.label}
            </span>
         </div>
@@ -369,7 +394,7 @@ const DripPath = ({ color, delay, left, height = 90 }) => (
       times: [0, 0.7, 1]
     }}
     className="absolute w-1 rounded-full blur-[0.2px]"
-    style={{ left, top: '22%', backgroundColor: color, opacity: 0.75 }}
+    style={{ left, top: '15%', backgroundColor: color, opacity: 0.75 }}
   >
     <motion.div 
       animate={{ scale: [1, 1.15, 1] }}
@@ -384,7 +409,7 @@ const SharkFin = ({ bottom, left, right, delay, isPotatoMode }) => (
   <motion.div
     animate={{ 
       x: [-45, 45, -45],
-      scaleX: [1, 1, -1, -1, 1], // Turn around beautifully
+      scaleX: [1, 1, -1, -1, 1],
       rotate: [-6, 6, -6]
     }}
     transition={{ duration: isPotatoMode ? 14 : 9, repeat: Infinity, ease: "easeInOut", delay }}
@@ -392,12 +417,10 @@ const SharkFin = ({ bottom, left, right, delay, isPotatoMode }) => (
     className="absolute z-10 pointer-events-none"
   >
     <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-      {/* Higher detail curved realistic fin */}
       <path d="M5 50C5 50 14 44 21 32C28 20 50 3 50 3C50 3 45 27 34 38C23 49 5 50 5 50Z" fill="#1e293b" />
       <path d="M8 48C8 48 16 42 22 32C28 22 44 8 44 8" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
       <path d="M6 49.5C10 49.5 20 48 24 44" stroke="#0f172a" strokeWidth="2.5" />
       
-      {/* Dynamic multiple water expansion ripples at base */}
       {!isPotatoMode && (
         <>
           <motion.ellipse 
@@ -407,14 +430,6 @@ const SharkFin = ({ bottom, left, right, delay, isPotatoMode }) => (
             fill="none"
             animate={{ scale: [0.9, 1.3, 0.9], opacity: [0.2, 0.6, 0.2] }}
             transition={{ duration: 2.2, repeat: Infinity }}
-          />
-          <motion.ellipse 
-            cx="22" cy="50" rx="28" ry="8" 
-            stroke="rgba(255,255,255,0.2)" 
-            strokeWidth="1"
-            fill="none"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.4, 0.1] }}
-            transition={{ duration: 3.5, repeat: Infinity, delay: 0.8 }}
           />
         </>
       )}
@@ -435,45 +450,48 @@ const RealisticLeaf = ({ rotate, scale = 1, color, delay = 0 }) => (
   <g transform={`scale(${scale})`}>
     <motion.g
       animate={{ 
-        rotate: [rotate - 2, rotate + 2, rotate - 2],
+        rotate: [rotate - 3, rotate + 3, rotate - 3],
       }}
       transition={{ 
-        duration: 8 + Math.random() * 5, 
+        duration: 9 + Math.random() * 5, 
         repeat: Infinity, 
         ease: "easeInOut",
         delay 
       }}
       style={{ transformOrigin: '0px 0px' }}
     >
-      {/* Main Spine of the Frond */}
+      {/* Elegant, Curved Leaf stem */}
       <path 
-        d="M 0,0 Q 70 -50 240 50" 
+        d="M 0,0 Q 80 -60 250 60" 
         stroke={color} 
         strokeWidth="4" 
         fill="none" 
         strokeLinecap="round" 
         opacity="0.95" 
       />
-      {/* Symmetrical, drooping organic leaflets cascading dynamically under gravity */}
-      {[...Array(22)].map((_, idx) => {
-        const t = (idx + 1) / 23; 
-        const x = (1-t)*(1-t)*0 + 2*(1-t)*t*70 + t*t*240;
-        const y = (1-t)*(1-t)*0 + 2*(1-t)*t*(-50) + t*t*50;
+      {/* Intricately detailed, multi-shade cascade fronds */}
+      {[...Array(32)].map((_, idx) => {
+        const t = (idx + 1) / 33; 
+        const x = (1-t)*(1-t)*0 + 2*(1-t)*t*80 + t*t*250;
+        const y = (1-t)*(1-t)*0 + 2*(1-t)*t*(-60) + t*t*60;
         
-        const length = 45 * Math.sin(t * Math.PI) + 15; 
-        const angle = 45 + t * 45; 
+        const length = 55 * Math.sin(t * Math.PI) + 12; 
+        const angle = 40 + t * 50; 
         const lx = x + length * Math.sin(angle * Math.PI / 180);
         const ly = y + length * Math.cos(angle * Math.PI / 180);
+        
+        // Multi-toned greens for enhanced realism
+        const frondColor = idx % 3 === 0 ? '#15803d' : idx % 3 === 1 ? '#166534' : '#22c55e';
         
         return (
           <path 
             key={idx}
-            d={`M ${x},${y} Q ${lx - 10},${ly + 10} ${lx},${ly}`}
-            stroke={color}
-            strokeWidth="2.5"
+            d={`M ${x},${y} Q ${lx - 12},${ly + 12} ${lx},${ly}`}
+            stroke={frondColor}
+            strokeWidth="2.0"
             strokeLinecap="round"
             fill="none"
-            opacity={0.8 + 0.2 * Math.sin(t * Math.PI)}
+            opacity={0.85 + 0.15 * Math.sin(t * Math.PI)}
           />
         );
       })}
@@ -483,91 +501,93 @@ const RealisticLeaf = ({ rotate, scale = 1, color, delay = 0 }) => (
 
 const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) => (
   <motion.div 
-    animate={{ rotate: flip ? [-0.5, 1, -0.5] : [0.5, -1, 0.5] }}
-    transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+    animate={{ rotate: flip ? [-0.8, 0.8, -0.8] : [0.8, -0.8, 0.8] }}
+    transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
     className={`absolute pointer-events-none ${className}`} 
-    style={{ bottom, left, right, scale, transform: flip ? 'scaleX(-1)' : 'none', transformOrigin: 'bottom' }}
+    style={{ 
+      bottom, 
+      left, 
+      right, 
+      scale, 
+      transform: flip ? 'scaleX(-1)' : 'none', 
+      transformOrigin: 'bottom center',
+    }}
   >
     <svg width="400" height="600" viewBox="0 0 400 600" fill="none" xmlns="http://www.w3.org/2000/svg" className="overflow-visible">
       <defs>
         <linearGradient id="trunk-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#4a2c20" />
-          <stop offset="50%" stopColor="#5d4037" />
-          <stop offset="100%" stopColor="#3e241c" />
+          <stop offset="0%" stopColor="#3d2314" />
+          <stop offset="35%" stopColor="#4e311f" />
+          <stop offset="70%" stopColor="#5c3f30" />
+          <stop offset="100%" stopColor="#2c170b" />
         </linearGradient>
-        <filter id="leafShadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="4" dy="4" stdDeviation="6" floodOpacity="0.3" />
-        </filter>
-        <pattern id="trunk-texture" width="10" height="20" patternUnits="userSpaceOnUse">
-          <path d="M0 10 Q 5 12 10 10" stroke="#3a1a03" strokeWidth="1" opacity="0.3" fill="none" />
-        </pattern>
       </defs>
       
-      {/* Elegant tapered trunk path */}
+      {/* Tapered curved trunk with rich texture */}
       <path 
-        d="M 180,600 C 185,500 190,400 185,180 L 215,180 C 210,400 205,500 220,600 Z" 
+        d="M 175,600 C 180,480 185,350 180,180 L 210,180 C 215,350 210,480 225,600 Z" 
         fill="url(#trunk-grad)" 
-        stroke="#27150e"
-        strokeWidth="2"
+        stroke="#1c0d06"
+        strokeWidth="2.5"
       />
       
-      {/* Volumetric horizontal ring segments, tapering correctly from thick to thin */}
-      {[...Array(24)].map((_, i) => {
-        const t = i / 24;
+      {/* Detailed Trunk Bark Ring segments with organic overlapping shade */}
+      {[...Array(26)].map((_, i) => {
+        const t = i / 26;
         const cy = 600 - t * 420;
         const cx = 200 - Math.pow(t, 2) * 15;
-        const width = 40 - t * 18;
+        const width = 45 - t * 20;
         
         return (
           <path 
             key={i} 
-            d={`M ${cx - width/2},${cy} Q ${cx},${cy + 4} ${cx + width/2},${cy}`} 
-            stroke="#2d1d1a" 
-            strokeWidth="3.5" 
-            opacity="0.8"
+            d={`M ${cx - width/2},${cy} Q ${cx},${cy + 5} ${cx + width/2},${cy}`} 
+            stroke="#211107" 
+            strokeWidth="4" 
+            opacity="0.85"
             fill="none"
           />
         );
       })}
       
-      {/* Realistic volumetric 14-leaf structured system */}
+      {/* Beautiful Volumetric Fan leaves */}
       <g className="leaf-group" transform="translate(200, 180)">
-        {/* Background dark layers */}
+        {/* Layer 1: Darkest background leaves */}
         <g transform="scale(1, 1)">
-          <RealisticLeaf rotate={25} scale={1.2} color="#064e3b" delay={0.2} />
-          <RealisticLeaf rotate={55} scale={1.0} color="#064e3b" delay={0.7} />
-          <RealisticLeaf rotate={85} scale={0.8} color="#022c22" delay={1.4} />
+          <RealisticLeaf rotate={30} scale={1.2} color="#14532d" delay={0.2} />
+          <RealisticLeaf rotate={60} scale={1.0} color="#14532d" delay={0.7} />
+          <RealisticLeaf rotate={90} scale={0.8} color="#052e16" delay={1.4} />
         </g>
         <g transform="scale(-1, 1)">
-          <RealisticLeaf rotate={25} scale={1.2} color="#064e3b" delay={0.4} />
-          <RealisticLeaf rotate={55} scale={1.0} color="#064e3b" delay={1.6} />
-          <RealisticLeaf rotate={85} scale={0.8} color="#022c22" delay={0.9} />
+          <RealisticLeaf rotate={30} scale={1.2} color="#14532d" delay={0.4} />
+          <RealisticLeaf rotate={60} scale={1.0} color="#14532d" delay={1.6} />
+          <RealisticLeaf rotate={90} scale={0.8} color="#052e16" delay={0.9} />
         </g>
         
-        {/* Midground rich tropical layers */}
+        {/* Layer 2: Midground bright tropical leaves */}
         <g transform="scale(1, 1)">
-          <RealisticLeaf rotate={10} scale={1.25} color="#047857" delay={0} />
-          <RealisticLeaf rotate={40} scale={1.05} color="#10b981" delay={0.5} />
-          <RealisticLeaf rotate={70} scale={0.85} color="#059669" delay={1.1} />
+          <RealisticLeaf rotate={12} scale={1.25} color="#15803d" delay={0} />
+          <RealisticLeaf rotate={42} scale={1.05} color="#22c55e" delay={0.5} />
+          <RealisticLeaf rotate={72} scale={0.85} color="#166534" delay={1.1} />
         </g>
         <g transform="scale(-1, 1)">
-          <RealisticLeaf rotate={10} scale={1.25} color="#047857" delay={0.3} />
-          <RealisticLeaf rotate={40} scale={1.05} color="#10b981" delay={1.3} />
-          <RealisticLeaf rotate={70} scale={0.85} color="#059669" delay={0.8} />
+          <RealisticLeaf rotate={12} scale={1.25} color="#15803d" delay={0.3} />
+          <RealisticLeaf rotate={42} scale={1.05} color="#22c55e" delay={1.3} />
+          <RealisticLeaf rotate={72} scale={0.85} color="#166534" delay={0.8} />
         </g>
         
-        {/* Upright center layers */}
-        <RealisticLeaf rotate={-45} scale={0.85} color="#34d399" delay={1.5} />
-        <RealisticLeaf rotate={-135} scale={0.85} color="#059669" delay={1.0} />
-        <RealisticLeaf rotate={-90} scale={0.9} color="#10b981" delay={2.0} />
+        {/* Layer 3: Dynamic high-contrast foreground crowns */}
+        <RealisticLeaf rotate={-40} scale={0.9} color="#4ade80" delay={1.5} />
+        <RealisticLeaf rotate={-120} scale={0.9} color="#16a34a" delay={1.0} />
+        <RealisticLeaf rotate={-80} scale={0.95} color="#22c55e" delay={2.0} />
       </g>
       
-      {/* Coconuts with more detail */}
-      <g transform="translate(180, 165)">
-        <circle cx="10" cy="20" r="14" fill="#2d1302" stroke="#1d0a01" strokeWidth="2" />
-        <circle cx="32" cy="12" r="12" fill="#3a1a03" stroke="#231002" strokeWidth="2" />
-        <circle cx="21" cy="30" r="15" fill="#2d1302" stroke="#1d0a01" strokeWidth="2" />
-        <path d="M 8,20 Q 12,25 15,22 M 28,10 Q 32,15 35,12" stroke="#100501" strokeWidth="1" />
+      {/* Volumetric cluster of Coconuts */}
+      <g transform="translate(182, 168)">
+        <circle cx="8" cy="18" r="12" fill="#2d1508" stroke="#1c0c04" strokeWidth="2" />
+        <circle cx="28" cy="12" r="10" fill="#381b0a" stroke="#220f04" strokeWidth="2" />
+        <circle cx="18" cy="26" r="13" fill="#2d1508" stroke="#1c0c04" strokeWidth="2" />
+        <path d="M 6,18 Q 10,22 12,20 M 24,11 Q 28,14 30,12" stroke="#120601" strokeWidth="1" />
       </g>
     </svg>
   </motion.div>
@@ -605,9 +625,9 @@ const Sun = ({ isPotatoMode }) => (
          
          {!isPotatoMode && (
             <motion.div 
-              animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.3, 1], filter: ['blur(15px)', 'blur(30px)', 'blur(15px)'] }} 
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute -inset-4 bg-white/40 rounded-full blur-2xl" 
+               animate={{ opacity: [0.5, 1, 0.5], scale: [1, 1.3, 1], filter: ['blur(15px)', 'blur(30px)', 'blur(15px)'] }} 
+               transition={{ duration: 3, repeat: Infinity }}
+               className="absolute -inset-4 bg-white/40 rounded-full blur-2xl" 
             />
          )}
       </div>
@@ -656,7 +676,6 @@ const Sun = ({ isPotatoMode }) => (
 
 const LensFlare = () => (
   <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
-    {/* Main hex flares */}
     {[...Array(4)].map((_, i) => (
       <motion.div
         key={i}
@@ -672,7 +691,6 @@ const LensFlare = () => (
         }}
       />
     ))}
-    {/* Rainbow ring fragment */}
     <div className="absolute top-48 right-48 w-96 h-96 border-[40px] border-orange-500/5 rounded-full blur-[40px] mix-blend-overlay" />
     <div className="absolute top-40 right-40 w-[500px] h-[500px] border-[20px] border-blue-400/5 rounded-full blur-[60px] mix-blend-overlay" />
   </div>
@@ -784,7 +802,7 @@ const Wave = ({ color, duration, delay, scale, height = 32, foam = false }) => (
         />
         {foam && (
           <path
-            d="M 0 100 C 100 130 300 70 400 100 C 500 130 700 70 800 100"
+            d="M 0 100 C 100 130 300 70 400 100 C 500 130 700 70 800 105"
             stroke="white"
             strokeWidth="4"
             fill="none"
@@ -798,3 +816,4 @@ const Wave = ({ color, duration, delay, scale, height = 32, foam = false }) => (
 );
 
 export default SummerCountdown;
+

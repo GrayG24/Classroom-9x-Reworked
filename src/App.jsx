@@ -808,7 +808,8 @@ const App = () => {
       synthwave: { primary: '#ff00ff', glow: 'rgba(255, 0, 255, 0.6)' },
       usa: { primary: '#ef4444', glow: 'rgba(239, 68, 68, 0.6)' },
       retrofuture: { primary: '#f59e0b', glow: 'rgba(245, 158, 11, 0.6)' },
-      void: { primary: '#ffffff', glow: 'rgba(255, 255, 255, 0.4)' }
+      void: { primary: '#ffffff', glow: 'rgba(255, 255, 255, 0.4)' },
+      doge: { primary: '#f2a900', glow: 'rgba(242, 169, 0, 0.6)' }
     };
 
     const theme = user.currentTheme === 'custom' ? user.customTheme : themes[user.currentTheme] || themes.cyan;
@@ -1492,6 +1493,28 @@ const App = () => {
       } else {
         // Create initial profile
         const isAnon = firebaseUser.isAnonymous || false;
+        
+        // Prevent recreation if email is deleted by admin
+        if (!isAnon && firebaseUser.email) {
+          try {
+            const deletedEmailRef = doc(db, 'deleted_emails', firebaseUser.email.toLowerCase());
+            const deletedEmailDoc = await getDoc(deletedEmailRef);
+            if (deletedEmailDoc.exists()) {
+              console.warn('Blocked recreation/login for deleted user email:', firebaseUser.email);
+              await auth.signOut();
+              setUser(DEFAULT_USER);
+              addNotification(
+                'ACCOUNT ERROR',
+                "Your account was deleted by an admin, and you can't recreate or log in with this email anymore.",
+                'error'
+              );
+              return;
+            }
+          } catch (checkErr) {
+            console.error('Error verifying deleted status:', checkErr);
+          }
+        }
+
         const initialProfile = {
           ...DEFAULT_USER,
           uid: firebaseUser.uid,
@@ -1841,7 +1864,30 @@ const App = () => {
     }));
   };
 
-  const handleCosmicEvent = () => {
+  const handleCosmicEvent = (type) => {
+    if (type === 'doge') {
+      const alreadyHasDoge = user.unlockedThemes?.includes('doge');
+      if (alreadyHasDoge) return;
+
+      setUser(prev => {
+        const newThemes = Array.from(new Set([...(prev.unlockedThemes || []), 'doge']));
+        const newCharacters = Array.from(new Set([...(prev.unlockedCharacters || ['agent-x']), 'doge']));
+        return {
+          ...prev,
+          unlockedThemes: newThemes,
+          unlockedCharacters: newCharacters
+        };
+      });
+
+      addNotification(
+        'SO MUCH WOW',
+        'You saw the rare floating Doge! DOGE theme and DOGE avatar unlocked.',
+        'success',
+        <Star size={14} className="text-amber-400" />
+      );
+      return;
+    }
+
     if (user.unlockedBadges.includes('stargazer')) return;
     
     setUser(prev => {

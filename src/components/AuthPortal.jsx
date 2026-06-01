@@ -4,6 +4,7 @@ import {
   auth, 
   db 
 } from '../lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -56,6 +57,14 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
         if (password.length < 6) {
           throw new Error('Password must be at least 6 characters.');
         }
+        
+        // Check if email has been deleted by an admin
+        const deletedEmailRef = doc(db, 'deleted_emails', email.toLowerCase());
+        const deletedEmailDoc = await getDoc(deletedEmailRef);
+        if (deletedEmailDoc.exists()) {
+          throw new Error("Your account was deleted by an admin, and you can't recreate it with the same email.");
+        }
+
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         if (addNotification) {
           addNotification('ACCOUNT CREATED', 'Welcome to Classroom 9X!', 'success');
@@ -63,12 +72,12 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
         onClose();
       }
     } catch (err) {
-      console.error('Email Auth Error:', err);
+      console.warn('Email Auth Error:', err);
       const code = err?.code || '';
       const msg = err?.message || String(err || '');
       const fullErrorStr = `${code} ${msg}`.toLowerCase();
 
-      let errMsg = 'An unexpected error occurred during authentication.';
+      let errMsg = err?.code ? 'An unexpected error occurred during authentication.' : (err?.message || 'An unexpected error occurred during authentication.');
 
       if (code === 'auth/invalid-credential' || fullErrorStr.includes('invalid-credential') || fullErrorStr.includes('user-not-found')) {
         if (activeTab === 'login') {
@@ -106,7 +115,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
       }
       onClose();
     } catch (err) {
-      console.error('Google Popup Auth Error:', err);
+      console.warn('Google Popup Auth Error:', err);
       setError('Google Sign-In failed inside the sandbox. Try signing in on a new page, or create a free online account below.');
     } finally {
       setLoading(false);
@@ -123,7 +132,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
       }
       onClose();
     } catch (err) {
-      console.error('Anonymous Auth Error:', err);
+      console.warn('Anonymous Auth Error:', err);
       if (err.code === 'auth/operation-not-allowed') {
         setError('Anonymous sign-in is not enabled in the Firebase Console. Please create an account with email or open in a new tab.');
       } else {

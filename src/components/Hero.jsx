@@ -20,6 +20,8 @@ export const Hero = ({ user, onBrowseLibrary }) => {
     "90 Gen 90 Gen 90 Gen!!",
     "\"everybody\" - wyatt",
     "Grih🥀",
+    "FweakyNikki",
+    "KANYE WEST",
     "want your own quote up here? send me your qoutes and ill add them"
   ], []);
 

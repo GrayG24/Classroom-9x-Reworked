@@ -54,6 +54,7 @@ export const Customization = ({ user, onUpdateUser, onUpdateUsername }) => {
     { id: 'usa', name: 'PATRIOT PRIDE', primary: '#3b82f6', bg: '#0f0505', desc: 'Show your pride with red, white, and blue.', isCode: true, type: 'rare' },
     { id: 'tester', name: 'BETA TESTING', primary: '#fda4af', bg: '#090d16', desc: 'System diagnostic early testing theme.', isCode: true, type: 'mythic' },
     { id: 'glitch', name: 'SYSTEM GLITCH', primary: '#ff00ff', bg: '#05020a', desc: 'A chaotic, glitched cyberpunk theme.', isCode: true, type: 'mythic' },
+    { id: 'doge', name: 'SO MUCH DOGE', primary: '#f59e0b', bg: '#292014', desc: 'Much yellow, very doge, so wow theme.', isCode: true, type: 'mythic' },
     { id: 'owner', name: 'OWNER EXCLUSIVE', primary: '#fbbf24', bg: '#1a0307', desc: 'The elite creator gold theme.', isCode: true, type: 'transcendent' },
   ];
 
