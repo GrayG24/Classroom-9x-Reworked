@@ -77,7 +77,7 @@ const AuthPortal = ({ isOpen, onClose, addNotification }) => {
           errMsg = 'This account credential is invalid or already in use. Try selecting the "Log In" tab above.';
         }
       } else if (fullErrorStr.includes('email-already-in-use')) {
-        errMsg = 'Incorrect password. Please try again.';
+        errMsg = 'This email address is already in use. Select the "Log In" tab above to sign in.';
       } else if (fullErrorStr.includes('invalid-email')) {
         errMsg = 'Invalid email address format. Please enter a valid email.';
       } else if (fullErrorStr.includes('weak-password')) {

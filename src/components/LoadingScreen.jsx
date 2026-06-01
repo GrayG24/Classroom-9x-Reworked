@@ -119,17 +119,17 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
         }
       });
 
-      // Handle Cinematic HUGE Shooting Star Trigger
+      // Handle Cinematic HUGE Shooting Star Trigger (0.1% chance per frame)
       const currentProgress = progressRef.current;
-      if (currentProgress > 35 && currentProgress < 75 && !hasSpawnedHugeStarRef.current && !isWarping) {
+      if (currentProgress > 35 && currentProgress < 75 && !hasSpawnedHugeStarRef.current && !isWarping && Math.random() < 0.001) {
         hasSpawnedHugeStarRef.current = true;
         shootingStarsRef.current.push({
-          x: -150,
-          y: Math.random() * (canvas.height * 0.2) + 80,
-          len: 420 + Math.random() * 120,
-          dx: 15 + Math.random() * 5,
-          dy: 3 + Math.random() * 2,
-          life: 1.25,
+          x: -500,
+          y: Math.random() * (canvas.height * 0.3) + 50,
+          len: 3000 + Math.random() * 1000,
+          dx: 35 + Math.random() * 8,
+          dy: 8 + Math.random() * 3,
+          life: 2.0,
           color: 'rgba(255, 223, 100, 1)',
           isHuge: true,
           triggeredEvent: false
@@ -161,9 +161,9 @@ export const LoadingScreen = ({ onComplete, onCosmicEvent }) => {
           grad.addColorStop(1, 'rgba(124, 58, 237, 0)');                 // Violet tail
           
           ctx.strokeStyle = grad;
-          ctx.lineWidth = 6;
-          ctx.shadowBlur = 35;
-          ctx.shadowColor = 'rgba(253, 224, 71, 0.8)';
+          ctx.lineWidth = 55;
+          ctx.shadowBlur = 180;
+          ctx.shadowColor = 'rgba(253, 224, 71, 1)';
         } else {
           grad.addColorStop(0, `rgba(255, 255, 255, ${ss.life})`);
           grad.addColorStop(0.3, `rgba(147, 197, 253, ${ss.life * 0.7})`);

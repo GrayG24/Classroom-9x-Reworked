@@ -196,6 +196,7 @@ export const Home = ({
   onPlayGame,
   onSwitchToLibrary,
   onProfileClick,
+  onPlayerClick,
   onLeaderboardClick,
   systemStats: propSystemStats
 }) => {
@@ -418,7 +419,7 @@ export const Home = ({
             <div className="lg:col-span-2 space-y-6">
               <FullLeaderboardWidget 
                 leaderboardData={displayLeaderboardData} 
-                onPlayerClick={onProfileClick}
+                onPlayerClick={onPlayerClick || onProfileClick}
               />
               <div className="flex justify-center">
                 <button 

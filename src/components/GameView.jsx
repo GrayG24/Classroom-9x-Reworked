@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { X, Maximize2, Minimize2, RefreshCw, Zap, AlertTriangle } from 'lucide-react';
 
 export const GameView = ({ game, onClose }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isReported, setIsReported] = useState(false);
+  const iframeRef = useRef(null);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -15,6 +16,13 @@ export const GameView = ({ game, onClose }) => {
         document.exitFullscreen();
         setIsFullscreen(false);
       }
+    }
+  };
+
+  const handleReload = () => {
+    if (iframeRef.current) {
+      // Safely reload iframe crossing origin boundaries by re-assigning src
+      iframeRef.current.src = game.iframeUrl;
     }
   };
 
@@ -53,7 +61,7 @@ export const GameView = ({ game, onClose }) => {
           </button>
 
           <button 
-            onClick={() => window.location.reload()}
+            onClick={handleReload}
             className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
             title="Reload Game"
           >
@@ -80,6 +88,7 @@ export const GameView = ({ game, onClose }) => {
       {/* Game Iframe */}
       <div className="flex-1 bg-black relative">
         <iframe
+          ref={iframeRef}
           id={game.idAttr || undefined}
           src={game.iframeUrl}
           className="w-full h-full border-none"

@@ -19,6 +19,7 @@ export const Hero = ({ user, onBrowseLibrary }) => {
     "sorry for the wait",
     "90 Gen 90 Gen 90 Gen!!",
     "\"everybody\" - wyatt",
+    "Grih🥀",
     "want your own quote up here? send me your qoutes and ill add them"
   ], []);
 

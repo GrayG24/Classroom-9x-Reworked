@@ -241,14 +241,24 @@ const Popsicle = ({ stat, index, meltProgress, isPotatoMode }) => {
       className="flex flex-col items-center group relative scale-[0.6] sm:scale-75 md:scale-100 origin-bottom flex-shrink-0 min-w-[100px] md:min-w-[180px]"
     >
       <div className="relative" style={{ width: window.innerWidth < 768 ? '100px' : '176px', height: `${fullHeight}px` }}>
-        {/* Popsicle Stick - Detailed with grain */}
-        <div className="absolute -bottom-10 md:-bottom-16 left-1/2 -translate-x-1/2 w-5 md:w-10 h-20 md:h-32 bg-gradient-to-r from-[#cc9a66] via-[#d2b48c] to-[#bc8f8f] rounded-b-xl md:rounded-b-2xl border-b-4 md:border-b-8 border-black/20 shadow-xl overflow-hidden z-10">
+        {/* Popsicle Stick - Detailed with grain and translucent tint showing through */}
+        <div className="absolute -bottom-10 md:-bottom-16 left-1/2 -translate-x-1/2 w-5 md:w-10 h-20 md:h-32 bg-gradient-to-r from-[#cc9a66] via-[#d2b48c] to-[#bc8f8f] rounded-xl md:rounded-3xl border-b-4 md:border-b-8 border-black/20 shadow-xl overflow-hidden z-[21]">
            {/* Wood grain details */}
            {!isPotatoMode && [...Array(5)].map((_, i) => (
              <div key={i} className="absolute inset-x-0 h-[1.5px] bg-[#8b5a2b]/25" style={{ top: `${20 + i * 15}%` }} />
            ))}
            <div className="absolute inset-y-0 left-2 w-[1.5px] bg-white/20" />
            <div className="absolute inset-y-0 right-2 w-[1.5px] bg-black/15" />
+           
+           {/* Translucent tint representing the top half of the stick inside the frozen colored popsicle */}
+           <div 
+             className="absolute top-0 inset-x-0 h-1/2 transition-colors opacity-70 mix-blend-multiply" 
+             style={{ backgroundColor: stat.dripColor }} 
+           />
+           <div 
+             className="absolute top-0 inset-x-0 h-1/2 transition-colors opacity-45 mix-blend-color-burn" 
+             style={{ backgroundColor: stat.dripColor }} 
+           />
         </div>
         
         {/* Main Body */}
@@ -425,7 +435,7 @@ const RealisticLeaf = ({ rotate, scale = 1, color, delay = 0 }) => (
   <g transform={`scale(${scale})`}>
     <motion.g
       animate={{ 
-        rotate: [rotate - 2.5, rotate + 2.5, rotate - 2.5],
+        rotate: [rotate - 2, rotate + 2, rotate - 2],
       }}
       transition={{ 
         duration: 8 + Math.random() * 5, 
@@ -437,31 +447,36 @@ const RealisticLeaf = ({ rotate, scale = 1, color, delay = 0 }) => (
     >
       {/* Main Spine of the Frond */}
       <path 
-        d="M 0,0 Q 60 10 220 140" 
+        d="M 0,0 Q 70 -50 240 50" 
         stroke={color} 
-        strokeWidth="6" 
+        strokeWidth="4" 
         fill="none" 
         strokeLinecap="round" 
         opacity="0.95" 
       />
-      {/* Symmetrical Realistic Drooping Leaflets along frond spine */}
-      <path 
-        d={`
-          M 15,3 L 30,35 M 15,3 L 0,-25
-          M 35,7 L 55,50 M 35,7 L 20,-25
-          M 55,14 L 80,65 M 55,14 L 40,-22
-          M 75,23 L 105,80 M 75,23 L 60,-15
-          M 95,34 L 130,95 M 95,34 L 80,-8
-          M 115,48 L 155,110 M 115,48 L 100,5
-          M 135,64 L 175,123 M 135,64 L 120,20
-          M 155,83 L 195,135 M 155,83 L 140,40
-          M 175,105 L 210,145 M 175,105 L 160,60
-        `} 
-        stroke={color} 
-        strokeWidth="4" 
-        strokeLinecap="round" 
-        opacity="0.85" 
-      />
+      {/* Symmetrical, drooping organic leaflets cascading dynamically under gravity */}
+      {[...Array(22)].map((_, idx) => {
+        const t = (idx + 1) / 23; 
+        const x = (1-t)*(1-t)*0 + 2*(1-t)*t*70 + t*t*240;
+        const y = (1-t)*(1-t)*0 + 2*(1-t)*t*(-50) + t*t*50;
+        
+        const length = 45 * Math.sin(t * Math.PI) + 15; 
+        const angle = 45 + t * 45; 
+        const lx = x + length * Math.sin(angle * Math.PI / 180);
+        const ly = y + length * Math.cos(angle * Math.PI / 180);
+        
+        return (
+          <path 
+            key={idx}
+            d={`M ${x},${y} Q ${lx - 10},${ly + 10} ${lx},${ly}`}
+            stroke={color}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            opacity={0.8 + 0.2 * Math.sin(t * Math.PI)}
+          />
+        );
+      })}
     </motion.g>
   </g>
 );
@@ -488,40 +503,63 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
         </pattern>
       </defs>
       
-      {/* Textured tapered trunk with better curvature */}
-      <path d="M200 600C210 500 215 400 200 180" stroke="url(#trunk-grad)" strokeWidth="48" strokeLinecap="round" fill="none" />
-      <path d="M200 600C210 500 215 400 200 180" stroke="url(#trunk-texture)" strokeWidth="48" strokeLinecap="round" fill="none" />
+      {/* Elegant tapered trunk path */}
+      <path 
+        d="M 180,600 C 185,500 190,400 185,180 L 215,180 C 210,400 205,500 220,600 Z" 
+        fill="url(#trunk-grad)" 
+        stroke="#27150e"
+        strokeWidth="2"
+      />
       
-      {[...Array(18)].map((_, i) => (
-        <path 
-          key={i} 
-          d={`M${200 + Math.sin(i)*1.5} ${585 - i*22} Q ${210 + Math.cos(i)*3} ${580 - i*22} ${200 - Math.sin(i)*1.5} ${575 - i*22}`} 
-          stroke="#2d1d1a" 
-          strokeWidth="5" 
-          opacity="0.6"
-          fill="none"
-        />
-      ))}
+      {/* Volumetric horizontal ring segments, tapering correctly from thick to thin */}
+      {[...Array(24)].map((_, i) => {
+        const t = i / 24;
+        const cy = 600 - t * 420;
+        const cx = 200 - Math.pow(t, 2) * 15;
+        const width = 40 - t * 18;
+        
+        return (
+          <path 
+            key={i} 
+            d={`M ${cx - width/2},${cy} Q ${cx},${cy + 4} ${cx + width/2},${cy}`} 
+            stroke="#2d1d1a" 
+            strokeWidth="3.5" 
+            opacity="0.8"
+            fill="none"
+          />
+        );
+      })}
       
-      {/* High-detail realistic leaves - Radially symmetrical and drooping structure */}
+      {/* Realistic volumetric 14-leaf structured system */}
       <g className="leaf-group" transform="translate(200, 180)">
-        {/* Right side - Arching out and down */}
+        {/* Background dark layers */}
         <g transform="scale(1, 1)">
-          <RealisticLeaf rotate={10} scale={1.1} color="#044d3b" delay={0} />
-          <RealisticLeaf rotate={40} scale={0.95} color="#065f46" delay={0.5} />
-          <RealisticLeaf rotate={75} scale={0.8} color="#044d3b" delay={1.2} />
+          <RealisticLeaf rotate={25} scale={1.2} color="#064e3b" delay={0.2} />
+          <RealisticLeaf rotate={55} scale={1.0} color="#064e3b" delay={0.7} />
+          <RealisticLeaf rotate={85} scale={0.8} color="#022c22" delay={1.4} />
         </g>
-        
-        {/* Left side - Arching out and down (mirrored) */}
         <g transform="scale(-1, 1)">
-          <RealisticLeaf rotate={10} scale={1.1} color="#044d3b" delay={0.3} />
-          <RealisticLeaf rotate={40} scale={0.95} color="#059669" delay={1.5} />
-          <RealisticLeaf rotate={75} scale={0.8} color="#065f46" delay={0.8} />
+          <RealisticLeaf rotate={25} scale={1.2} color="#064e3b" delay={0.4} />
+          <RealisticLeaf rotate={55} scale={1.0} color="#064e3b" delay={1.6} />
+          <RealisticLeaf rotate={85} scale={0.8} color="#022c22" delay={0.9} />
         </g>
         
-        {/* Center/Top layers - upright & shorter */}
-        <RealisticLeaf rotate={-60} scale={0.75} color="#10b981" delay={1.8} />
-        <RealisticLeaf rotate={-120} scale={0.75} color="#34d399" delay={1.1} />
+        {/* Midground rich tropical layers */}
+        <g transform="scale(1, 1)">
+          <RealisticLeaf rotate={10} scale={1.25} color="#047857" delay={0} />
+          <RealisticLeaf rotate={40} scale={1.05} color="#10b981" delay={0.5} />
+          <RealisticLeaf rotate={70} scale={0.85} color="#059669" delay={1.1} />
+        </g>
+        <g transform="scale(-1, 1)">
+          <RealisticLeaf rotate={10} scale={1.25} color="#047857" delay={0.3} />
+          <RealisticLeaf rotate={40} scale={1.05} color="#10b981" delay={1.3} />
+          <RealisticLeaf rotate={70} scale={0.85} color="#059669" delay={0.8} />
+        </g>
+        
+        {/* Upright center layers */}
+        <RealisticLeaf rotate={-45} scale={0.85} color="#34d399" delay={1.5} />
+        <RealisticLeaf rotate={-135} scale={0.85} color="#059669" delay={1.0} />
+        <RealisticLeaf rotate={-90} scale={0.9} color="#10b981" delay={2.0} />
       </g>
       
       {/* Coconuts with more detail */}
@@ -529,7 +567,6 @@ const DetailedPalmtree = ({ bottom, left, right, scale, flip, className = "" }) 
         <circle cx="10" cy="20" r="14" fill="#2d1302" stroke="#1d0a01" strokeWidth="2" />
         <circle cx="32" cy="12" r="12" fill="#3a1a03" stroke="#231002" strokeWidth="2" />
         <circle cx="21" cy="30" r="15" fill="#2d1302" stroke="#1d0a01" strokeWidth="2" />
-        {/* Coconut hair details */}
         <path d="M 8,20 Q 12,25 15,22 M 28,10 Q 32,15 35,12" stroke="#100501" strokeWidth="1" />
       </g>
     </svg>

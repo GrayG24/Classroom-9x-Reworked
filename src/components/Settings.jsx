@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown, LayoutGrid, MessageSquare, Lightbulb } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Bell, Activity, Layers, Bot, Ghost, BrainCircuit, Rocket, Plus, Award, Flame, User, X, ChevronRight, Zap, Star, Trophy, Monitor, Smartphone, Volume2, Eye, EyeOff, Key, LogOut, RefreshCw, Palette, Cpu, AlertTriangle, ChevronDown, LayoutGrid, MessageSquare, Lightbulb, Cloud } from 'lucide-react';
 import { Suggestions } from './Suggestions';
 
 export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onResetProgress, onUpdateUsername, addNotification }) => {
@@ -261,7 +261,8 @@ export const Settings = ({ user, onUpdateSettings, onSetTheme, onRedeemCode, onR
                         {[
                           { title: 'APPS', icon: LayoutGrid },
                           { title: 'CUSTOMIZATION', icon: Palette },
-                          { title: 'GLOBAL CHAT', icon: MessageSquare }
+                          { title: 'GLOBAL CHAT', icon: MessageSquare },
+                          { title: 'CLOUD GAMING', icon: Cloud }
                         ].map((item, i) => (
                           <div key={i} className="p-8 rounded-[2rem] bg-white/[0.03] border border-white/5 flex items-center gap-8 group/item hover:bg-white/5 transition-all">
                             <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-white/40 group-hover/item:text-theme transition-colors">

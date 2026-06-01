@@ -142,7 +142,7 @@ const DEFAULT_USER = {
     performanceMode: false,
     hideUnreleased: true,
     showFPS: false,
-    reducedMotion: false,
+    reduceMotion: false,
     lowQualityParticles: false,
     sidebarAutoHide: true,
     backgroundEffects: true,
@@ -1676,6 +1676,18 @@ const App = () => {
       } else {
         body.classList.remove('liquid-glass');
       }
+
+      if (user.settings.highContrast) {
+        body.classList.add('high-contrast');
+      } else {
+        body.classList.remove('high-contrast');
+      }
+
+      if (user.settings.reduceMotion) {
+        body.classList.add('reduce-motion-enabled');
+      } else {
+        body.classList.remove('reduce-motion-enabled');
+      }
     }
   }, [user, activeGame, isCloaked]);
 
@@ -2391,6 +2403,7 @@ const App = () => {
           onPlayGame={handleGameSelect}
           onSwitchToLibrary={() => setCurrentView(AppRoute.LIBRARY)}
           onProfileClick={() => setIsProfileModalOpen(true)}
+          onPlayerClick={setSelectedPlayer}
           onLeaderboardClick={() => setCurrentView(AppRoute.LEADERBOARD)}
           systemStats={systemStats}
         />
@@ -2449,14 +2462,10 @@ const App = () => {
     return (
       <MiniProfile 
         player={selectedPlayer} 
-        currentUser={user}
-        isFriend={(user.friends || []).includes(selectedPlayer.username)}
-        isSent={(user.sentRequests || []).includes(selectedPlayer.username)}
-        onToggleFriend={() => toggleFriend(selectedPlayer.username)}
         onClose={() => setSelectedPlayer(null)} 
       />
     );
-  }, [selectedPlayer, user, toggleFriend]);
+  }, [selectedPlayer]);
 
   const renderCurrentView = () => {
     if (isAuthLoading) return <LoadingScreen />;
